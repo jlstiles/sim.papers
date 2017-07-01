@@ -47,3 +47,23 @@ g0_1 = function (W1, W2, W3, W4)
   plogis(.5*(-0.08 * W1^2*W2+.5*W1 + 0.49 * cos(W2)*W3 + 0.18 * W3^2 - 0.12 * sin(W4) - 0.15))
 }
 
+sim_lr = function(n, g0, Q0) {
+  
+  simdata = gendata(n, g0, Q0, form)
+  head(simdata)
+  X=simdata
+  X$Y = NULL
+  X1 = X0 = X
+  X1$A = 1
+  X0$A = 0
+  newX = rbind(X,X1,X0)
+  W = X
+  W$A = NULL
+  
+  results_glm <- glm(form,data = simdata,family=binomial())
+  Qk = predict(results_glm,newdata = X, type = 'response')
+  Q1k = predict(results_glm,newdata=X1,type='response')
+  Q0k = predict(results_glm,newdata=X0,type='response')
+  initest = var(Q1k-Q0k)
+  return(initest)
+}
