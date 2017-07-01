@@ -92,7 +92,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
   W = X
   W$A = NULL
   
-  results_glm <- glm(Y ~ A*(W1+W2+W3+W4),data = simdata,family=binomial())
+  results_glm <- glm(Y ~ A*(W1+W2+W3+W4),data = data,family=binomial())
   Qk_glm = predict(results_glm, newdata = X, type = "response")
   Q1k_glm = predict(results_glm,newdata=X1,type='response')
   Q0k_glm = predict(results_glm,newdata=X0,type='response')
