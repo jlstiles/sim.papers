@@ -196,7 +196,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
   
   initest_lr = var(Q1k_glm - Q0k_glm)
   
-  initdata = data.frame(A = X$A, Y = simdata$Y, gk = gk_glm, Qk_glm = Qk, 
+  initdata = data.frame(A = X$A, Y = data$Y, gk = gk_glm, Qk_glm = Qk, 
                         Q1k = Q1k_glm, Q0k = Q0k_glm)
   
   sigmait_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
