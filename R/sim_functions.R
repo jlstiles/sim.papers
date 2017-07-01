@@ -76,20 +76,32 @@ sim_lr = function(n, g0, Q0, form) {
 
 #' @export
 sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
-  
-  simdata = gendata(n, g0, Q0)
-  head(simdata)
-  X=simdata
+  # SL.library = SL.libraryG = c("SL.glm","SL.mean")
+  # HAL = FALSE
+  # g0 = g0_1
+  # Q0 = Q0_1
+  # n=100
+  data = gendata(n, g0, Q0)
+  # head(simdata)
+  X=data
   X$Y = NULL
   X1 = X0 = X
   X1$A = 1
   X0$A = 0
-  newX = rbind(X,X1,X0)
+  newdata = rbind(X,X1,X0)
   W = X
   W$A = NULL
   
+  results_glm <- glm(Y ~ A*(W1+W2+W3+W4),data = simdata,family=binomial())
+  Qk_glm = predict(results_glm, newdata = X, type = "response")
+  Q1k_glm = predict(results_glm,newdata=X1,type='response')
+  Q0k_glm = predict(results_glm,newdata=X0,type='response')
+  
+  gfit_glm = glm(A~.,data = X, family = 'binomial')
+  gk_glm = predict(gfit_glm, type = 'response')
+  
   if (HAL==TRUE) {
-    halresults <- hal(Y = simdata$Y,newX = newX,
+    halresults <- hal(Y = data$Y,newX = newdata,
                       X = X, family = binomial(),
                       verbose = FALSE, parallel = FALSE)
     
@@ -102,12 +114,12 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     gfit = glm(A~.,data = X, family = 'binomial')
     gk = predict(gfit, type = 'response')
     
-    halresultsG <- hal(Y = simdata$A,newX = W,
+    halresultsG <- hal(Y = data$A,newX = W,
                        X = W, family = binomial(),
                        verbose = FALSE, parallel = FALSE)
-    gk_hal = halresultsG$pred[1:n]
+    gk = halresultsG$pred[1:n]
   } else {
-    data <- gendata(n)
+    
     X = data
     X1 = X0 = X
     X0$A = 0
@@ -143,7 +155,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     W = X
     W$A = NULL
     
-    gfit = SuperLearner(data$A,W,newW, family = binomial(),
+    gfit = SuperLearner(data$A,W,newX = W, family = binomial(),
                         SL.library=SL.libraryG, 
                         id = NULL, verbose = FALSE, control = list(),
                         cvControl = list(V=10), obsWeights = NULL)
@@ -156,30 +168,36 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     
   }
   
+  initest = var(Q1k - Q0k)
+  initdata = data.frame(A = X$A, Y = data$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
   
-  initdata = data.frame(A = X$A, Y = simdata$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
-  initdataG = data.frame(A = X$A, Y = simdata$Y, gk = gk_hal, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
-  
-  sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
-                                   submodel = submodel_logit, loss = loss_loglik,
-                                   approach = "full", max_iter = 100,g.trunc = 1e-2)
   sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                  submodel = submodel_logit, loss = loss_loglik,
                                  approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
   
-  sigmait_infoG = gentmle2::gentmle(initdata=initdataG, params=list(param_sigmaATE), 
-                                    submodel = submodel_logit, loss = loss_loglik,
-                                    approach = "full", max_iter = 100,g.trunc = 1e-2)
-  sigma_infoG = gentmle2::gentmle(initdata=initdataG, params=list(param_sigmaATE), 
-                                  submodel = submodel_logit, loss = loss_loglik,
-                                  approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100,g.trunc = 1e-2)
   
-  results_glm <- glm(Y ~ A*(W1+W2+W3+W4),data = simdata,family=binomial())
-  Qk = predict(results_glm, newdata = X, type = "response")
-  Q1k = predict(results_glm,newdata=X1,type='response')
-  Q0k = predict(results_glm,newdata=X0,type='response')
-  initest_lr = var(Q1k - Q0k)
-  initdata = data.frame(A = X$A, Y = simdata$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
+  simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
+                                 simultaneous.inference = TRUE)
+  
+  simuljl_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "line", max_iter = 100,g.trunc = 1e-2,
+                                   simultaneous.inference = TRUE)
+  
+  simuljer_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100,g.trunc = 1e-2,
+                                   simultaneous.inference = TRUE)
+  
+  initest_lr = var(Q1k_glm - Q0k_glm)
+  
+  initdata = data.frame(A = X$A, Y = simdata$Y, gk = gk_glm, Qk_glm = Qk, 
+                        Q1k = Q1k_glm, Q0k = Q0k_glm)
   
   sigmait_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                        submodel = submodel_logit, loss = loss_loglik,
@@ -188,21 +206,30 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
                                      submodel = submodel_logit, loss = loss_loglik,
                                      approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
   
-  steps = c(sigma_info$steps, sigma_infoG$steps,sigmait_info$steps, sigmait_infoG$steps,
-            sigma_info_glm$steps,sigmait_info_glm$steps)
-  converge = c(sigma_info$converge, sigma_infoG$converge,
-               sigmait_info$converge, sigmait_infoG$converge,
-               sigma_info_glm$converge, sigmait_info_glm$converge)
-  
-  ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
-  ci_sigG = ci_gentmle(sigma_infoG)[c(2,4,5)]
-  ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
-  ci_sigitG = ci_gentmle(sigmait_infoG)[c(2,4,5)]
-  ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
-  ci_sigit_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
-  
-  return(c(ci_sig,ci_sigG, ci_sigit, ci_sigitG, ci_sig_glm,
-           ci_sigit_glm,initest, initest_lr,
-           steps = steps, converge = converge))
-}
+  steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
+            simuljer_info$steps, sigma_info_glm$steps,sigmait_info_glm$steps)
+  converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
+               simuljl_info$converge, simuljer_info$converge, sigma_info_glm$converge,
+               sigmait_info_glm$converge)
 
+  ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
+  ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
+  ci_simul = ci_gentmle(simul_info)[2,c(2,4,5)]
+  ci_simuljl = ci_gentmle(simuljl_info)[2,c(2,4,5)]
+  ci_simuljer = ci_gentmle(simuljer_info)[2,c(2,4,5)]
+  ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
+  ci_sigit_glm = ci_gentmle(sigmait_info_glm)[c(2,4,5)]
+  
+  cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,
+    ci_sig_glm, ci_sigit_glm)
+  names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19)]=
+    c("sig", "sigit", "simul", "simul_line", "simul_full",
+                                    "sig_glm", "sigit_glm")
+  results = c(cis, initest = initest, initest_lr = initest_lr,
+              steps = steps, converge = converge)
+  # results
+  return(results)
+}
+# 
+# pp = sim_hal(100, g0 = g0_1, Q0 = Q0_trig, HAL = TRUE, SL.library=NULL, SL.libraryG=NULL)
+# pp[c(1,4,7,10,13,16,19,22,23)]
