@@ -118,6 +118,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
                        X = W, family = binomial(),
                        verbose = FALSE, parallel = FALSE)
     gk = halresultsG$pred[1:n]
+    Qcoef = Gcoef = 0
   } else {
     
     X = data
@@ -163,6 +164,8 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     Q1k = Qfit$library.predict[(n+1):(2*n),Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     Q0k = Qfit$library.predict[(2*n+1):(3*n),Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     
+    Qcoef = Qfit$coef
+    Gcoef = gfit$coef
   }
   
   initest = var(Q1k - Q0k)
@@ -223,7 +226,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     c("sig", "sigit", "simul", "simul_line", "simul_full",
                                     "sig_glm", "sigit_glm")
   results = c(cis, initest = initest, initest_lr = initest_lr,
-              steps = steps, converge = converge)
+              steps = steps, converge = converge, Qcoef, Gcoef)
   # results
   return(results)
 }
