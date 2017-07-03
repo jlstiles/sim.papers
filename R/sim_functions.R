@@ -151,9 +151,6 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
                       id = NULL, verbose = FALSE, control = list(),
                       cvControl = list(V=10), obsWeights = NULL)
     
-    # proc.time() - time
-    W = X
-    W$A = NULL
     
     gfit = SuperLearner(data$A,W,newX = W, family = binomial(),
                         SL.library=SL.libraryG, 
