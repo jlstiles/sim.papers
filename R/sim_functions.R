@@ -77,10 +77,10 @@ sim_lr = function(n, g0, Q0, form) {
 #' @export
 sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
   # SL.library = SL.libraryG = c("SL.glm","SL.mean")
-  # HAL = FALSE
-  # g0 = g0_1
-  # Q0 = Q0_1
-  # n=100
+  HAL = FALSE
+  g0 = g0_1
+  Q0 = Q0_1
+  n=250
   data = gendata(n, g0, Q0)
   # head(simdata)
   X=data
@@ -158,11 +158,29 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
                         id = NULL, verbose = FALSE, control = list(),
                         cvControl = list(V=10), obsWeights = NULL)
     
+    if (length(gfit$coef[gfit$coef!=0])==1){
+      gk = gfit$library.predict[1:n,gfit$coef!=0]
+      } else {
     gk = gfit$library.predict[1:n,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
+      }
     
-    Qk = Qfit$library.predict[1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
-    Q1k = Qfit$library.predict[(n+1):(2*n),Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
-    Q0k = Qfit$library.predict[(2*n+1):(3*n),Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Qk = Qfit$library.predict[1:n,Qfit$coef!=0]
+    } else {
+      Qk = Qfit$library.predict[1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0]
+    } else {
+      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0]
+    } else {
+      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
     
     Qcoef = Qfit$coef
     Gcoef = gfit$coef
