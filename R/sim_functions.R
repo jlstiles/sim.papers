@@ -293,7 +293,7 @@ sim_single = function(n, g0, Q0, form) {
   initest = var(Q1k - Q0k)
   
   gfit = glm(A~.,data = X, family = binomial())
-  gk = predict(gfit, type = 'repsonse')
+  gk = predict(gfit, type = 'response')
   
   initdata = data.frame(A = X$A, Y = simdata$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
   
