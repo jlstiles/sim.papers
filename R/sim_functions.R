@@ -273,6 +273,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
 }
 
 # for linear model g and specified form 
+
 #' @export
 sim_single = function(n, g0, Q0, form) {
   
