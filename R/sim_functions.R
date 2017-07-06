@@ -272,13 +272,11 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
   return(results)
 }
 
-# for linear model g and specified form 
-
 #' @export
 sim_single = function(n, g0, Q0, form) {
   
   simdata = gendata(n, g0, Q0)
-  head(simdata)
+  
   X=simdata
   X$Y = NULL
   X1 = X0 = X
@@ -306,6 +304,7 @@ sim_single = function(n, g0, Q0, form) {
   ci_tmle = ci_gentmle(sigma_info)[c(2,4,5)]
   return(c(ci_tmle, initest))
 }
+
 # 
 # pp = sim_hal(100, g0 = g0_1, Q0 = Q0_trig, HAL = TRUE, SL.library=NULL, SL.libraryG=NULL)
 # pp[c(1,4,7,10,13,16,19,22,23)]
