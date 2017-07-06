@@ -77,10 +77,10 @@ sim_lr = function(n, g0, Q0, form) {
 #' @export
 sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
   # SL.library = SL.libraryG = c("SL.glm","SL.mean")
-  HAL = FALSE
-  g0 = g0_1
-  Q0 = Q0_1
-  n=250
+  # HAL = FALSE
+  # g0 = g0_1
+  # Q0 = Q0_1
+  # n=250
   data = gendata(n, g0, Q0)
   # head(simdata)
   X=data
@@ -273,6 +273,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
 }
 
 # for linear model g and specified form 
+#' @export
 sim_single = function(n, g0, Q0, form) {
   
   simdata = gendata(n, g0, Q0)
