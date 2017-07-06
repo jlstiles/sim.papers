@@ -272,7 +272,38 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
   return(results)
 }
 
-
+# for linear model g and specified form 
+sim_single = function(n, g0, Q0, form) {
+  
+  simdata = gendata(n, g0, Q0)
+  head(simdata)
+  X=simdata
+  X$Y = NULL
+  X1 = X0 = X
+  X1$A = 1
+  X0$A = 0
+  newX = rbind(X,X1,X0)
+  W = X
+  W$A = NULL
+  
+  results_glm <- glm(form,data = simdata,family = binomial())
+  Qk = predict(results_glm, newdata = X, type = 'response')
+  Q1k = predict(results_glm, newdata = X1,type = 'response')
+  Q0k = predict(results_glm, newdata = X0,type = 'response')
+  initest = var(Q1k - Q0k)
+  
+  gfit = glm(A~.,data = X, family = binomial())
+  gk = predict(gfit, type = 'repsonse')
+  
+  initdata = data.frame(A = X$A, Y = data$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
+  
+  sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  
+  ci_tmle = ci_gentmle(sigma_info)[c(2,4,5)]
+  return(c(ci_tmle, initest))
+}
 # 
 # pp = sim_hal(100, g0 = g0_1, Q0 = Q0_trig, HAL = TRUE, SL.library=NULL, SL.libraryG=NULL)
 # pp[c(1,4,7,10,13,16,19,22,23)]
