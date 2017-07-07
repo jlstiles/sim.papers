@@ -184,6 +184,10 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     
     Qcoef = Qfit$coef
     Gcoef = gfit$coef
+    
+    Qrisk = Qfit$cvRisk
+    grisk = gfit$cvRisk
+    
   }
   
   initest = var(Q1k - Q0k)
@@ -267,7 +271,8 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     c("sig", "sigit", "simul", "simul_line", "simul_full","sig_glm", 
       "sigit_glm","simulATE","ATE","simulATE_glm","ATE_glm")
   results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
-              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, Qcoef, Gcoef)
+              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, Qcoef, 
+              Gcoef, Qrisk, grisk)
   # results
   return(results)
 }
