@@ -75,7 +75,7 @@ sim_lr = function(n, g0, Q0, form) {
 }
 
 #' @export
-sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method) {
+sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNLS") {
   # SL.library = SL.libraryG = c("SL.glm","SL.mean")
   # HAL = FALSE
   # g0 = g0_1
