@@ -75,7 +75,7 @@ sim_lr = function(n, g0, Q0, form) {
 }
 
 #' @export
-sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
+sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method) {
   # SL.library = SL.libraryG = c("SL.glm","SL.mean")
   # HAL = FALSE
   # g0 = g0_1
@@ -148,13 +148,13 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG) {
     
     # time = proc.time()
     Qfit=SuperLearner(data$Y,X,newX=newdata, family = binomial(),
-                      SL.library=SL.library, 
+                      SL.library=SL.library, method=method,
                       id = NULL, verbose = FALSE, control = list(),
                       cvControl = list(V=10), obsWeights = NULL)
     
     
     gfit = SuperLearner(data$A,W,newX = W, family = binomial(),
-                        SL.library=SL.libraryG, 
+                        SL.library=SL.libraryG,method = method, 
                         id = NULL, verbose = FALSE, control = list(),
                         cvControl = list(V=10), obsWeights = NULL)
     
