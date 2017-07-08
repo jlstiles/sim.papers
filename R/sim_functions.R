@@ -72,7 +72,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
   Q0k = predict(results, newdata = X0,type = 'response')
   
   gfit = glm(formG,data = X, family = 'binomial')
-  gk = predict(gfit_glm, type = 'response')
+  gk = predict(gfit, type = 'response')
   initest = var(Q1k - Q0k)
   initest_ATE = mean(Q1k - Q0k)
   
