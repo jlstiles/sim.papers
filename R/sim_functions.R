@@ -106,8 +106,9 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
   
   cis = c(ci_sig, ci_sigit, ci_simul, ci_simulATE, 
           ci_ATE)
-  names(converge) = names(steps) = names(cis)[c(1,4,7,10,13)] =
+  names(cis)[c(1,4,7,10,13)] =
     c("sig", "sigit","simul","simulATE","ATE")
+  names(converge) = names(steps) = names(cis)[1:4]
   results = c(cis, initest = initest, initest_ATE = initest_ATE,steps = steps, 
               converge = converge)
   
