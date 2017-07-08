@@ -76,8 +76,8 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
   initest = var(Q1k - Q0k)
   initest_ATE = mean(Q1k - Q0k)
   
-  initdata = data.frame(A = X$A, Y = data$Y, gk = gk_glm, Qk = Qk_glm, 
-                        Q1k = Q1k_glm, Q0k = Q0k_glm)
+  initdata = data.frame(A = X$A, Y = data$Y, gk = gk, Qk = Qk, 
+                        Q1k = Q1k, Q0k = Q0k)
   
   sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                        submodel = submodel_logit, loss = loss_loglik,
