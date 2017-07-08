@@ -88,7 +88,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
   
   simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE,param_sigmaATE), 
                                      submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "full", max_iter = 10000, g.trunc = 1e-2,
+                                     approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
                                      simultaneous.inference = TRUE)
   
   ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
@@ -100,7 +100,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
   
   ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
   ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
-  ci_simul = ci_gentmle(simul__info)[2,c(2,4,5)]
+  ci_simul = ci_gentmle(simul_info)[2,c(2,4,5)]
   ci_simulATE = ci_gentmle(simul_info)[1,c(2,4,5)]
   ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]
   
