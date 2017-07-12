@@ -117,11 +117,12 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 
 #' @export
 sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNLS") {
-  # SL.library = SL.libraryG = c("SL.glm","SL.mean")
-  # HAL = FALSE
-  # g0 = g0_1
-  # Q0 = Q0_1
-  # n=250
+  SL.library = SL.libraryG = list("SL.glm","SL.mean")
+  method = "method.NNloglik"
+  HAL = FALSE
+  g0 = g0_1
+  Q0 = Q0_1
+  n=1000
   data = gendata(n, g0, Q0)
   # head(simdata)
   X=data
@@ -286,11 +287,12 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
   
   steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
             simuljer_info$steps, sigma_info_glm$steps,sigmait_info_glm$steps, 
-            simuljl_info$steps,simul_info_glm$steps, ATE_info$steps,ATE_info_glm$steps)
+            simul_info_glm$steps,simul_info$steps, ATE_info$steps, simul_info_glm$steps
+            ,ATE_info_glm$steps)
   converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
                simuljl_info$converge, simuljer_info$converge, sigma_info_glm$converge,
-               sigmait_info_glm$converge,simul_info$converge,simul_info_glm$converge, 
-               ATE_info$converge, ATE_info_glm$converge)
+               sigmait_info_glm$converge,simul_info_glm$converge,simul_info$converge, 
+               ATE_info$converge, simul_info_glm$converge, ATE_info_glm$converge)
 
   ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
   ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
@@ -299,6 +301,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
   ci_simuljer = ci_gentmle(simuljer_info)[2,c(2,4,5)]
   ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
   ci_sigit_glm = ci_gentmle(sigmait_info_glm)[c(2,4,5)]
+  ci_simul_glm = ci_gentmle(simul_info_glm)[2,c(2,4,5)]
   
   ci_simulATE = ci_gentmle(simul_info)[1,c(2,4,5)]
   ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
@@ -306,11 +309,11 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
   ci_ATE_glm = ci_gentmle(ATE_info_glm)[c(2,4,5)]
   
   cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,
-    ci_sig_glm, ci_sigit_glm, ci_simulATE,ci_ATE, ci_simulATE_glm, 
+    ci_sig_glm, ci_sigit_glm, ci_simul_glm, ci_simulATE,ci_ATE, ci_simulATE_glm, 
     ci_ATE_glm)
-  names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31)]=
+  names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31,34)]=
     c("sig", "sigit", "simul", "simul_line", "simul_full","sig_glm", 
-      "sigit_glm","simulATE","ATE","simulATE_glm","ATE_glm")
+      "sigit_glm","simul_glm","simulATE","ATE","simulATE_glm","ATE_glm")
   results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
               initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, Qcoef, 
               Gcoef, Qrisk, grisk)
