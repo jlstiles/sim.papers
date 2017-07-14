@@ -203,7 +203,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
     if (length(gfit$coef[gfit$coef!=0])==1){
       gk = gfit$library.predict[1:n,gfit$coef!=0]
       } else {
-    gk = gfit$library.predict[1:n,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
+      gk = gfit$library.predict[1:n,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
       }
     
     if (length(Qfit$coef[Qfit$coef!=0])==1){
@@ -354,6 +354,233 @@ sim_single = function(n, g0, Q0, form) {
   return(c(ci_tmle, initest))
 }
 
+#' @export
+SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
+  # 
+  # X = X
+  # Y = data$Y
+  # A = data$A
+  # W = X
+  # W$A = NULL
+  # newdata = newdata
+  # method = "method.NNloglik"
+  folds = make_folds(n=1000, V=10)
+  stack = lapply(folds, FUN = function(x) {
+    # x=folds[[5]]
+    tr = x$training_set
+    n=length(tr)
+    Y = Y[tr]
+    X = X[tr,]
+    newtr = c(tr, (n+tr),(2*n+tr))
+    newdata = newdata[newtr,]
+    Qfit=SuperLearner(Y,X,newX=newdata, family = binomial(),
+                      SL.library=SL.library, method=method,
+                      id = NULL, verbose = FALSE, control = list(),
+                      cvControl = list(V=10), obsWeights = NULL)
+    
+    A = A[tr]
+    W = W[tr,1:4]
+    gfit = SuperLearner(A,W,newX = W, family = binomial(),
+                        SL.library=SL.libraryG,method = method, 
+                        id = NULL, verbose = FALSE, control = list(),
+                        cvControl = list(V=10), obsWeights = NULL)
+    
+    
+    if (length(gfit$coef[gfit$coef!=0])==1){
+      gk = gfit$library.predict[1:n,gfit$coef!=0]
+    } else {
+      gk = gfit$library.predict[1:n,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Qk = Qfit$library.predict[1:n,Qfit$coef!=0]
+    } else {
+      Qk = Qfit$library.predict[1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0]
+    } else {
+      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0]
+    } else {
+      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    Qcoef = Qfit$coef
+    Gcoef = gfit$coef
+    
+    Qrisk = Qfit$cvRisk
+    Grisk = gfit$cvRisk
+    
+    return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk, Qcoef = Qcoef, Gcoef = Gcoef,
+                Qrisk = Qrisk, Grisk = Grisk, inds = x$validation_set))
+  })
+  
+  Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
+  Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
+  Q0k = unlist(lapply(stack, FUN = function(x) x$Q0k))
+  gk = unlist(lapply(stack, FUN = function(x) x$gk))
+  Qcoef = rowMeans(vapply(stack, FUN = function(x) x$Qcoef, 
+                          FUN.VALUE = rep(1,length(stack[[1]]$Qcoef))))
+  Gcoef = rowMeans(vapply(stack, FUN = function(x) x$Gcoef,
+                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
+  Qrisk = rowMeans(vapply(stack, FUN = function(x) x$Qrisk,
+                          FUN.VALUE = rep(1,length(stack[[1]]$Qrisk))))
+  Grisk = rowMeans(vapply(stack, FUN = function(x) x$Grisk,
+                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
+  inds = unlist(lapply(stack, FUN = function(x) x$inds))
+  Y = Y[inds]
+  A = A[inds]
+  
+  initdata = data.frame(Y=Y,A=A,Qk=Qk,Q1k=Q1k,Q0k=Q0k,gk=gk)
+  return(list(initdata = initdata, Qcoef = Qcoef, Gcoef = Gcoef, Qrisk = Qrisk,
+              Grisk = Grisk, inds = inds))
+}  
 # 
+#' @export
+sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
+  
+  # n=1000
+  # g0 = g0_linear
+  # Q0 = Q0_trig
+  # SL.library = SL.libraryQ = c("SL.mean", "SL.glm")
+  # method = "method.NNloglik"
+  
+  data = gendata(n, g0, Q0)
+  
+  X = data
+  X1 = X0 = X
+  X0$A = 0
+  X1$A = 1
+  newdata = rbind(X,X1,X0)
+  
+  mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
+  mainform
+  squares = paste0(paste0("I(",colnames(data)[2:5]),"^2)")
+  squares
+  squares = paste0(paste(squares[1:3],"+",collapse=""),squares[4])
+  squares
+  mainsq = paste0(mainform,"+",squares)
+  mainsq
+  mainsq.int = paste0("Y~A*(",mainsq,")")
+  mainsq.int = formula(mainsq.int) 
+  mainsq.int
+  
+  newdata = model.matrix(mainsq.int,newdata)
+  newdata = as.data.frame(newdata[,-1])
+  colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
+  head(newdata)
+  X = newdata[1:n,]
+  X$Y = NULL
+  Y = data$Y
+  A = data$A
+  W = X[,1:5]
+  W$A = NULL
+  
+  stack = SL.stack(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
+                      SL.library=SL.library, SL.libraryG=SL.libraryG)
+
+  initdata = stack$initdata   
+  initest = with(initdata,var(Q1k - Q0k))
+  initest_ATE = with(initdata, mean(Q1k - Q0k))
+  
+  
+  sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  
+  sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100,g.trunc = 1e-2)
+  
+  simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
+                                 simultaneous.inference = TRUE)
+  
+  simuljl_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "line", max_iter = 100,g.trunc = 1e-2,
+                                   simultaneous.inference = TRUE)
+  
+  simuljer_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                    submodel = submodel_logit, loss = loss_loglik,
+                                    approach = "full", max_iter = 100,g.trunc = 1e-2,
+                                    simultaneous.inference = TRUE)
+  
+  ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
+                               submodel = submodel_logit, loss = loss_loglik,
+                               approach = "full", max_iter = 100,g.trunc = 1e-2)
+  
+  results_glm <- glm(Y ~ .,data = X[,1:5],family=binomial())
+  Q = predict(results_glm, newdata = newdata[,1:5], type = "response")
+  Qk = Q[1:n]
+  Q1k = Q[n+1:n]
+  Q0k = Q[2*n+1:n]
+  gfit_glm = glm(A~.,data = X[,1:5], family = 'binomial')
+  gk_glm = predict(gfit_glm, type = 'response')
+  initest_lr = var(Q1k_glm - Q0k_glm)
+  initest_lr_ATE = mean(Q1k_glm - Q0k_glm)
+  
+  initdata = data.frame(A = X$A, Y = data$Y, gk = gk_glm, Qk = Qk_glm, 
+                        Q1k = Q1k_glm, Q0k = Q0k_glm)
+  
+  sigmait_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                       submodel = submodel_logit, loss = loss_loglik,
+                                       approach = "full", max_iter = 100,g.trunc = 1e-2)
+  sigma_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                     submodel = submodel_logit, loss = loss_loglik,
+                                     approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  
+  simul_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE,param_sigmaATE), 
+                                     submodel = submodel_logit, loss = loss_loglik,
+                                     approach = "full", max_iter = 10000, g.trunc = 1e-2,
+                                     simultaneous.inference = TRUE)
+  
+  ATE_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100, g.trunc = 1e-2)
+  
+  steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
+            simuljer_info$steps, sigma_info_glm$steps,sigmait_info_glm$steps, 
+            simul_info_glm$steps,simul_info$steps, ATE_info$steps, simul_info_glm$steps
+            ,ATE_info_glm$steps)
+  converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
+               simuljl_info$converge, simuljer_info$converge, sigma_info_glm$converge,
+               sigmait_info_glm$converge,simul_info_glm$converge,simul_info$converge, 
+               ATE_info$converge, simul_info_glm$converge, ATE_info_glm$converge)
+  
+  ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
+  ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
+  ci_simul = ci_gentmle(simul_info)[2,c(2,4,5)]
+  ci_simuljl = ci_gentmle(simuljl_info)[2,c(2,4,5)]
+  ci_simuljer = ci_gentmle(simuljer_info)[2,c(2,4,5)]
+  ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
+  ci_sigit_glm = ci_gentmle(sigmait_info_glm)[c(2,4,5)]
+  ci_simul_glm = ci_gentmle(simul_info_glm)[2,c(2,4,5)]
+  
+  ci_simulATE = ci_gentmle(simul_info)[1,c(2,4,5)]
+  ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
+  ci_simulATE_glm = ci_gentmle(simul_info_glm)[1,c(2,4,5)]
+  ci_ATE_glm = ci_gentmle(ATE_info_glm)[c(2,4,5)]
+  
+  cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,
+          ci_sig_glm, ci_sigit_glm, ci_simul_glm, ci_simulATE,ci_ATE, ci_simulATE_glm, 
+          ci_ATE_glm)
+  names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31,34)]=
+    c("sig", "sigit", "simul", "simul_line", "simul_full","sig_glm", 
+      "sigit_glm","simul_glm","simulATE","ATE","simulATE_glm","ATE_glm")
+  results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
+              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, 
+            Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
+            Grisk = stack$Grisk)
+  # results
+  return(results)
+}
+
 # pp = sim_hal(100, g0 = g0_1, Q0 = Q0_trig, HAL = TRUE, SL.library=NULL, SL.libraryG=NULL)
 # pp[c(1,4,7,10,13,16,19,22,23)]
