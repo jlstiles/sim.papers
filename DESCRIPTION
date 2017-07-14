@@ -31,4 +31,5 @@ Depends: knitr,
     rpart,
     randomForest,
     hal,
-    gentmle2
+    gentmle2,
+    origami
