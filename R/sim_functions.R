@@ -521,9 +521,9 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   
   results_glm <- glm(Y ~ .,data = X[,1:5],family=binomial())
   Q = predict(results_glm, newdata = newdata[,1:5], type = "response")
-  Qk = Q[1:n]
-  Q1k = Q[n+1:n]
-  Q0k = Q[2*n+1:n]
+  Qk_glm = Q[1:n]
+  Q1k_glm = Q[n+1:n]
+  Q0k_glm = Q[2*n+1:n]
   gfit_glm = glm(A~.,data = X[,1:5], family = 'binomial')
   gk_glm = predict(gfit_glm, type = 'response')
   initest_lr = var(Q1k_glm - Q0k_glm)
