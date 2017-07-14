@@ -324,9 +324,7 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
 #' @export
 sim_single = function(n, g0, Q0, form) {
   
-  simdata = gendata(n, g0, Q0)
-  
-  X=simdata
+  X = gendata(n, g0, Q0)
   X$Y = NULL
   X1 = X0 = X
   X1$A = 1
@@ -355,7 +353,7 @@ sim_single = function(n, g0, Q0, form) {
 }
 
 #' @export
-SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
+SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -365,13 +363,16 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
   # newdata = newdata
   # method = "method.NNloglik"
   folds = make_folds(n=1000, V=10)
-  stack = lapply(folds, FUN = function(x) {
+  stack = mclapply(folds, FUN = function(x) {
     # x=folds[[5]]
     tr = x$training_set
+    val = x$validation_set
     n=length(tr)
+    nv = length(val)
+    
     Y = Y[tr]
     X = X[tr,]
-    newtr = c(tr, (n+tr),(2*n+tr))
+    newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
     Qfit=SuperLearner(Y,X,newX=newdata, family = binomial(),
                       SL.library=SL.library, method=method,
@@ -379,35 +380,36 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
                       cvControl = list(V=10), obsWeights = NULL)
     
     A = A[tr]
-    W = W[tr,1:4]
-    gfit = SuperLearner(A,W,newX = W, family = binomial(),
+    W1 = W[tr,]
+    newW = W[val,]
+    gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomial(),
                         SL.library=SL.libraryG,method = method, 
                         id = NULL, verbose = FALSE, control = list(),
                         cvControl = list(V=10), obsWeights = NULL)
     
     
     if (length(gfit$coef[gfit$coef!=0])==1){
-      gk = gfit$library.predict[1:n,gfit$coef!=0]
+      gk = gfit$library.predict[1:nv,gfit$coef!=0]
     } else {
-      gk = gfit$library.predict[1:n,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
+      gk = gfit$library.predict[1:nv,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
     }
     
     if (length(Qfit$coef[Qfit$coef!=0])==1){
-      Qk = Qfit$library.predict[1:n,Qfit$coef!=0]
+      Qk = Qfit$library.predict[1:nv,Qfit$coef!=0]
     } else {
-      Qk = Qfit$library.predict[1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+      Qk = Qfit$library.predict[1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     }
     
     if (length(Qfit$coef[Qfit$coef!=0])==1){
-      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0]
+      Q1k = Qfit$library.predict[nv+1:nv,Qfit$coef!=0]
     } else {
-      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+      Q1k = Qfit$library.predict[nv+1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     }
     
     if (length(Qfit$coef[Qfit$coef!=0])==1){
-      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0]
+      Q0k = Qfit$library.predict[2*nv+1:nv,Qfit$coef!=0]
     } else {
-      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+      Q0k = Qfit$library.predict[2*nv+1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     }
     
     Qcoef = Qfit$coef
@@ -418,7 +420,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
     
     return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk, Qcoef = Qcoef, Gcoef = Gcoef,
                 Qrisk = Qrisk, Grisk = Grisk, inds = x$validation_set))
-  })
+  }, mc.cores = mc.cores)
   
   Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
   Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
@@ -447,7 +449,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   # n=1000
   # g0 = g0_linear
   # Q0 = Q0_trig
-  # SL.library = SL.libraryQ = c("SL.mean", "SL.glm")
+  # SL.library = SL.libraryG = c("SL.mean", "SL.glm","SL.glmnet","SL.rpartPrune")
   # method = "method.NNloglik"
   
   data = gendata(n, g0, Q0)
@@ -478,11 +480,12 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   X$Y = NULL
   Y = data$Y
   A = data$A
-  W = X[,1:5]
-  W$A = NULL
+  W = X[,2:5]
   
+  # time = proc.time()
   stack = SL.stack(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                      SL.library=SL.library, SL.libraryG=SL.libraryG)
+                      SL.library=SL.library, SL.libraryG=SL.libraryG, mc.cores = 1)
+  # proc.time() - time
 
   initdata = stack$initdata   
   initest = with(initdata,var(Q1k - Q0k))
