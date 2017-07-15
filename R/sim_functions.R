@@ -422,18 +422,22 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) 
                 Qrisk = Qrisk, Grisk = Grisk, inds = x$validation_set))
   })
   
-  Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
-  Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
-  Q0k = unlist(lapply(stack, FUN = function(x) x$Q0k))
-  gk = unlist(lapply(stack, FUN = function(x) x$gk))
-  Qcoef = rowMeans(vapply(stack, FUN = function(x) x$Qcoef, 
-                          FUN.VALUE = rep(1,length(stack[[1]]$Qcoef))))
-  Gcoef = rowMeans(vapply(stack, FUN = function(x) x$Gcoef,
-                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
-  Qrisk = rowMeans(vapply(stack, FUN = function(x) x$Qrisk,
-                          FUN.VALUE = rep(1,length(stack[[1]]$Qrisk))))
-  Grisk = rowMeans(vapply(stack, FUN = function(x) x$Grisk,
-                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
+  if (length(SL.library)==1) {
+    Qcoef = mean(Qcoef_mat)
+    Qrisk = mean(Qrisk_mat)
+  } else {
+    Qcoef = rowMeans(Qcoef_mat)
+    Qrisk = rowMeans(Qrisk_mat)
+  }
+  
+  if (length(SL.libraryG)==1) {
+    Gcoef = mean(Gcoef_mat)
+    Grisk = mean(Grisk_mat)
+  } else {
+    Gcoef = rowMeans(Gcoef_mat)
+    Grisk = rowMeans(Grisk_mat)
+  }
+  
   inds = unlist(lapply(stack, FUN = function(x) x$inds))
   Y = Y[inds]
   A = A[inds]
@@ -517,14 +521,33 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
   Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
   Q0k = unlist(lapply(stack, FUN = function(x) x$Q0k))
   gk = unlist(lapply(stack, FUN = function(x) x$gk))
-  Qcoef = rowMeans(vapply(stack, FUN = function(x) x$Qcoef, 
-                          FUN.VALUE = rep(1,length(stack[[1]]$Qcoef))))
-  Gcoef = rowMeans(vapply(stack, FUN = function(x) x$Gcoef,
-                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
-  Qrisk = rowMeans(vapply(stack, FUN = function(x) x$Qrisk,
-                          FUN.VALUE = rep(1,length(stack[[1]]$Qrisk))))
-  Grisk = rowMeans(vapply(stack, FUN = function(x) x$Grisk,
-                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
+  
+  Qcoef_mat = vapply(stack, FUN = function(x) x$Qcoef, 
+                     FUN.VALUE = rep(1,length(stack[[1]]$Qcoef)))
+  Qrisk_mat = vapply(stack, FUN = function(x) x$Qrisk,
+         FUN.VALUE = rep(1,length(stack[[1]]$Qrisk)))
+  
+  Gcoef_mat = vapply(stack, FUN = function(x) x$Gcoef, 
+                     FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
+  Grisk_mat = vapply(stack, FUN = function(x) x$Grisk,
+                      FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
+  
+  if (length(SL.library)==1) {
+    Qcoef = mean(Qcoef_mat)
+    Qrisk = mean(Qrisk_mat)
+  } else {
+    Qcoef = rowMeans(Qcoef_mat)
+    Qrisk = rowMeans(Qrisk_mat)
+  }
+  
+  if (length(SL.libraryG)==1) {
+    Gcoef = mean(Gcoef_mat)
+    Grisk = mean(Grisk_mat)
+  } else {
+    Gcoef = rowMeans(Gcoef_mat)
+    Grisk = rowMeans(Grisk_mat)
+  }
+
   inds = unlist(lapply(stack, FUN = function(x) x$inds))
   Y = Y[inds]
   A = A[inds]
@@ -575,7 +598,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   
   # time = proc.time()
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                      SL.library=SL.library, SL.libraryG=SL.libraryG, mc.cores = 1)
+                      SL.library=SL.library, SL.libraryG=SL.libraryG)
   # proc.time() - time
 
   initdata = stack$initdata   
