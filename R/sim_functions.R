@@ -422,6 +422,16 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) 
                 Qrisk = Qrisk, Grisk = Grisk, inds = x$validation_set))
   })
   
+  Qcoef_mat = vapply(stack, FUN = function(x) x$Qcoef, 
+                     FUN.VALUE = rep(1,length(stack[[1]]$Qcoef)))
+  Qrisk_mat = vapply(stack, FUN = function(x) x$Qrisk,
+                     FUN.VALUE = rep(1,length(stack[[1]]$Qrisk)))
+  
+  Gcoef_mat = vapply(stack, FUN = function(x) x$Gcoef, 
+                     FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
+  Grisk_mat = vapply(stack, FUN = function(x) x$Grisk,
+                     FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
+  
   if (length(SL.library)==1) {
     Qcoef = mean(Qcoef_mat)
     Qrisk = mean(Qrisk_mat)
