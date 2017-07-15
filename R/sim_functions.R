@@ -537,11 +537,11 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
 #' @export
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   
-  n=1000
-  g0 = g0_linear
-  Q0 = Q0_trig
-  SL.library = SL.libraryG = c("SL.mean", "SL.glm")
-  method = "method.NNloglik"
+  # n=1000
+  # g0 = g0_linear
+  # Q0 = Q0_trig
+  # SL.library = SL.libraryG = c("SL.mean", "SL.glm")
+  # method = "method.NNloglik"
   
   data = gendata(n, g0, Q0)
   
