@@ -362,7 +362,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) 
   # W$A = NULL
   # newdata = newdata
   # method = "method.NNloglik"
-  folds = make_folds(n=1000, V=10)
+  folds = make_folds(n, V=10)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
     tr = x$training_set
@@ -453,7 +453,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
   # W$A = NULL
   # newdata = newdata
   # method = "method.NNloglik"
-  folds = make_folds(n=1000, V=10)
+  folds = make_folds(n, V=10)
   stack = mclapply(folds, FUN = function(x) {
     # x=folds[[5]]
     tr = x$training_set
