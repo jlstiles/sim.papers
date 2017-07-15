@@ -353,6 +353,97 @@ sim_single = function(n, g0, Q0, form) {
 }
 
 #' @export
+SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
+  # 
+  # X = X
+  # Y = data$Y
+  # A = data$A
+  # W = X
+  # W$A = NULL
+  # newdata = newdata
+  # method = "method.NNloglik"
+  folds = make_folds(n=1000, V=10)
+  stack = lapply(folds, FUN = function(x) {
+    # x=folds[[5]]
+    tr = x$training_set
+    val = x$validation_set
+    n=length(tr)
+    nv = length(val)
+    
+    Y = Y[tr]
+    X = X[tr,]
+    newtr = c(val, (n+val),(2*n+val))
+    newdata = newdata[newtr,]
+    Qfit=SuperLearner(Y,X,newX=newdata, family = binomial(),
+                      SL.library=SL.library, method=method,
+                      id = NULL, verbose = FALSE, control = list(),
+                      cvControl = list(V=10), obsWeights = NULL)
+    
+    A = A[tr]
+    W1 = W[tr,]
+    newW = W[val,]
+    gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomial(),
+                        SL.library=SL.libraryG,method = method, 
+                        id = NULL, verbose = FALSE, control = list(),
+                        cvControl = list(V=10), obsWeights = NULL)
+    
+    
+    if (length(gfit$coef[gfit$coef!=0])==1){
+      gk = gfit$library.predict[1:nv,gfit$coef!=0]
+    } else {
+      gk = gfit$library.predict[1:nv,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Qk = Qfit$library.predict[1:nv,Qfit$coef!=0]
+    } else {
+      Qk = Qfit$library.predict[1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Q1k = Qfit$library.predict[nv+1:nv,Qfit$coef!=0]
+    } else {
+      Q1k = Qfit$library.predict[nv+1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    if (length(Qfit$coef[Qfit$coef!=0])==1){
+      Q0k = Qfit$library.predict[2*nv+1:nv,Qfit$coef!=0]
+    } else {
+      Q0k = Qfit$library.predict[2*nv+1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
+    }
+    
+    Qcoef = Qfit$coef
+    Gcoef = gfit$coef
+    
+    Qrisk = Qfit$cvRisk
+    Grisk = gfit$cvRisk
+    
+    return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk, Qcoef = Qcoef, Gcoef = Gcoef,
+                Qrisk = Qrisk, Grisk = Grisk, inds = x$validation_set))
+  })
+  
+  Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
+  Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
+  Q0k = unlist(lapply(stack, FUN = function(x) x$Q0k))
+  gk = unlist(lapply(stack, FUN = function(x) x$gk))
+  Qcoef = rowMeans(vapply(stack, FUN = function(x) x$Qcoef, 
+                          FUN.VALUE = rep(1,length(stack[[1]]$Qcoef))))
+  Gcoef = rowMeans(vapply(stack, FUN = function(x) x$Gcoef,
+                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
+  Qrisk = rowMeans(vapply(stack, FUN = function(x) x$Qrisk,
+                          FUN.VALUE = rep(1,length(stack[[1]]$Qrisk))))
+  Grisk = rowMeans(vapply(stack, FUN = function(x) x$Grisk,
+                          FUN.VALUE = rep(1,length(stack[[1]]$Gcoef))))
+  inds = unlist(lapply(stack, FUN = function(x) x$inds))
+  Y = Y[inds]
+  A = A[inds]
+  
+  initdata = data.frame(Y=Y,A=A,Qk=Qk,Q1k=Q1k,Q0k=Q0k,gk=gk)
+  return(list(initdata = initdata, Qcoef = Qcoef, Gcoef = Gcoef, Qrisk = Qrisk,
+              Grisk = Grisk, inds = inds))
+}  
+# 
+
 SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
   # 
   # X = X
@@ -442,15 +533,15 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
   return(list(initdata = initdata, Qcoef = Qcoef, Gcoef = Gcoef, Qrisk = Qrisk,
               Grisk = Grisk, inds = inds))
 }  
-# 
+
 #' @export
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   
-  # n=1000
-  # g0 = g0_linear
-  # Q0 = Q0_trig
-  # SL.library = SL.libraryG = c("SL.mean", "SL.glm","SL.glmnet","SL.rpartPrune")
-  # method = "method.NNloglik"
+  n=1000
+  g0 = g0_linear
+  Q0 = Q0_trig
+  SL.library = SL.libraryG = c("SL.mean", "SL.glm")
+  method = "method.NNloglik"
   
   data = gendata(n, g0, Q0)
   
@@ -519,7 +610,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
                                submodel = submodel_logit, loss = loss_loglik,
                                approach = "full", max_iter = 100,g.trunc = 1e-2)
   
-  results_glm <- glm(Y ~ .,data = X[,1:5],family=binomial())
+  results_glm <- glm(Y ~ A*(X2+X3+X4+X5),data = X[,1:5],family=binomial())
   Q = predict(results_glm, newdata = newdata[,1:5], type = "response")
   Qk_glm = Q[1:n]
   Q1k_glm = Q[n+1:n]
