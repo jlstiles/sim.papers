@@ -353,7 +353,7 @@ sim_single = function(n, g0, Q0, form) {
 }
 
 #' @export
-SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
+SL.stack1 = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -463,7 +463,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) 
 }  
 # 
 #' @export
-SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
+SL.stack = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
   # 
   # X = X
   # Y = data$Y
