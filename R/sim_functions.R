@@ -353,7 +353,7 @@ sim_single = function(n, g0, Q0, form) {
 }
 
 #' @export
-SL.stack1 = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
+SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -362,6 +362,7 @@ SL.stack1 = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...
   # W$A = NULL
   # newdata = newdata
   # method = "method.NNloglik"
+  n = length(Y)
   folds = make_folds(n, V=10)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
@@ -463,7 +464,7 @@ SL.stack1 = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...
 }  
 # 
 #' @export
-SL.stack = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
+SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -472,6 +473,7 @@ SL.stack = function(n,Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.c
   # W$A = NULL
   # newdata = newdata
   # method = "method.NNloglik"
+  n = length(Y)
   folds = make_folds(n, V=10)
   stack = mclapply(folds, FUN = function(x) {
     # x=folds[[5]]
@@ -612,7 +614,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   W = X[,2:5]
   
   # time = proc.time()
-  stack = SL.stack1(n,Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
+  stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
                       SL.library=SL.library, SL.libraryG=SL.libraryG)
   # proc.time() - time
 
