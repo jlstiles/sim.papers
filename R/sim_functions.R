@@ -443,7 +443,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, ...) 
               Grisk = Grisk, inds = inds))
 }  
 # 
-
+#' @export
 SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
   # 
   # X = X

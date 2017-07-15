@@ -3,6 +3,7 @@
 export(Q0_1)
 export(Q0_trig)
 export(Q0_trig1)
+export(SL.stack)
 export(SL.stack1)
 export(g0_1)
 export(g0_linear)
