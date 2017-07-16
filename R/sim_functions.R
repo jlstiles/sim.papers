@@ -719,10 +719,9 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
 # remember the order of vars is A, mainterms, then interactions
 #' @export
-LR.BVinference = function(data) {
+LR.BVinference = function(n, g0, Q0) {
   
-  data = gendata(1000, g0 = g0_linear, Q0 = Q0_trig)  
-  n=nrow(data)
+  data = gendata(n, g0 = g0, Q0 = Q0)  
   
   # set up treatment and outcome plus stack for pred
   data1 = data0 = data
