@@ -582,7 +582,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   # Q0 = Q0_trig
   # SL.library = SL.libraryG = c("SL.mean", "SL.glm")
   # method = "method.NNloglik"
-  
+  # n=100
   data = gendata(n, g0, Q0)
   
   X = data
@@ -716,5 +716,80 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS") {
   return(results)
 }
 
-# pp = sim_hal(100, g0 = g0_1, Q0 = Q0_trig, HAL = TRUE, SL.library=NULL, SL.libraryG=NULL)
-# pp[c(1,4,7,10,13,16,19,22,23)]
+# input data.frame with A, Y and covariates spit out lr CI based on delta method
+# remember the order of vars is A, mainterms, then interactions
+#' @export
+LR.BVinference = function(data) {
+  
+  data = gendata(1000, g0 = g0_linear, Q0 = Q0_trig)  
+  n=nrow(data)
+  
+  # set up treatment and outcome plus stack for pred
+  data1 = data0 = data
+  data1$A = 1
+  data0$A = 0
+  
+  newdata = rbind(data,data1,data0)
+  
+  mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
+  mainform
+
+  main.int = paste0("Y~A*(",mainform,")")
+  main.int = formula(main.int) 
+  main.int
+  
+  newdata = model.matrix(main.int,newdata)
+  newdata = as.data.frame(newdata[,-1])
+  colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
+  
+  # fit the regression
+  X = newdata[1:n,]
+  X$Y = data$Y
+  Qfit = glm(Y~.,data=X,
+             family='binomial')
+  # predictions over data, A=1 and A=0
+  Qk = predict(Qfit,type='response')
+  Q1k = predict(Qfit,newdata=newdata[(n+1):(2*n),],type='response')
+  Q0k = predict(Qfit,newdata=newdata[(2*n+1):(3*n),],type='response')
+  
+  # covariates and treatment for convenient use
+  X = newdata
+  X$Y = NULL
+  X=cbind(int = rep(1,n),X)
+  head(X)
+  # calculate the score
+  score_beta = sapply(1:n,FUN = function(x) {
+    X[x,]*(data[x,"Y"]-Qk[x])
+  })
+  
+  # averaging hessians to approx the deriv of hessian and mean then inverse
+  hessian = lapply(1:n,FUN = function(x) {
+    mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
+    return(mat)
+  })
+  fisher = -Reduce('+', hessian)/n
+  M = solve(fisher)
+  
+  # calculate the IC for beta
+  IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+  
+  SE_test = apply(IC_beta,1,sd)*sqrt(n-1)/n
+  SE_test
+  
+  blip = Q1k-Q0k
+  ate = mean(Q1k-Q0k)
+  # calculate the deriv to mult by IC_beta
+  deriv = rowMeans(vapply(1:n, FUN = function(x) {
+    return(2*(blip[x]-ate)*((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
+             as.numeric(X[(2*n+x),])))
+  }, FUN.VALUE=rep(1,10)))
+  
+  psi = var(blip)
+  # connect both parts of IC to form the full one
+  IC = apply(IC_beta,2,FUN = function(x) t(deriv)%*%x) + (blip - ate)^2 - psi
+  
+  # standard error
+  SE = sd(IC)*sqrt((n-1))/n
+  CI = c(psi=psi,left=psi-1.96*SE,right=psi+1.96*SE)
+  return(CI)
+}
