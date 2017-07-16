@@ -779,6 +779,11 @@ LR.BVinference = function(data) {
   blip = Q1k-Q0k
   ate = mean(Q1k-Q0k)
   # calculate the deriv to mult by IC_beta
+  deriv1 = rowMeans(vapply(1:n, FUN = function(x) {
+    return((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
+                              as.numeric(X[(2*n+x),]))
+  }, FUN.VALUE=rep(1,10)))
+  
   deriv = rowMeans(vapply(1:n, FUN = function(x) {
     return(2*(blip[x]-ate)*((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
              as.numeric(X[(2*n+x),])))
@@ -786,10 +791,24 @@ LR.BVinference = function(data) {
   
   psi = var(blip)
   # connect both parts of IC to form the full one
-  IC = apply(IC_beta,2,FUN = function(x) t(deriv)%*%x) + (blip - ate)^2 - psi
   
+  IC = apply(IC_beta,2,FUN = function(x) t(deriv)%*%x) + (blip - ate)^2 - psi
+  IC1 = apply(IC_beta, 2, FUN = function(x) t(deriv1)%*%x) + blip -ate
   # standard error
   SE = sd(IC)*sqrt((n-1))/n
-  CI = c(psi=psi,left=psi-1.96*SE,right=psi+1.96*SE)
-  return(CI)
-}
+  SE1 = sd(IC1)*sqrt((n-1))/n
+  CI = c(psi_bv=psi,left=psi-1.96*SE,right=psi+1.96*SE)
+  
+  CI_ate = c(psi_ate = ate, ate-1.96*SE1,right=ate+1.96*SE1)
+  
+  corM = cor(data.frame(IC=IC, IC1=IC1))
+  corM
+  
+  Z = rmvnorm(1000000,c(0,0),corM)
+  zabs = apply(Z,1,FUN = function(x) max(abs(x)))
+  zscore = quantile(zabs,.95)
+  CI_simul_ate = c(psi_ate_simul = ate, left = ate - zscore*SE1, right = ate + zscore*SE1)  
+  CI_simul_bv = c(psi_bv_simul = psi, left = psi - zscore*SE, right = psi + zscore*SE) 
+
+  return(c(CI,CI_simul_bv,CI_ate,CI_simul_ate))
+  }
