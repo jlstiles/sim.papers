@@ -299,7 +299,8 @@ sim_single = function(n, g0, Q0, form) {
 }
 
 #' @export
-SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, cv = TRUE, ...) {
+SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, 
+                     cv = TRUE, V=10, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -309,7 +310,8 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, cv = 
   # newdata = newdata
   # method = "method.NNloglik"
   n = length(Y)
-  folds = make_folds(n, V=10)
+  if  (!cv) V = 1
+  folds = make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
     if (!cv) {tr = val = 1:n} else{
@@ -368,7 +370,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, cv = 
     Grisk = gfit$cvRisk
     
     return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk, Qcoef = Qcoef, Gcoef = Gcoef,
-                Qrisk = Qrisk, Grisk = Grisk, inds = x$validation_set))
+                Qrisk = Qrisk, Grisk = Grisk, inds = val))
   })
   
   Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
@@ -523,7 +525,8 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
 }  
 
 #' @export
-sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", cv = TRUE) {
+sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
+                  cv = TRUE, single = FALSE) {
   
   # n=1000
   # g0 = g0_linear
@@ -538,6 +541,12 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", cv
   X1 = X0 = X
   X0$A = 0
   X1$A = 1
+  Y = data$Y
+  A = data$A
+  W = X
+  W$A = NULL
+  
+  if (single) {} else{
   newdata = rbind(X,X1,X0)
   
   mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
@@ -558,16 +567,14 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", cv
   head(newdata)
   X = newdata[1:n,]
   X$Y = NULL
-  Y = data$Y
-  A = data$A
-  W = X[,2:5]
   
   # time = proc.time()
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                      SL.library=SL.library, SL.libraryG=SL.libraryG)
+                      SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv)
   # proc.time() - time
-
-  initdata = stack$initdata   
+  
+  initdata = stack$initdata
+  }
   initest = with(initdata,var(Q1k - Q0k))
   initest_ATE = with(initdata, mean(Q1k - Q0k))
   
