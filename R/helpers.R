@@ -1,7 +1,7 @@
 #' @export
 cov.check = function(data, truth, ind) {
   ans = vapply(ind,FUN = function(x){
-    covs = data[,x+1]<=var0&data[,x+2]>=var0
+    covs = data[,x+1]<=truth&data[,x+2]>=truth
     mean(covs)
   }, FUN.VALUE = 1)
   names(ans) = colnames(data)[ind]
@@ -10,8 +10,8 @@ cov.check = function(data, truth, ind) {
 
 #' @export
 cov.simul = function(data, truth, ind) {
-  covs = data[,ind[1]+1]<=var0&data[,ind[1]+2]>=var0
-  covs1 = data[,ind[2]+1]<=var0&data[,ind[2]+2]>=var0
+  covs = data[,ind[1]+1]<=truth[1]&data[,ind[1]+2]>=truth[1]
+  covs1 = data[,ind[2]+1]<=truth[2]&data[,ind[2]+2]>=truth[2]
   mean(covs*covs1)
 }
 
