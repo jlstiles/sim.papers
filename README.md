@@ -1,2 +1,3 @@
 # Simulations
-controlling the noise on Simulations
+Simulation tools
+devtools::install_github("jlstiles/Simulations")
