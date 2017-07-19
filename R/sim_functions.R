@@ -429,7 +429,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
     # x=folds[[5]]
     tr = x$training_set
     val = x$validation_set
-    n=length(tr)
+    nt=length(tr)
     nv = length(val)
     
     Y = Y[tr]
