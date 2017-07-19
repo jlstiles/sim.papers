@@ -318,7 +318,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     tr = x$training_set
     val = x$validation_set
   }
-    n=length(tr)
+    nt=length(tr)
     nv = length(val)
     
     Y = Y[tr]
