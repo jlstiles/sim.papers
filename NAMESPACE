@@ -2,6 +2,7 @@
 
 export(LR.BVinference)
 export(Q0_1)
+export(Q0_2)
 export(Q0_trig)
 export(Q0_trig1)
 export(SL.stack)

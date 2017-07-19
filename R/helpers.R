@@ -55,6 +55,11 @@ Q0_1 = function (A, W1, W2, W3, W4)
   plogis(.14*(2* A + 2*A * W1 + 4*A*W3*W4+W2*W1+W3*W4+10*A*cos(W4)))
 }
 
+#' @export
+Q0_2 = function (A, W1, W2, W3, W4) 
+{
+  plogis(.14*(2* A + 2*A * W1 + 4*A*W3*W4+W2*W1+W3*W4+10*A*cos(W4)))
+}
 
 #' @export
 g0_linear= function (W1, W2, W3, W4) 
