@@ -314,7 +314,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
   folds = make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
-    if (!cv) {tr = val = 1:n} else{
+    if (!cv) {tr = val = 1:n} else {
     tr = x$training_set
     val = x$validation_set
   }
@@ -529,6 +529,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
                   cv = TRUE, single = FALSE) {
   
   # n=1000
+  # single= FALSE
   # g0 = g0_linear
   # Q0 = Q0_trig
   # SL.library = SL.libraryG = c("SL.mean", "SL.glm")
@@ -545,6 +546,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   A = data$A
   W = X
   W$A = NULL
+  W$Y = NULL
   
   if (single) {} else{
   newdata = rbind(X,X1,X0)
@@ -575,6 +577,8 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   initdata = stack$initdata
   }
+  
+  # stack
   initest = with(initdata,var(Q1k - Q0k))
   initest_ATE = with(initdata, mean(Q1k - Q0k))
   
