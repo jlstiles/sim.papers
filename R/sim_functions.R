@@ -414,7 +414,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 }  
 # 
 #' @export
-SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cores = 1, ...) {
+SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V, mc.cores = 1, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -424,7 +424,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, mc.cor
   # newdata = newdata
   # method = "method.NNloglik"
   n = length(Y)
-  folds = make_folds(n, V=10)
+  folds = make_folds(n, V=V)
   stack = mclapply(folds, FUN = function(x) {
     # x=folds[[5]]
     tr = x$training_set
