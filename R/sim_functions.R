@@ -15,11 +15,11 @@ library(boot)
 #' @param mc.cores,  number of cores to use for parallel processing the SuperLearner. 
 #' Note, this parallelizes across the folds not within SuperLearner
 #' @return A list with 5 elements:
-#' initdata: the initdata argument for running tmle with gentmle function
-#' Qcoef: the avg SuperLearner coef for each model in the outcome regression
-#' Gcoef: the avg SuperLearner coef for each model in the treatment mech regression
-#' Qrisk: the avg SuperLearner risk for each model in the outcome regression
-#' Grisk: the avg SuperLearner risk for each model in the treatment mech
+#' initdata: the initdata argument for running tmle with gentmle function\\
+#' Qcoef: the avg SuperLearner coef for each model in the outcome regression\\
+#' Gcoef: the avg SuperLearner coef for each model in the treatment mech regression\\
+#' Qrisk: the avg SuperLearner risk for each model in the outcome regression\\
+#' Grisk: the avg SuperLearner risk for each model in the treatment mech\\
 #' inds: the indices for all the val sets, stacked to match 
 #' 
 #' @export
