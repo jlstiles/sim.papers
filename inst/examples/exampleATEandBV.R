@@ -21,11 +21,13 @@ SL.library = SL.libraryG = c("SL.glm","SL.mean")
 stack = SL.stack(Y, X, A, W, newdata, method = "method.NNloglik",
                  SL.library, SL.libraryG, V=10, mc.cores = 4)
 
-# simultaneously run one-step tmle for ATE and blip variance with simultaneous CI
+# simultaneously run one-step tmle for ATE and blip variance with 
+# simultaneous CI
 tmle.info = gentmle(initdata=stack$initdata, 
                     params=list(param_ATE,param_sigmaATE), 
                     submodel = submodel_logit, loss = loss_loglik,
-                    approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
+                    approach = "recursive", max_iter = 10000, 
+                    g.trunc = 1e-2,
                     simultaneous.inference = TRUE)
 tmle.info$steps
 # get simultaneous CIs

@@ -1,25 +1,33 @@
 library(boot)
 
 #' @title SL.stack
-#' @description Function that runs fully nested SuperLearner cross validated estimates 
+#' @description Function that runs fully nested SuperLearner 
+#' cross validated estimates 
 #' on V-folds.  Only supports binary treatment.
 #' @param Y, outcome vector
 #' @param X, data.frame of variables that Y is a function of.
 #' @param A, treatment vector
 #' @param W, vector of variables A is a function of.
-#' @param newdata, dataframe of X, stacked with X when A=1 and X when A=0, in that order
+#' @param newdata, dataframe of X, stacked with X when A=1 and X when A=0, 
+#' in that order
 #' @param method, the SuperLearner meta learning method
 #' @param SL.library, SuperLearner Library for finding outcome model
 #' @param SL.libraryG, SuperLearner Library for the treatment mechanism
 #' @param V, the number of folds
-#' @param mc.cores,  number of cores to use for parallel processing the SuperLearner. 
-#' Note, this parallelizes across the folds not within SuperLearner
+#' @param mc.cores,  number of cores to use for parallel processing the 
+#' SuperLearner. Note, this parallelizes across the folds not within 
+#' SuperLearner
+#' @param simultaneous.inference, if estimating more than one parameter
+#' you may specify TRUE for ci-gentmle(object, level) function to 
+#' give simultaneous confidence intervals with alpha = level and object
+#' a gentmle object.
 #' @return A list with 5 elements:
 #' initdata: the initdata argument for running tmle with gentmle function
 #' 
 #' Qcoef: the avg SuperLearner coef for each model in the outcome regression
 #' 
-#' Gcoef: the avg SuperLearner coef for each model in the treatment mech regression
+#' Gcoef: the avg SuperLearner coef for each model in the treatment mech 
+#' regression
 #' 
 #' Qrisk: the avg SuperLearner risk for each model in the outcome regression
 #' 
@@ -29,7 +37,9 @@ library(boot)
 #' 
 #' @export
 #' @example /inst/examples/exampleATEandBV.R
-SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V=10, mc.cores = 1, ...) {
+SL.stack = function(Y, X, A, W, newdata, method, SL.library, 
+                    SL.libraryG, V=10, mc.cores = 1, 
+                    simultaneous.inference = FALSE, ...) {
   # 
   # X = X
   # Y = data$Y

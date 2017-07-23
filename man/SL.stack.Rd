@@ -5,7 +5,7 @@
 \title{SL.stack}
 \usage{
 SL.stack(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V = 10,
-  mc.cores = 1, ...)
+  mc.cores = 1, simultaneous.inference = FALSE, ...)
 }
 \arguments{
 \item{Y, }{outcome vector}
@@ -16,7 +16,8 @@ SL.stack(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V = 10,
 
 \item{W, }{vector of variables A is a function of.}
 
-\item{newdata, }{dataframe of X, stacked with X when A=1 and X when A=0, in that order}
+\item{newdata, }{dataframe of X, stacked with X when A=1 and X when A=0, 
+in that order}
 
 \item{method, }{the SuperLearner meta learning method}
 
@@ -26,8 +27,14 @@ SL.stack(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V = 10,
 
 \item{V, }{the number of folds}
 
-\item{mc.cores, }{number of cores to use for parallel processing the SuperLearner. 
-Note, this parallelizes across the folds not within SuperLearner}
+\item{mc.cores, }{number of cores to use for parallel processing the 
+SuperLearner. Note, this parallelizes across the folds not within 
+SuperLearner}
+
+\item{simultaneous.inference, }{if estimating more than one parameter
+you may specify TRUE for ci-gentmle(object, level) function to 
+give simultaneous confidence intervals with alpha = level and object
+a gentmle object.}
 }
 \value{
 A list with 5 elements:
@@ -35,7 +42,8 @@ initdata: the initdata argument for running tmle with gentmle function
 
 Qcoef: the avg SuperLearner coef for each model in the outcome regression
 
-Gcoef: the avg SuperLearner coef for each model in the treatment mech regression
+Gcoef: the avg SuperLearner coef for each model in the treatment mech 
+regression
 
 Qrisk: the avg SuperLearner risk for each model in the outcome regression
 
@@ -44,7 +52,8 @@ Grisk: the avg SuperLearner risk for each model in the treatment mech
 inds: the indices for all the val sets, stacked to match
 }
 \description{
-Function that runs fully nested SuperLearner cross validated estimates 
+Function that runs fully nested SuperLearner 
+cross validated estimates 
 on V-folds.  Only supports binary treatment.
 }
 \examples{
@@ -71,11 +80,13 @@ SL.library = SL.libraryG = c("SL.glm","SL.mean")
 stack = SL.stack(Y, X, A, W, newdata, method = "method.NNloglik",
                  SL.library, SL.libraryG, V=10, mc.cores = 4)
 
-# simultaneously run one-step tmle for ATE and blip variance with simultaneous CI
+# simultaneously run one-step tmle for ATE and blip variance with 
+# simultaneous CI
 tmle.info = gentmle(initdata=stack$initdata, 
                     params=list(param_ATE,param_sigmaATE), 
                     submodel = submodel_logit, loss = loss_loglik,
-                    approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
+                    approach = "recursive", max_iter = 10000, 
+                    g.trunc = 1e-2,
                     simultaneous.inference = TRUE)
 tmle.info$steps
 # get simultaneous CIs
