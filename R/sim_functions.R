@@ -28,7 +28,7 @@ library(boot)
 #' inds: the indices for all the val sets, stacked to match 
 #' 
 #' @export
-#' @example /inst/examples/exampleATE_BV.R
+#' @example /inst/examples/exampleATEandBV.R
 SL.stack = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V=10, mc.cores = 1, ...) {
   # 
   # X = X
