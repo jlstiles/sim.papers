@@ -1,5 +1,4 @@
 # basic example with very simple SuperLearner library
-
 # generate the data according to a couple of built-in functions here
 
 data = gendata(1000, g0 = g0_linear, Q0 = Q0_trig1)
