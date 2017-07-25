@@ -17,10 +17,6 @@ library(boot)
 #' @param mc.cores,  number of cores to use for parallel processing the 
 #' SuperLearner. Note, this parallelizes across the folds not within 
 #' SuperLearner
-#' @param simultaneous.inference, if estimating more than one parameter
-#' you may specify TRUE for ci-gentmle(object, level) function to 
-#' give simultaneous confidence intervals with alpha = level and object
-#' a gentmle object.
 #' @return A list with 5 elements:
 #' initdata: the initdata argument for running tmle with gentmle function
 #' 
@@ -38,8 +34,7 @@ library(boot)
 #' @export
 #' @example /inst/examples/exampleATEandBV.R
 SL.stack = function(Y, X, A, W, newdata, method, SL.library, 
-                    SL.libraryG, V=10, mc.cores = 1, 
-                    simultaneous.inference = FALSE, ...) {
+                    SL.libraryG, V=10, mc.cores = 1, ...) {
   # 
   # X = X
   # Y = data$Y

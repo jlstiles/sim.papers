@@ -5,7 +5,7 @@
 \title{SL.stack}
 \usage{
 SL.stack(Y, X, A, W, newdata, method, SL.library, SL.libraryG, V = 10,
-  mc.cores = 1, simultaneous.inference = FALSE, ...)
+  mc.cores = 1, ...)
 }
 \arguments{
 \item{Y, }{outcome vector}
@@ -30,11 +30,6 @@ in that order}
 \item{mc.cores, }{number of cores to use for parallel processing the 
 SuperLearner. Note, this parallelizes across the folds not within 
 SuperLearner}
-
-\item{simultaneous.inference, }{if estimating more than one parameter
-you may specify TRUE for ci-gentmle(object, level) function to 
-give simultaneous confidence intervals with alpha = level and object
-a gentmle object.}
 }
 \value{
 A list with 5 elements:
