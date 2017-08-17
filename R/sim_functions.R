@@ -561,18 +561,44 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 }  
 # 
  
+#' @title sim_cv
+#' @description Function that simulates data and performs TMLE estimates
+#' data is 4 covariates and binary treatment and outcome.  The covariates
+#' are generated according to the gendata function.
+#' @param n, sample size
+#' @param g0, treatment mechanism formula 
+#' @param Q0, outcome model formula
+#' @param SL.library, SuperLearner library for outcome predictions
+#' @param SL.libraryG, SuperLearner Library for treatment mechanism
+#' @param cv, set to TRUE for CV-TMLE
+#' @param single, always set to FALSE.
+#' @return  a vector with the following elements in this order:
+#' TMLE confidence intervals each with estimate, left and right bounds
+#' one step single parameter TMLE for blip variance, the iterative one
+#' step TMLE for blip variance, simultaneous one step TMLE (which 
+#' estimates average treatment effect and blip variance) for blip 
+#' variance, simultaneous iterative TMLE "line" option
+#' (estimates average treatment effect and blip variance) for blip 
+#' variance, simultaneous iterative TMLE "full" option
+#' (estimates average treatment effect and blip variance) for blip 
+#' variance. All of the same CI's just mentioned except for initial
+#' estimate that is main terms and interactions glm excep the "line"
+#' and "full" models. one step simultaneous TMLE (estimating average
+#' treatment effect and blip variance) for average treatment effect,
+#' TMLE just for Average Treatment Effect, the same as the previous
+#' two CI's where initial estimates for the TMLE's are glm with 
+#' main terms and interactions. initial estimate for blip variance
+#' using SuperLearner, initial estimate for blip variance using glm 
+#' with main terms and interactions, initial estimate for ATE using
+#' superlearner, initial estimate for ATE using glm with main terms
+#' and interactions, steps to convergence, logical of whether the 
+#' algorithm converged, Outcome SuperLearner coefficients, treatment
+#' mechanism SuperLearner coefficients, Outcome SuperLearner risk,
+#' Propensity score SuperLearner risk
 #' @export
+#' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                   cv = TRUE, single = FALSE) {
-  
-  # n=1000
-  # single= FALSE
-  # g0 = g0_linear
-  # Q0 = Q0_trig
-  # SL.library = SL.libraryG = c("SL.mean", "SL.glm")
-  # method = "method.NNloglik"
-  # n=100
- 
   data = gendata(n, g0, Q0)
   
   X = data
