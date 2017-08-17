@@ -3,7 +3,7 @@ cov.check = function(data, truth, ind) {
   ans = vapply(ind,FUN = function(x){
     covs = data[,x+1]<=truth&data[,x+2]>=truth
     mean(covs)
-  }, FUN.VALUE = 1)
+  }, FUN.VALUE = 1, USE.NAMES = FALSE)
   names(ans) = colnames(data)[ind]
   return(ans)
 }
