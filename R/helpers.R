@@ -1,4 +1,14 @@
 #' @export
+get.truth = function(g0, Q0, N=1e6) {
+  testdata=gendata(N, g0=g0, Q0 = Q0)
+  blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+  propensity = with(testdata, g0_1(W1,W2,W3,W4))
+  ATE0 = mean(blip_true)
+  var0 = var(blip_true)
+  return(c(ATE0, var0))
+}
+
+#' @export
 cov.check = function(data, truth, ind) {
   ans = vapply(ind,FUN = function(x){
     covs = data[,x+1]<=truth&data[,x+2]>=truth
@@ -72,3 +82,5 @@ g0_1 = function (W1, W2, W3, W4)
 {
   plogis(.5*(-0.08 * W1^2*W2+.5*W1 + 0.49 * cos(W2)*W3 + 0.18 * W3^2 - 0.12 * sin(W4) - 0.15))
 }
+
+
