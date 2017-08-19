@@ -833,4 +833,68 @@ LR.BVinference = function(n, g0, Q0) {
   CI_simul_bv = c(psi_bv_simul = psi, left = psi - zscore*SE, right = psi + zscore*SE) 
 
   return(c(CI,CI_simul_bv,CI_ate,CI_simul_ate))
-  }
+}
+
+#' @export
+noise.1 = function(data,n,rate, biasQ, sdQ) {
+  rnorm(nrow(data), 
+        with(data, biasQ(1,W1,W2,W3,W4,n=n,rate=rate)),
+        with(data, sdQ(1,W1,W2,W3,W4,n=n,rate=rate)))
+}
+
+#' @export
+# noise on barQ(0,W) is correlated per draw so not any more variant
+noise.0 = function(data,noise,n,rate, biasQ, sdQ) {
+  .5*noise + 
+    sqrt(.75)*rnorm(nrow(data), 
+                    with(data, biasQ(0,W1,W2,W3,W4,n=n,rate=rate)),
+                    with(data, sdQ(0,W1,W2,W3,W4,n=n,rate=rate)))
+}
+
+#' @export
+noise = function(data, noise_1, noise_0, biasQ, sdQ) {
+  with(data, A*noise_1+(1-A)*noise_0)
+}
+
+#' @export
+simBlipvar = function(n,rate, g0, Q0, biasQ, sdQ){
+  # tack on the noise and use as an initial estimate
+  data = gendata(n, g0, Q0)
+  noise_1 = noise.1(data, n, rate, biasQ, sdQ)
+  noise_0 = noise.0(data, noise_1, n, rate, biasQ, sdQ)
+  noise_A = noise(data, noise_1, noise_0 ,biasQ, sdQ)
+  # noise_G = noiseG(data,V,n,rate)
+  
+  Q1k = plogis(qlogis(with(data,Q0(1,W1,W2,W3,W4)))+noise_1)
+  Q0k = plogis(qlogis(with(data,Q0(0,W1,W2,W3,W4)))+noise_0)
+  Qk = plogis(qlogis(with(data,Q0(A,W1,W2,W3,W4)))+noise_A)
+  # gk = plogis(qlogis(with(data,g0(W1,W2,W3,W4)))+noise_G)
+  gk = with(data,g0(W1,W2,W3,W4))
+  
+  initdata = data.frame(Qk=Qk,Q1k=Q1k,Q0k=Q0k,gk=gk,A=data$A,Y=data$Y)
+  
+  ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
+                               submodel = submodel_logit, loss = loss_loglik,
+                               approach = "line", max_iter = 100,g.trunc = 1e-2)
+  sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100,g.trunc = 1e-2)
+  sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  
+  steps = c(ATE_steps = ATE_info$steps, sigmait_steps = sigmait_info$steps,
+            sigma_info = sigma_info$steps)
+  
+  ATE_ci = gentmle2::ci_gentmle(ATE_info)[c(2,4,5)]
+  sigmait_ci = gentmle2::ci_gentmle(sigmait_info)[c(2,4,5)]
+  sigma_ci = gentmle2::ci_gentmle(sigma_info)[c(2,4,5)]
+  
+  converges = c(sigmait = sigmait_info$converge,sigma = sigma_info$converge,
+                ATE = ATE_info$converge)
+  
+  initest = var(Q1k-Q0k)
+  return(c(sigmait_ci = sigmait_ci, ci_sigma = sigma_ci, ATE_ci = ATE_ci,
+           sigma_init = initest, ATE_init = ATE_info$initests,
+           steps = steps, converges = converges))
+}
