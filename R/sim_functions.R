@@ -898,3 +898,81 @@ simBlipvar = function(n,rate, g0, Q0, biasQ, sdQ){
            sigma_init = initest, ATE_init = ATE_info$initests,
            steps = steps, converges = converges))
 }
+
+#' @export
+getRes = function(allresults,B) {
+  # allresults = L[[4]]
+  # B=1000
+  results = vapply(1:B,FUN = function(x) (allresults[[x]]),
+                   FUN.VALUE=allresults[[1]])
+  results1=as.matrix(results)
+  results=apply(results1,2,as.numeric)
+  row.names(results)=row.names(results1)
+  results=t(results)
+  # results = results[results[,"converges.sigma"]==0,]
+  cov.sig.it = mean(results[,2]<=var0&var0<=results[,3])
+  cov.sig.1step = mean(results[,5]<=var0&var0<=results[,6])
+  cov.ate = mean(results[,8]<=ATE0&ATE0<=results[,9])
+  # cov.onestepEst = mean(results[,36]<=var0&var0<=results[,37])
+  coverage = c(cov.sig.it=cov.sig.it,
+               cov.sig.1step=cov.sig.1step,
+               cov.ate=cov.ate)
+  
+  ests=c(results[,7],results[,11])
+  type = c(rep("TMLE",B),rep("init",B))
+  
+  ateests = data.frame(ests=ests,type=type)
+  ggover1 = ggplot(ateests,aes(ests, fill=type)) + 
+    geom_density(alpha=.3)+
+    scale_fill_manual(values=c("red", "blue"))+
+    theme(axis.title.x = element_blank())+ggtitle("ATE sampling distributions")+
+    theme(plot.title = element_text(size = 12, face = "bold"),
+          axis.text.x = element_text(size=8))
+  ggover1 = ggover1+geom_vline(xintercept = c(ATE0),color=c("green"))+
+    # annotate("text",x=c(.2,.3),y=0,label=c("Event1","Event2"),hjust=1,angle=-40)
+    # geom_text(x=.1,y=-5,label="asdfs",angle=-40,size = 3,hjust=1)
+    geom_vline(xintercept=mean(results[,7]),color = "red")+
+    geom_vline(xintercept=mean(results[,11]),color = "blue")+
+    geom_vline(xintercept=ATE0,color = "green")
+  # breaks = round(c(seq(min(ests),max(ests),length.out=4),ATE0,
+  #            mean(results[,11]),mean(results[,7])),3)
+  # ggover1 + scale_x_continuous(labels = c(round(seq(min(ests),max(ests),length.out=4),3),"ATE0",
+  #                                         "mean init", "mean of TMLE")[order(breaks)],
+  #                              breaks=breaks[order(breaks)])
+  ggover1=ggdraw(add_sub(ggover1,"Truth at green line", 
+                         x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                         vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                         colour = "black", size = 8, angle = 0, lineheight = 0.9))
+  
+  ests = c(results[,4],results[,10])
+  type= c(rep("one step",B),rep("init",B))
+  # ests = c(results[,23],results[,7],results[,34])
+  # type= c(rep("LR",B),rep("one-step multi",B),rep("init",B))
+  varests = data.frame(ests=ests,type=type)[1:B,]
+  
+  ggover2 = ggplot(varests,aes(ests)) + 
+    geom_density(alpha=.3)+
+    theme(axis.title.x = element_blank())+
+    theme(plot.title = element_text(size = 12, face = "bold"),
+          axis.text.x = element_text(size=8,angle=315))+
+    ggtitle("blip variance sampling distributions")
+  ggover2 = ggover2+geom_vline(xintercept = var0,color="green")+
+    geom_vline(xintercept=mean(results[,4]),color = "black")+
+    geom_vline(xintercept=mean(results[,10]),color = "red")
+  # breaks = round(c(seq(min(varests[,1]),max(varests[,1]),length.out=4),mean(results[,10])),3)
+  # ggover2 = ggover2 + scale_x_continuous(labels = c(round(seq(min(varests[,1]),max(varests[,1]),length.out=4),3),
+  #                                         "mean init")[order(breaks)],
+  #                              breaks=breaks[order(breaks)])
+  ggover2=ggdraw(add_sub(ggover2,"truth at green line. mean of initial est at red line",x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                         vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                         colour = "black", size = 8, angle = 0, lineheight = 0.9))
+  
+  performance.sig = t(apply(results[,varind], 2, perf,var0))
+  performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+  
+  res = list(performance.ate=performance.ate, performance.sig=performance.sig, 
+             coverage=coverage,ggover1=ggover1, ggover2=ggover2)
+  return(res)
+}
+
+
