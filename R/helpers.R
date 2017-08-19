@@ -83,4 +83,8 @@ g0_1 = function (W1, W2, W3, W4)
   plogis(.5*(-0.08 * W1^2*W2+.5*W1 + 0.49 * cos(W2)*W3 + 0.18 * W3^2 - 0.12 * sin(W4) - 0.15))
 }
 
-
+#' @export
+Q0_wells =function (A, W1, W2, W3, W4)
+{
+  plogis(.2*(.1*A+2*A*W1-10*A*W2+3*A*W3^2+W1+W2+.4*W3+.3*W4))
+}
