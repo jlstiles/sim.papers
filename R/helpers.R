@@ -84,7 +84,20 @@ g0_1 = function (W1, W2, W3, W4)
 }
 
 #' @export
-Q0_wells =function (A, W1, W2, W3, W4)
+Q0_noise =function (A, W1, W2, W3, W4)
 {
   plogis(.2*(.1*A+2*A*W1-10*A*W2+3*A*W3^2+W1+W2+.4*W3+.3*W4))
+}
+
+#' @export
+gendata_noise=function(n, g0, Q0){
+  W1 = runif(n,-3,3)
+  # W1= rnorm(n)
+  # W1=rnorm(n)
+  W2=rbinom(n,1,.5)
+  W3=rnorm(n)
+  W4=rnorm(n)
+  A=rbinom(n,1,g0(W1,W2,W3,W4))
+  Y=rbinom(n,1,Q0(A,W1,W2,W3,W4))
+  data.frame(A,W1,W2,W3,W4,Y)
 }

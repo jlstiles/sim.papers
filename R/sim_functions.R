@@ -859,7 +859,7 @@ noise = function(data, noise_1, noise_0, biasQ, sdQ) {
 #' @export
 simBlipvar = function(n,rate, g0, Q0, biasQ, sdQ){
   # tack on the noise and use as an initial estimate
-  data = gendata(n, g0, Q0)
+  data = gendata_noise(n, g0, Q0)
   noise_1 = noise.1(data, n, rate, biasQ, sdQ)
   noise_0 = noise.0(data, noise_1, n, rate, biasQ, sdQ)
   noise_A = noise(data, noise_1, noise_0 ,biasQ, sdQ)
@@ -900,8 +900,9 @@ simBlipvar = function(n,rate, g0, Q0, biasQ, sdQ){
 }
 
 #' @export
-getRes = function(allresults,B) {
-  # allresults = L[[4]]
+getRes = function(allresults,B, ATE0, var0, varind = c(4,10), 
+                  ateind = c(7,11)) {
+  # allresults = L[[3]]
   # B=1000
   results = vapply(1:B,FUN = function(x) (allresults[[x]]),
                    FUN.VALUE=allresults[[1]])
