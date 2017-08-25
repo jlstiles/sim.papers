@@ -209,7 +209,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 }
 
 #' @export
-sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNLS") {
+sim_hal = function(n, g0, Q0) {
   # SL.library = SL.libraryG = list("SL.glm","SL.mean")
   # method = "method.NNloglik"
   # HAL = FALSE
@@ -227,103 +227,24 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
   W = X
   W$A = NULL
   
-  results_glm <- glm(Y ~ A*(W1+W2+W3+W4),data = data,family=binomial())
-  Qk_glm = predict(results_glm, newdata = X, type = "response")
-  Q1k_glm = predict(results_glm,newdata=X1,type='response')
-  Q0k_glm = predict(results_glm,newdata=X0,type='response')
+  halresults <- hal(Y = data$Y,newX = newdata,
+                    X = X, family = binomial(),
+                    verbose = FALSE, parallel = FALSE)
   
-  gfit_glm = glm(A~.,data = X, family = 'binomial')
-  gk_glm = predict(gfit_glm, type = 'response')
+  Qk = halresults$pred[1:n]
+  Q1k = halresults$pred[n+1:n]
+  Q0k = halresults$pred[2*n+1:n]
   
-  if (HAL==TRUE) {
-    halresults <- hal(Y = data$Y,newX = newdata,
-                      X = X, family = binomial(),
-                      verbose = FALSE, parallel = FALSE)
-    
-    Qk = halresults$pred[1:n]
-    Q1k = halresults$pred[n+1:n]
-    Q0k = halresults$pred[2*n+1:n]
-    
-    initest = var(Q1k-Q0k)
-    
-    gfit = glm(A~.,data = X, family = 'binomial')
-    gk = predict(gfit, type = 'response')
-    
-    halresultsG <- hal(Y = data$A,newX = W,
-                       X = W, family = binomial(),
-                       verbose = FALSE, parallel = FALSE)
-    gk = halresultsG$pred[1:n]
-    Qcoef = Gcoef = 0
-  } else {
-    
-    X = data
-    X1 = X0 = X
-    X0$A = 0
-    X1$A = 1
-    newdata = rbind(X,X1,X0)
-    
-    mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
-    mainform
-    squares = paste0(paste0("I(",colnames(data)[2:5]),"^2)")
-    squares
-    squares = paste0(paste(squares[1:3],"+",collapse=""),squares[4])
-    squares
-    mainsq = paste0(mainform,"+",squares)
-    mainsq
-    mainsq.int = paste0("Y~A*(",mainsq,")")
-    mainsq.int = formula(mainsq.int) 
-    mainsq.int
-    
-    newdata = model.matrix(mainsq.int,newdata)
-    newdata = as.data.frame(newdata[,-1])
-    colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
-    head(newdata)
-    X = newdata[1:n,]
-    X$Y = NULL
-    
-    # time = proc.time()
-    Qfit=SuperLearner(data$Y,X,newX=newdata, family = binomial(),
-                      SL.library=SL.library, method=method,
-                      id = NULL, verbose = FALSE, control = list(),
-                      cvControl = list(V=10), obsWeights = NULL)
-    
-    
-    gfit = SuperLearner(data$A,W,newX = W, family = binomial(),
-                        SL.library=SL.libraryG,method = method, 
-                        id = NULL, verbose = FALSE, control = list(),
-                        cvControl = list(V=10), obsWeights = NULL)
-    
-    if (length(gfit$coef[gfit$coef!=0])==1){
-      gk = gfit$library.predict[1:n,gfit$coef!=0]
-      } else {
-      gk = gfit$library.predict[1:n,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
-      }
-    
-    if (length(Qfit$coef[Qfit$coef!=0])==1){
-      Qk = Qfit$library.predict[1:n,Qfit$coef!=0]
-    } else {
-      Qk = Qfit$library.predict[1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
-    }
-    
-    if (length(Qfit$coef[Qfit$coef!=0])==1){
-      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0]
-    } else {
-      Q1k = Qfit$library.predict[n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
-    }
-    
-    if (length(Qfit$coef[Qfit$coef!=0])==1){
-      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0]
-    } else {
-      Q0k = Qfit$library.predict[2*n+1:n,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
-    }
-    
-    Qcoef = Qfit$coef
-    Gcoef = gfit$coef
-    
-    Qrisk = Qfit$cvRisk
-    grisk = gfit$cvRisk
-    
-  }
+  initest = var(Q1k-Q0k)
+  
+  gfit = glm(A~.,data = X, family = 'binomial')
+  gk = predict(gfit, type = 'response')
+  
+  halresultsG <- hal(Y = data$A,newX = W,
+                     X = W, family = binomial(),
+                     verbose = FALSE, parallel = FALSE)
+  gk = halresultsG$pred[1:n]
+  Qcoef = Gcoef = 0
   
   initest = var(Q1k - Q0k)
   initest_ATE = mean(Q1k - Q0k)
@@ -348,68 +269,35 @@ sim_hal = function(n, g0, Q0, HAL, SL.library, SL.libraryG, method = "method.NNL
                                    simultaneous.inference = TRUE)
   
   simuljer_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
-                                   submodel = submodel_logit, loss = loss_loglik,
-                                   approach = "full", max_iter = 100,g.trunc = 1e-2,
-                                   simultaneous.inference = TRUE)
+                                    submodel = submodel_logit, loss = loss_loglik,
+                                    approach = "full", max_iter = 100,g.trunc = 1e-2,
+                                    simultaneous.inference = TRUE)
   
   ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
-                                    submodel = submodel_logit, loss = loss_loglik,
-                                    approach = "full", max_iter = 100,g.trunc = 1e-2)
+                               submodel = submodel_logit, loss = loss_loglik,
+                               approach = "full", max_iter = 100,g.trunc = 1e-2)
   
-  initest_lr = var(Q1k_glm - Q0k_glm)
-  initest_lr_ATE = mean(Q1k_glm - Q0k_glm)
-  
-  initdata = data.frame(A = X$A, Y = data$Y, gk = gk_glm, Qk = Qk_glm, 
-                        Q1k = Q1k_glm, Q0k = Q0k_glm)
-  
-  sigmait_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
-                                       submodel = submodel_logit, loss = loss_loglik,
-                                       approach = "full", max_iter = 100,g.trunc = 1e-2)
-  sigma_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
-                                     submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
-  
-  simul_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE,param_sigmaATE), 
-                                   submodel = submodel_logit, loss = loss_loglik,
-                                   approach = "full", max_iter = 10000, g.trunc = 1e-2,
-                                   simultaneous.inference = TRUE)
-  
-  ATE_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
-                                     submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "full", max_iter = 100, g.trunc = 1e-2)
   
   steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
-            simuljer_info$steps, sigma_info_glm$steps,sigmait_info_glm$steps, 
-            simul_info_glm$steps,simul_info$steps, ATE_info$steps, simul_info_glm$steps
-            ,ATE_info_glm$steps)
+            simuljer_info$steps, ATE_info$steps)
   converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
-               simuljl_info$converge, simuljer_info$converge, sigma_info_glm$converge,
-               sigmait_info_glm$converge,simul_info_glm$converge,simul_info$converge, 
-               ATE_info$converge, simul_info_glm$converge, ATE_info_glm$converge)
-
+               simuljl_info$converge, simuljer_info$converge, simul_info$converge, 
+               ATE_info$converge)
+  
   ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
   ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
   ci_simul = ci_gentmle(simul_info)[2,c(2,4,5)]
   ci_simuljl = ci_gentmle(simuljl_info)[2,c(2,4,5)]
   ci_simuljer = ci_gentmle(simuljer_info)[2,c(2,4,5)]
-  ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
-  ci_sigit_glm = ci_gentmle(sigmait_info_glm)[c(2,4,5)]
-  ci_simul_glm = ci_gentmle(simul_info_glm)[2,c(2,4,5)]
   
   ci_simulATE = ci_gentmle(simul_info)[1,c(2,4,5)]
   ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
-  ci_simulATE_glm = ci_gentmle(simul_info_glm)[1,c(2,4,5)]
-  ci_ATE_glm = ci_gentmle(ATE_info_glm)[c(2,4,5)]
   
-  cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,
-    ci_sig_glm, ci_sigit_glm, ci_simul_glm, ci_simulATE,ci_ATE, ci_simulATE_glm, 
-    ci_ATE_glm)
+  cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,ci_simulATE,ci_ATE)
   names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31,34)]=
-    c("sig", "sigit", "simul", "simul_line", "simul_full","sig_glm", 
-      "sigit_glm","simul_glm","simulATE","ATE","simulATE_glm","ATE_glm")
+    c("sig", "sigit", "simul", "simul_line", "simul_full","simulATE","ATE")
   results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
-              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, Qcoef, 
-              Gcoef, Qrisk, grisk)
+              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge)
   # results
   return(results)
 }
@@ -795,8 +683,8 @@ LR.BVinference = function(n, g0, Q0) {
   # calculate the IC for beta
   IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
   
-  SE_test = apply(IC_beta,1,sd)*sqrt(n-1)/n
-  SE_test
+  # SE_test = apply(IC_beta,1,sd)*sqrt(n-1)/n
+  # SE_test
   
   blip = Q1k-Q0k
   ate = mean(Q1k-Q0k)
@@ -976,4 +864,66 @@ getRes = function(allresults,B, ATE0, var0, varind = c(4,10),
   return(res)
 }
 
-
+#' @export
+noise_analysis = function(n, rate, truth, coverage, Q0, biasQ, sdQ) {
+  # rate = .33
+  # # V=1
+  # # truth = gendata(10000)
+  # n
+  Q1_true = with(truth, Q0(1,W1,W2,W3,W4))
+  Q0_true = with(truth, Q0(0,W1,W2,W3,W4))
+  Q_true = with(truth,Q0(A,W1,W2,W3,W4))
+  # g_true = with(truth, g0(W1,W2,W3,W4))
+  
+  noise.1 = function(data,n,rate) {
+    rnorm(nrow(data), with(data, biasQ(1,W1,W2,W3,W4,n=n,rate=rate)), 
+          with(data, sdQ(1,W1,W2,W3,W4,n=n,rate=rate)))}
+  # noise on barQ(0,W) is correlated per draw so not any more variant
+  noise.0 = function(data,noise,n,rate) {
+    .5*noise +
+      sqrt(.75)*rnorm(nrow(data), with(data, biasQ(0,W1,W2,W3,W4,n=n,rate=rate)),
+                    with(data, sdQ(0,W1,W2,W3,W4,n=n,rate=rate)))}
+  
+  noise = function(data, noise_1, noise_0) with(data, A*noise_1+(1-A)*noise_0)
+  
+  noise_1 = noise.1(truth,n,rate)
+  noise_0 = noise.0(truth,noise_1,n,rate)
+  noise_A = noise(truth, noise_1, noise_0)
+  # noise_G = noiseG(truth,V,n,rate)
+  var(noise_1-noise_0)
+  var(noise_A)
+  Q1_test = plogis(qlogis(Q1_true) + noise_1)
+  Q0_test = plogis(qlogis(Q0_true) + noise_0)
+  Q_test = plogis(qlogis(Q_true) + noise_A)
+  # g_test = plogis(qlogis(g_true) + noise_G)
+  
+  blip_test = Q1_test - Q0_test
+  blip_true = Q1_true - Q0_true
+  
+  L2_blip = sqrt(mean((blip_test - blip_true)^2))
+  L2_Q = sqrt(mean((Q_true - Q_test)^2))
+  # L2_G = sqrt(mean((g_true - g_test)^2))
+  
+  # hist(Q_test)
+  # hist(Q_true)
+  # hist(blip_test)
+  # hist(blip_true)
+  # hist(g_test)
+  ate_bias = mean(blip_test) - ATE0
+  var_bias = var(blip_test) - var0
+  
+  title = paste("sample size ",n, "variance bias = ",round(var_bias,5))
+  df = data.frame(blip = c(blip_test,blip_true), type = c(rep("test",1e6),rep("true",1e6)))
+  gg_testvstrue = ggplot(df,aes(x=blip,color=type))+geom_density()+ggtitle(title)+
+    theme(plot.title = element_text(size = 10, face = "bold"),
+          axis.text.x = element_text(size=8,angle=315)) 
+  caption = paste0("coverage = ",coverage)
+  gg_testvstrue = ggdraw(add_sub(gg_testvstrue,caption, x= .05, y = 0.5, hjust = 0, vjust = 0.5, vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                                 colour = "black", size = 9, angle = 0, lineheight = 0.9))
+  # var_bias
+  # ate_bias
+  
+  results = list(L2_blip = n^.25*L2_blip, L2_Q = n^.25*L2_Q,
+                 ate_bias = ate_bias, var_bias = var_bias,plot = gg_testvstrue)
+  return(results)
+}
