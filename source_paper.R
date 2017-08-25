@@ -72,7 +72,7 @@ if (case == "setup") {
       ggtitle("blip variance sampling distributions", subtitle=
                 "tmle with logistic regression initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")
-    ggoverLR1 = ggover
+    ggoverLRcase2a = ggover
   }
   
   if (case == "lr_case2b"){
@@ -120,7 +120,7 @@ if (case == "setup") {
       ggtitle("blip variance sampling distributions", subtitle=
                 "tmle with logistic regression initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")
-    ggoverLR2 = ggover
+    ggoverLRcase2b = ggover
     
   }
   
@@ -148,16 +148,14 @@ if (case == "setup") {
     if (!resultsGotten) {
     # run this on a 24 core node
     ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
-                .errorhandling = "remove")%dopar%
-                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
-                        SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
-                )}
+                  .errorhandling = "remove")%dopar%
+                  {sim_hal(n, g0 = g0, Q0 = Q0)}
     
     results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
     B = nrow(results)
     
-    varind = c("1step tmle HAL" = 1,"init est HAL" = 37)
+    varind = c("1step tmle HAL" = 1,"init est HAL" = 22)
     
     type= c(rep("initial est HAL",B),rep("TMLE HAL",B))
     types = c("initial est HAL","TMLE HAL")
@@ -174,7 +172,7 @@ if (case == "setup") {
       scale_color_manual(values=colors)+
       theme(axis.title.x = element_blank())+
       ggtitle("blip variance sampling distributions", subtitle=
-                "tmle logistic regression initial estimates")
+                "tmle with hal initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")+
       geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])
     geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
@@ -216,15 +214,13 @@ if (case == "setup") {
     # run this on a 24 core node
     ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                 .errorhandling = "remove")%dopar%
-                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
-                        SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
-                )}
+                {sim_hal(n, g0 = g0, Q0 = Q0)}
     
     results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
     B = nrow(results)
     
-    varind = c("1step tmle HAL" = 1,"init est HAL" = 37)
+    varind = c("1step tmle HAL" = 1,"init est HAL" = 22)
     type= c(rep("initial est HAL",B),rep("TMLE HAL",B))
     types = c("initial est HAL","TMLE HAL")
     inds = varind
@@ -240,7 +236,7 @@ if (case == "setup") {
       scale_color_manual(values=colors)+
       theme(axis.title.x = element_blank())+
       ggtitle("blip variance sampling distributions", subtitle=
-                "tmle logistic regression initial estimates")
+                "tmle with hal initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")+
       geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])
     geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
@@ -937,18 +933,22 @@ if (case == "setup") {
     registerDoSNOW(cl)
     clusterExport(cl,cl_export)
     
-    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+    ALL_hal=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                 .errorhandling = "remove")%dopar%
                 {sim_hal(n, g0 = g0, Q0 = Q0)}
     
-    ALL_hal=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+    cl = makeCluster(detectCores(), type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    ALL_halglm=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                 .errorhandling = "remove")%dopar%
                 {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
                         SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
                 )}
-    results = data.matrix(data.frame(do.call(rbind, ALL)))
     results_hal = data.matrix(data.frame(do.call(rbind, ALL_hal)))
-    results = cbind(results_hal[,c(1:3,22)],results)
+    results_halglm = data.matrix(data.frame(do.call(rbind, ALL_halglm)))
+    results = cbind(results_hal[,c(1:3,22)],results_halglm)
     }
     
     B = nrow(results)
@@ -1181,7 +1181,7 @@ if (case == "setup") {
     registerDoSNOW(cl)
     L = list()
     i=1
-    sizes = seq(250,N,250)[c(1)]
+    sizes = seq(250,N,250)
     for (n in sizes){
       rate = 1/3
       print(i)
