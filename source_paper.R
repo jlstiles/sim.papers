@@ -42,7 +42,7 @@ if (case == "setup") {
     if (!resultsGotten) {
     cl = makeCluster(no.cores, type = "SOCK")
     registerDoSNOW(cl)
-    clusterExport(cl,c("glm.mainint"))
+    clusterExport(cl,cl_export)
     
     # run this on a 24 core node
     ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
@@ -70,7 +70,7 @@ if (case == "setup") {
       scale_color_manual(values=colors)+
       theme(axis.title.x = element_blank())+
       ggtitle("blip variance sampling distributions", subtitle=
-                "tmle logistic regression initial estimates")
+                "tmle with logistic regression initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")
     ggoverLR1 = ggover
   }
@@ -90,7 +90,7 @@ if (case == "setup") {
     if (!resultsGotten) {
     cl = makeCluster(no.cores, type = "SOCK")
     registerDoSNOW(cl)
-    clusterExport(cl,c("glm.mainint"))
+    clusterExport(cl,cl_export)
     
     # run this on a 24 core node
     ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
@@ -118,7 +118,7 @@ if (case == "setup") {
       scale_color_manual(values=colors)+
       theme(axis.title.x = element_blank())+
       ggtitle("blip variance sampling distributions", subtitle=
-                "tmle logistic regression initial estimates")
+                "tmle with logistic regression initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")
     ggoverLR2 = ggover
     
@@ -143,7 +143,7 @@ if (case == "setup") {
     
     cl = makeCluster(no.cores, type = "SOCK")
     registerDoSNOW(cl)
-    clusterExport(cl,c("glm.mainint"))
+    clusterExport(cl,cl_export)
     
     if (!resultsGotten) {
     # run this on a 24 core node
@@ -211,7 +211,7 @@ if (case == "setup") {
     if (!resultsGotten) {
     cl = makeCluster(no.cores, type = "SOCK")
     registerDoSNOW(cl)
-    clusterExport(cl,c("glm.mainint"))
+    clusterExport(cl,cl_export)
     
     # run this on a 24 core node
     ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
