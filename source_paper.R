@@ -1,0 +1,1414 @@
+
+if (case == "setup") {
+  cl_export = c("SL.gam3","screen.Main","screen10","screen6","SL.glmnet_1","SL.glmnet_2",
+                "SL.glmnet_3","xgbFull","xgbMain","screen.Main",
+                "xgb6","screen6","xgb10","screen10","rpartPrune","nnetFull",
+                "nnetMain","screen.Main","earthFull","All","screen10","screen6",
+                "earthMain","screen.Main","rangerFull","All","screen.Main",
+                "ranger10","screen10","screen6","SL.glm","screen6","screen10",
+                "SL.stepAIC","SL.hal","glm.mainint")
+  
+  SL.library1 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),"SL.glmnet_1",
+                     "SL.glmnet_2","SL.glmnet_3", c("SL.rpartPrune", "screen.Main"), 
+                     c("nnetMain","screen.Main"), 
+                     c("earthMain","screen.Main"),
+                     c("SL.glm","screen.Main","screen6","screen10","All"),
+                     "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
+  
+  SL.library2 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),
+                     "SL.glmnet_1","SL.glmnet_2","SL.glmnet_3",
+                     c("SL.rpartPrune", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
+                     c("nnetMain","screen.Main"), c("earthMain","screen.Main"),
+                     c("rangerFull","screen.Main"),
+                     c("SL.glm","screen.Main","screen6","screen10","All"),
+                     "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
+  
+  SL.libraryG = list("nnetMain","SL.mean","SL.hal",
+                     "SL.earth","SL.glm","SL.step.interaction",
+                     "SL.glm.interaction")
+  } else {
+  if (case == "lr_case2a") {
+    g0 = g0_linear
+    Q0 = Q0_trig1
+    testdata=gendata(1e6, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = c("glm.mainint")
+    SL.libraryG = c("SL.glm")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,c("glm.mainint"))
+    
+    # run this on a 24 core node
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n=n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
+                )}
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    B = nrow(results)
+    
+    type= c(rep("tmle with lr initial",B),rep("lr initial",B))
+    types = c("tmle with lr initial","lr initial")
+    inds = c(1,37)
+    inds = inds[order(types)]
+    colors = c("red","blue")
+    
+    ests = c(results[,1], results[,37])
+    plotdf = data.frame(ests=ests, type=type)
+    
+    ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle("blip variance sampling distributions", subtitle=
+                "tmle logistic regression initial estimates")
+    ggover = ggover+geom_vline(xintercept = var0,color="black")
+    ggoverLR1 = ggover
+  }
+  
+  if (case == "lr_case2b"){
+    g0 = g0_linear
+    Q0 = Q0_trig
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = c("glm.mainint")
+    SL.libraryG = c("SL.glm")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,c("glm.mainint"))
+    
+    # run this on a 24 core node
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
+                )}
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    B = nrow(results)
+    
+    type= c(rep("tmle with lr initial",B),rep("lr initial",B))
+    types = c("tmle with lr initial","lr initial")
+    inds = c(1,37)
+    inds = inds[order(types)]
+    colors = c("red","blue")
+    
+    ests = c(results[,1], results[,37])
+    plotdf = data.frame(ests=ests, type=type)
+    
+    ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle("blip variance sampling distributions", subtitle=
+                "tmle logistic regression initial estimates")
+    ggover = ggover+geom_vline(xintercept = var0,color="black")
+    ggoverLR2 = ggover
+    
+  }
+  
+  ####
+  ####
+  ####
+  # hal
+  if (case == "hal_case2a") {
+    
+    g0 = g0_linear
+    Q0 = Q0_trig1
+    testdata=gendata(1e6, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = list(c("SL.hal","screen.Main"))
+    SL.libraryG = c("SL.glm")
+    
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,c("glm.mainint"))
+    
+    if (!resultsGotten) {
+    # run this on a 24 core node
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
+                )}
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    B = nrow(results)
+    
+    varind = c("1step tmle HAL" = 1,"init est HAL" = 37)
+    
+    type= c(rep("initial est HAL",B),rep("TMLE HAL",B))
+    types = c("initial est HAL","TMLE HAL")
+    inds = varind
+    inds = inds[order(types)]
+    colors = c("red","blue")
+    
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    plotdf = data.frame(ests=ests, type=type)
+    
+    ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle("blip variance sampling distributions", subtitle=
+                "tmle logistic regression initial estimates")
+    ggover = ggover+geom_vline(xintercept = var0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])
+    geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
+    ggoverHAL2a = ggover
+    
+    coverage = vapply(varind[1], 
+                      FUN = function(x) cov.check(results, var0, x),  
+                      FUN.VALUE = 1, USE.NAMES = TRUE)
+    
+    SE_true = sd(results[,varind[1]])*sqrt(B-1)/sqrt(B)
+    ci_true = data.frame(results[,varind[1]], 
+                         results[,varind[1]] - 1.96*SE_true,
+                         results[,varind[1]] + 1.96*SE_true)
+    cov_true = cov.check(ci_true, var0, 1)
+    coverage = c(coverage, cov_true)
+    names(coverage)[2] = paste0(names(varind)[1], " TRUE VAR")
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    rownames(performance.sig) = names(varind)
+  }
+  
+  if (case == "hal_case2b") {
+    g0 = g0_linear
+    Q0 = Q0_trig
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = list(c("SL.hal","screen.Main"))
+    SL.libraryG = c("SL.glm")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,c("glm.mainint"))
+    
+    # run this on a 24 core node
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
+                )}
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    B = nrow(results)
+    
+    varind = c("1step tmle HAL" = 1,"init est HAL" = 37)
+    type= c(rep("initial est HAL",B),rep("TMLE HAL",B))
+    types = c("initial est HAL","TMLE HAL")
+    inds = varind
+    inds = inds[order(types)]
+    colors = c("red","blue")
+    
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    plotdf = data.frame(ests=ests, type=type)
+    
+    ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle("blip variance sampling distributions", subtitle=
+                "tmle logistic regression initial estimates")
+    ggover = ggover+geom_vline(xintercept = var0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])
+    geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
+    ggoverHAL2b = ggover
+    
+    coverage = vapply(varind[1], 
+                      FUN = function(x) cov.check(results, var0, x),  
+                      FUN.VALUE = 1, USE.NAMES = TRUE)
+    
+    SE_true = sd(results[,varind[1]])*sqrt(B-1)/sqrt(B)
+    ci_true = data.frame(results[,varind[1]], 
+                         results[,varind[1]] - 1.96*SE_true,
+                         results[,varind[1]] + 1.96*SE_true)
+    cov_true = cov.check(ci_true, var0, 1)
+    coverage = c(coverage, cov_true)
+    names(coverage)[2] = paste0(names(varind)[1], "TRUE VAR")
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    rownames(performance.sig) = names(varind)
+  }
+  
+  if (case == "case2a") {
+    
+    g0 = g0_linear
+    Q0 = Q0_trig1
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = SL.library1
+    SL.libraryG = list("SL.glm")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
+                )}
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    
+    B = nrow(results)
+    
+    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+    
+    rownames(performance.sig) = names(varind)
+    rownames(performance.ate) = names(ateind)
+    
+    coverage = c(cov.check(results, var0, 1),
+                 cov.simul(results, c(var0, ATE0), c(7,25)),
+                 cov.check(results, ATE0, 28), cov.check(results, ATE0, 34))
+    
+    # getting coveage using the true variance of the estimator
+    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+    
+    cov.sig.1step = cov.check(dd, var0, 1)
+    cov.ate = cov.check(dd, ATE0, 4)
+    cov = c(coverage, cov.sig.1step, cov.ate)
+    names(cov) = c("TMLE Blip Variance SL1", "Simultaneous TMLE SL1", "TMLE ATE SL1",
+                   "TMLE ATE LR", "TMLE Blip Var using true Var", "TMLE ATE using true Var")
+    coverage = data.frame(coverage = cov)
+    rownames(coverage) = names(cov)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+    rownames(SL_results) = colnames(results)[65:(64+LL)]
+    
+    type = c(rep("TMLE SL1",B), rep("init. est SL1",B),
+             rep("TMLE LR",B), rep("init est. LR",B))
+    types = c("simul TMLE SL1","iter TMLE SL1","init. est SL1","init est. LR")
+    inds = c(25, 39, 34, 40)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("red", "blue","green","orange")
+    
+    ateests = data.frame(ests=ests,type=type)
+    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("ATE sampling distributions, ", case))
+    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    capt = paste0("Truth is at black vline.\n",
+                  "\ninitial est using SuperLearner library 1 is excellent", 
+                  "\nTMLE for ATE using IC approx for variance covers at ", 
+                  100*round(coverage[3,1],3),"%",
+                  "\ninit est. LR which is Logistic Reg. with main terms and interactions ",
+                  "\nplug-in clearly biased but TMLE corrects it and it covers at ",
+                  100*round(coverage[4,],3),"%\n")
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
+    ggover_ATEcase2a = ggover
+    
+    
+    type = c(rep("TMLE SL1",B), rep("init est SL1",B), 
+             rep("init est LR",B), rep("TMLE LR",B))
+    types = c("TMLE SL1","init est SL1","init est LR", "TMLE LR")
+    inds = c(1, 37, 38, 16)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    
+    cap = paste0("truth is black line\n",
+                 "tmle SL1, which used Superlearner Library 1 for initial ests\n", 
+                 "attains near nominal coverage at ", 100*round(coverage[1,1],3),"%\n", 
+                 "and debiases initial SuperLearner lib 1 estimate.\n", 
+                 "tmle LR used logistic regression with main terms and interactions\n",
+                 "is a disaster as TMLE holds no promises for terrible initial estimates.\n")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    ggover2
+    
+    ggover_BVcase2a = ggover2
+    
+  }
+  
+  if (case == "combo_case2b") {
+    
+    coverage_case2b = c(cov.check(results_SL1, var0, c(1)),
+                        cov.check(results_of, var0, c(1)),
+                        cov.check(results_cv, var0, c(1)))
+    
+    coverage_simulcase2b = c(cov.simul(results_SL1, c(var0,ATE0), c(7,25)),
+                             cov.simul(results_of, c(var0,ATE0), c(7,25)),
+                             cov.simul(results_cv, c(var0,ATE0), c(7,25)))
+    
+    coverage_case2b = c(coverage_case2b, coverage_simulcase2b, 
+                        rep(NA,3))[c(1,4,7,2,5,7,3,6,7)]
+    
+    MSE_case2b = rbind(t(apply(results_SL1[,c(1,7,37)],2,perf,var0)),
+                       MSE_of = t(apply(results_of[,c(1,7,37)],2,perf,var0)),
+                       MSE_cv = t(apply(results_cv[,c(1,7,37)],2,perf,var0)))
+    
+    MSE_cov = cbind(MSE_case2b, coverage_case2b)
+    rownames(MSE_cov) = c("TMLE SL1","Simul. TMLE SL1","init est SL1",
+                          "TMLE SL2","Simul. TMLE SL2","init est SL2",
+                          "CV-TMLE SL2","Simul. CV-TMLE SL2","init est CV-SL1")
+    
+    B1 = nrow(results_SL1)
+    B2 = nrow(results_of)
+    B3 = nrow(results_cv)
+    
+    type = c(rep("tmle SL1",B1), rep("tmle SL2",B2),
+             rep("cv-tmle SL2",B3))
+    types = c("tmle SL1","tmle SL2",
+              "cv-tmle SL2")
+    
+    ests = c(results_SL1[,1], results_of[,1], 
+             results_cv[,1])
+    plotdf = data.frame(ests=ests, type=type)
+    
+    ggover = ggplot(plotdf, aes(x=ests, fill = type, color = type))+geom_density(alpha=.5)
+    ggover = ggover + scale_fill_manual(values=colors)
+    ggover = ggover + scale_color_manual(values=colors)
+    ggover = ggover + geom_vline(xintercept = var0, color= "black")+
+      ggtitle("The virtue of cv-tmle, case 2b",
+              subtitle = "cv-tmle maintains normality, eliminates skewing, bad outliers")+
+      theme(plot.title = element_text(size=12), plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept = mean(as.numeric(results_cv[,1])), color = colors[1])+
+      geom_vline(xintercept = mean(as.numeric(results_SL1[,1])), color = colors[2])+
+      geom_vline(xintercept = mean(as.numeric(results_of[,1])), color = colors[3])
+    
+  }
+  
+  if (case == "case2b") {
+    g0 = g0_linear
+    Q0 = Q0_trig
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = SL.library1
+    SL.libraryG = list("SL.glm")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
+                )}
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    
+    B = nrow(results)
+    
+    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+    
+    rownames(performance.sig) = names(varind)
+    rownames(performance.ate) = names(ateind)
+    
+    coverage = c(cov.check(results, var0, 1),
+                 cov.simul(results, c(var0, ATE0), c(7,25)),
+                 cov.check(results, ATE0, 28), cov.check(results, ATE0, 34))
+    
+    # getting coveage using the true variance of the estimator
+    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+    
+    cov.sig.1step = cov.check(dd, var0, 1)
+    cov.ate = cov.check(dd, ATE0, 4)
+    cov = c(coverage, cov.sig.1step, cov.ate)
+    names(cov) = c("TMLE Blip Variance SL1", "Simultaneous TMLE SL1", "TMLE ATE SL1",
+                   "TMLE ATE LR", "TMLE Blip Var using true Var", "TMLE ATE using true Var")
+    coverage = data.frame(coverage = cov)
+    rownames(coverage) = names(cov)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+    rownames(SL_results) = colnames(results)[65:(64+LL)]
+    
+    type = c(rep("TMLE SL1",B), rep("init. est SL1",B),
+             rep("TMLE LR",B), rep("init est. LR",B))
+    types = c("simul TMLE SL1","iter TMLE SL1","init. est SL1","init est. LR")
+    inds = c(25, 39, 34, 40)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("red", "blue","green","orange")
+  
+    ateests = data.frame(ests=ests,type=type)
+    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("ATE sampling distributions, ", case))
+    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    capt = paste0("Truth is at black vline.\n",
+                  "\ninitial est using SuperLearner library 1 is excellent", 
+                  "\nTMLE for ATE using IC approx for variance covers at ", 
+                  100*round(coverage[3,1],3),"%",
+                  "\ninit est. LR which is Logistic Reg. with main terms and interactions ",
+                  "\nplug-in clearly biased but TMLE corrects it and it covers at ",
+                  100*round(coverage[4,],3),"%\n")
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
+    ggover_ATEcase2b = ggover
+    
+    
+    type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B))
+    types = c("TMLE SL1","init est SL1","init est LR")
+    inds = c(1, 37, 38)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])
+    cap = paste0("truth is black line\n",
+                 "tmle SL1, which used Superlearner Library 1 for initial ests\n", 
+                 "attains near nominal coverage at ", 100*round(coverage[1,1],3),"%\n", 
+                 "and debiases initial SuperLearner lib 1 estimate.\n", 
+                 "init est LR used logistic regression with main terms and interactions\n",
+                 "plug-in estimator and is a disaster, which TMLE cannot help.\n")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    ggover_BVcase2b = ggover2
+  }
+  
+  if (case == "case2b_2G") {
+    B = nrow(results)
+    
+    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+    
+    rownames(performance.sig) = names(varind)
+    rownames(performance.ate) = names(ateind)
+    
+    coverage = c(cov.check(results, var0, 1),
+                 cov.simul(results, c(var0, ATE0), c(7,25)),
+                 cov.check(results, ATE0, 28))
+    
+    # getting coveage using the true variance of the estimator
+    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+    
+    cov.sig.1step = cov.check(dd, var0, 1)
+    cov.ate = cov.check(dd, ATE0, 4)
+    cov = c(coverage, cov.sig.1step, cov.ate)
+    names(cov) = c("TMLE Blip Variance", "Simultaneous TMLE", "TMLE ATE",
+                   "TMLE Blip Var using true Var", "TMLE ATE using true Var")
+    coverage = data.frame(coverage = cov)
+    rownames(coverage) = names(cov)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+    rownames(SL_results) = colnames(results)[65:(64+LL)]
+
+    type = c(rep("iter TMLE SL1",B), rep("init. est SL1",B),
+             rep("TMLE LR",B), rep("init est. LR",B))
+    types = c("simul TMLE SL1","iter TMLE SL1","init. est SL1","init est. LR")
+    inds = c(25, 39, 34, 40)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("red", "blue","green","orange")
+
+    ateests = data.frame(ests=ests,type=type)
+    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("ATE sampling distributions, ", case))
+    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    ggover_ATEcase2b2G = ggover
+    
+    
+    type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B))
+    types = c("TMLE SL1","init est SL1","init est LR")
+    inds = c(1, 37, 38)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    
+    ggover_BVcase2b2G = ggover2
+  }
+  
+  if (case == "case2b_CV") {
+    B = nrow(results)
+    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+    
+    rownames(performance.sig) = names(varind)
+    rownames(performance.ate) = names(ateind)
+    
+    coverage = c(cov.check(results, var0, 1),
+                 cov.simul(results, c(var0, ATE0), c(7,25)),
+                 cov.check(results, ATE0, 28), cov.check(results, ATE0, 34))
+    
+    # getting coveage using the true variance of the estimator
+    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+    
+    cov.sig.1step = cov.check(dd, var0, 1)
+    cov.ate = cov.check(dd, ATE0, 4)
+    cov = c(coverage, cov.sig.1step, cov.ate)
+    names(cov) = c("TMLE Blip Variance SL2", "Simultaneous TMLE SL2", "TMLE ATE SL2",
+                   "TMLE ATE LR", "TMLE Blip Var using true Var", "TMLE ATE using true Var")
+    coverage = data.frame(coverage = cov)
+    rownames(coverage) = names(cov)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+    rownames(SL_results) = colnames(results)[65:(64+LL)]
+    
+    type = c(rep("TMLE SL2",B), rep("init. est SL2",B),
+             rep("TMLE LR",B), rep("init est. LR",B))
+    types = c("simul TMLE SL2","iter TMLE SL2","init. est SL2","init est. LR")
+    inds = c(25, 39, 34, 40)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("red", "blue","green","orange")
+    
+    ateests = data.frame(ests=ests,type=type)
+    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("ATE sampling distributions, ", case))
+    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    capt = paste0("Truth is at black vline.\n",
+                  "\ninitial est using SuperLearner library 2 is excellent", 
+                  "\nTMLE for ATE using IC approx for variance covers at ", 
+                  100*round(coverage[3,1],3),"%",
+                  "\ninit est. LR which is Logistic Reg. with main terms and interactions ",
+                  "\nplug-in clearly biased but TMLE corrects it and it covers at ",
+                  100*round(coverage[4,],3),"%\n")
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
+    ggover_ATEcase2bCV = ggover
+    
+    
+    type = c(rep("TMLE SL2",B), rep("init est SL2",B), rep("init est LR",B))
+    types = c("TMLE SL2","init est SL2","init est LR")
+    inds = c(1, 37, 38)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])
+    cap = paste0("truth is black line\n",
+                 "tmle SL2, which used Superlearner Library 2 for initial ests\n", 
+                 "is normally dist, hasn't many outliers, covers at ", 100*round(coverage[1,1],3),"%\n", 
+                 "and slightly debiases initial estimate using Superlearner Lib 2 \n",
+                 "which defies the donsker condition but such is not needed for\n",
+                 "CV-TMLE. The TMLE coverage using the True variance was ",
+                  100*round(coverage[5,1], 3), "%, \nso the IC approx was a bit anticonservative.\n",
+                 "init est LR used logistic regression with main terms and interactions\n",
+                 "plug-in estimator and is a disaster, which TMLE cannot help.\n")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    ggover_BVcase2bCV = ggover2  }
+  
+  if (case == "case2b_OF") { 
+    
+    g0 = g0_linear
+    Q0 = Q0_trig
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = SL.library2
+    SL.libraryG = list("SL.glm")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
+                )}
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    
+    B = nrow(results)
+    
+    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+    
+    rownames(performance.sig) = names(varind)
+    rownames(performance.ate) = names(ateind)
+    
+    coverage = c(cov.check(results, var0, 1),
+                 cov.simul(results, c(var0, ATE0), c(7,25)),
+                 cov.check(results, ATE0, 28), cov.check(results, ATE0, 34))
+    
+    # getting coveage using the true variance of the estimator
+    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+    
+    cov.sig.1step = cov.check(dd, var0, 1)
+    cov.ate = cov.check(dd, ATE0, 4)
+    cov = c(coverage, cov.sig.1step, cov.ate)
+    names(cov) = c("TMLE Blip Variance SL2", "Simultaneous TMLE SL2", "TMLE ATE SL2",
+                   "TMLE ATE LR", "TMLE Blip Var using true Var", "TMLE ATE using true Var")
+    coverage = data.frame(coverage = cov)
+    rownames(coverage) = names(cov)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+    rownames(SL_results) = colnames(results)[65:(64+LL)]
+    
+    type = c(rep("TMLE SL2",B), rep("init. est SL2",B),
+             rep("TMLE LR",B), rep("init est. LR",B))
+    types = c("simul TMLE SL2","iter TMLE SL2","init. est SL2","init est. LR")
+    inds = c(25, 39, 34, 40)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("red", "blue","green","orange")
+    
+    ateests = data.frame(ests=ests,type=type)
+    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("ATE sampling distributions, ", case))
+    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    capt = paste0("Truth is at black vline.\n",
+                  "\ninitial est using SuperLearner library 2 is excellent", 
+                  "\nTMLE for ATE using IC approx for variance covers at ", 
+                  100*round(coverage[3,1],3),"%",
+                  "\ninit est. LR which is Logistic Reg. with main terms and interactions ",
+                  "\nplug-in clearly biased but TMLE corrects it and it covers at ",
+                  100*round(coverage[4,],3),"%\n")
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
+    ggover_ATEcase2bOF = ggover
+    
+    
+    type = c(rep("TMLE SL2",B), rep("init est SL2",B), rep("init est LR",B))
+    types = c("TMLE SL2","init est SL2","init est LR")
+    inds = c(1, 37, 38)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])
+    cap = paste0("truth is black line\n",
+                 "tmle SL2, which used Superlearner Library 2 for initial ests\n", 
+                 "is skewed, has many outliers and covers at ", 100*round(coverage[1,1],3),"%\n", 
+                 "and does not debias initial estimate due to overfit outcome regressions\n",
+                 "which defy the donsker condition--need CV-TMLE!\n",
+                 "init est LR used logistic regression with main terms and interactions\n",
+                 "plug-in estimator and is a disaster, which TMLE cannot help.\n")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    ggover_BVcase2bOF = ggover2
+  }
+  
+  if (case == "case4") {
+    g0 = g0_1
+    Q0 = Q0_1
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = list(c("glm.mainint", "screen.Main"), 
+                      c("SL.hal", "screen.Main"))
+    SL.libraryG = list("SL.glm", "SL.hal")
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_hal(n, g0 = g0, Q0 = Q0)}
+    
+    ALL_hal=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
+                )}
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    results_hal = data.matrix(data.frame(do.call(rbind, ALL_hal)))
+    results = cbind(results_hal[,c(1:3,22)],results)
+    }
+    
+    B = nrow(results)
+    
+    varind = c("1step tmle LR" = 20,"1step tmle HAL" = 1, "1step tmle HAL+glm" = 5,
+               "init est LR" = 40,"init est HAL" = 4, "init est HAL+glm" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    rownames(performance.sig) = names(varind)
+    coverage = c(cov.check(results, var0, varind[1:3]), 0.434, NA, NA)
+    MSE_cov = cbind(performance.sig, coverage)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,69:(68+LL)]))
+    rownames(SL_results) = colnames(results)[69:(68+LL)]
+    
+    type = c(rep("1step TMLE LR",B), rep("1step TMLE HAL",B), rep("1step TMLE HAL+glm",B))
+    types = c("1step TMLE LR","1step TMLE HAL","1step TMLE HAL+glm")
+    inds = c(20, 1, 5)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+    cap = paste0("truth at black line.\n",
+                 "tmle LR uses glm with interactions for outcome model and glm for\n",
+                 "treatment mechanism initial estimates. tmle LR CI's cover at", 
+                  round(MSE_cov[3,4] ,1),"\n",
+                 "hal tmle uses highly adaptive lasso for initial estimates of both\n",
+                 "outcome and treatment mech initial estimates and these cover\n",
+                 "at", round(MSE_cov[3,4] ,2),
+                 "\ntmle hal+glm SL uses a SuperLearner with hal and glm for\n",
+                 "outcome and treatment mechanism initial estimates and cover at ",
+                  round(MSE_cov[3,4] ,3),"\n",
+                 "All coverage here is using infuence curve approx for inference.")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    ggover_BVcase4 = ggover2
+    
+  }
+  
+  if (case == "case3") {
+    
+    g0 = g0_1
+    Q0 = Q0_2
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = SL.library1
+    SL.libraryG = SL.libraryG
+    
+    if (!resultsGotten) {
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                        SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
+                )}
+    }
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
+    B = nrow(results)
+    
+    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+    
+    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+    
+    rownames(performance.sig) = names(varind)
+    rownames(performance.ate) = names(ateind)
+    
+    coverage = c(cov.check(results, var0, 1),
+                 cov.simul(results, c(var0, ATE0), c(7,25)),
+                 cov.check(results, ATE0, 28), cov.check(results, ATE0, 34),
+                 cov.check(results, var0, 16))
+    
+    # getting coveage using the true variance of the estimator
+    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+    
+    cov.sig.1step = cov.check(dd, var0, 1)
+    cov.ate = cov.check(dd, ATE0, 4)
+    cov = c(coverage, cov.sig.1step, cov.ate)
+    names(cov) = c("TMLE Blip Variance SL1", "Simultaneous TMLE SL1", "TMLE ATE SL1",
+                   "TMLE ATE LR", "TMLE Blip Variance LR", 
+                   "TMLE Blip Var using true Var", 
+                   "TMLE ATE using true Var")
+    coverage = data.frame(coverage = cov)
+    rownames(coverage) = names(cov)
+    
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+    rownames(SL_results) = colnames(results)[65:(64+LL)]
+    
+    type = c(rep("TMLE SL1",B), rep("init. est SL1",B),
+             rep("TMLE LR",B), rep("init est. LR",B))
+    types = c("simul TMLE SL1","iter TMLE SL1","init. est SL1","init est. LR")
+    inds = c(25, 39, 34, 40)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("red", "blue","green","orange")
+    
+    ateests = data.frame(ests=ests,type=type)
+    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("ATE sampling distributions, ", case))
+    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    capt = paste0("Truth is at black vline.\n",
+                  "\ninitial est using SuperLearner library 1 is excellent", 
+                  "\nTMLE for ATE using IC approx for variance covers at ", 
+                  100*round(coverage[3,1],3),"%",
+                  "\ninit est. LR which is Logistic Reg. with main terms and interactions ",
+                  "\nplug-in unbiased and TMLE keeps it as is, covering at ",
+                  100*round(coverage[4,],3),"%\n")
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
+    ggover_ATEcase3 = ggover
+    
+    
+    type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B),
+             rep("TMLE LR",B))
+    types = c("TMLE SL1","init est SL1","init est LR","TMLE LR")
+    inds = c(1, 37, 38, 16)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+    cap = paste0("truth is black line\n",
+                 "tmle SL1, which used Superlearner Library 1 for initial ests\n", 
+                 "attains near nominal coverage at ", 100*round(coverage[1,1],3),"%\n", 
+                 "and debiases initial SuperLearner lib 1 estimate.\n", 
+                 "init est LR, which used logistic regression with main terms and\n",
+                 "interactions, and corresponding TMLE are much more biased.\n",
+                 "This underscores the importance of machine learning in making\n",
+                 "the initial estimates for both propensity score and outcome here.")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    ggover_BVcase3 = ggover2
+  }
+  
+  if (case == "noise"|case =="noise_neg"){
+    g0 = g0_linear
+    Q0 = Q0_noise
+    testdata=gendata_noise(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    rate = 1/3
+    if (case == "noise") {
+    biasQ = function(A,W1,W2,W3,W4,n,rate)  {
+      n^-rate*1.5*(-.2+1.5*A+.2*W1+1*W2-A*W3+ 1*W4)
+    }
+    # hist(with(truth,biasQ(A,W1,W2,W3,W4,n=n,rate=rate)))
+    sdQ = function(A,W1,W2,W3,W4,n,rate) {
+      (n^-rate)*.8*(abs(3.5+.5*W1+.15*W2+.33*W3*W4-W4))
+    }
+    N=20000} else {
+    biasQ = function(A,W1,W2,W3,W4,n,rate) { 
+      -n^-rate*.8*(+.2+1.5*A+.2*W1+1*W2+5*A*W3^2+ 1*W4)
+    }
+    
+    sdQ = function(A,W1,W2,W3,W4,n,rate) {
+      (n^-rate)*.8*(abs(3.5+.5*W1+.15*W2+.33*W3*W4-W4))
+    }
+    N=50000}
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    L = list()
+    i=1
+    sizes = seq(250,N,250)[c(1)]
+    for (n in sizes){
+      rate = 1/3
+      print(i)
+      time = proc.time()
+      ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm", "Simulations"))%dopar%
+      {simBlipvar(n = n, rate = rate, g0 = g0, Q0 = Q0, biasQ, sdQ)}
+      
+      L[[i]] = ALL
+      print(proc.time()-time)
+      i=i+1
+    }
+    res_noise = vapply(1:length(sizes), FUN = function(x) {
+      res = getRes(L[[x]],B, ATE0=ATE0, var0=var0)
+      bias_init = res[[2]][1,2]
+      bias_tmle = res[[2]][2,2]
+      mse_init = res[[2]][1,3]
+      mse_tmle = res[[2]][2,3]
+      coverage = res[[3]][2]
+      return(c(bias_init, bias_tmle, mse_init, mse_tmle, coverage))
+    }, FUN.VALUE = c(1,1,1,1,1))
+    res_noise = t(res_noise)
+    plotdf_biasmse = data.frame(n = rep(sizes,2), 
+                                bias = c(res_noise[,1], res_noise[,2]), 
+                                mse = c(res_noise[,3], res_noise[,4]),
+                                type = c(rep("init", length(sizes)), 
+                                         rep("tmle", length(sizes))))
+    
+    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+    "\no_p(n^{-.25}) as required")
+    p250 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+                          x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
+                          vpadding = grid::unit(1, "lines"), 
+                          fontfamily = "", fontface = "plain",
+                          colour = "black", size = 9, angle = 0, lineheight = 0.9))
+    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+           "\no_p(n^{-.25}) as required")
+    p1000 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+                           x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
+                           vpadding = grid::unit(1, "lines"), 
+                           fontfamily = "", fontface = "plain",
+                           colour = "black", size = 9, angle = 0, lineheight = 0.9))
+    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+           "\no_p(n^{-.25}) as required")
+    p5000 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+                           x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
+                           vpadding = grid::unit(1, "lines"), 
+                           fontfamily = "", fontface = "plain",
+                           colour = "black", size = 9, angle = 0, lineheight = 0.9))
+    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+           "\no_p(n^{-.25}) as required")
+    p10000 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+                            x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
+                            vpadding = grid::unit(1, "lines"), 
+                            fontfamily = "", fontface = "plain",
+                            colour = "black", size = 9, angle = 0, lineheight = 0.9))
+    
+    ml=marrangeGrob(list(p250,p1000,p5000,p10000),ncol=2,nrow=10, 
+                    widths = c(3.5,3.5),
+                    heights=c(1,1))
+    
+    if (case=="noise"){
+      truth = gendata_noise(1e6, g0, Q0)
+      
+      grobs = lapply(c(1,4,10,20), FUN = function(x) {
+        coverage = coverage_n[x,2]
+        noise_analysis(coverage_n[x,1],1/3,truth,coverage=coverage,
+                       Q0, biasQ, sdQ)[[5]]
+      })
+      
+      ml1=marrangeGrob(grobs,ncol=2,nrow=2, widths = c(3.5,3.5),
+                       heights=c(1,1))
+    } else {
+      truth = gendata_noise(1e6, g0, Q0)
+      grobs = lapply(c(1,4,10,160), FUN = function(x) {
+        coverage = coverage_n[x,2]
+        noise_analysis(coverage_n[x,1],1/3,truth,coverage=coverage,
+                       Q0, biasQ, sdQ)[[5]]
+      })
+      
+      ml1=marrangeGrob(grobs,ncol=2,nrow=2, widths = c(3.5,3.5),
+                       heights=c(1,1))
+    }
+    
+    
+  }
+  if (case == "wells") {
+    
+    a = seq(0,15,.5)
+    b = seq(0,15,.5)
+    truevars = c()
+    trueates = c()
+    gg_wells = list()
+    oc_list = list()
+    for (i in 1:31){
+      Q0 = function (A, W1, W2, W3, W4) 
+      {
+        plogis(.14*(2* A + W1 + a[i]*A * W1 - b[i]*A*W2 + W2 - W3+ W4))
+      }
+      testdata=gendata(1000000, g0=g0_1, Q0 = Q0)
+      blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+      truevars = c(truevars, var(blip_true))
+      trueates = c(trueates, mean(blip_true))
+      oc_list = append(oc_list,Q0)
+    }
+    
+    for (nn in c(250,500,1000)){
+      cl = makeCluster(detectCores(), type = "SOCK")
+      registerDoSNOW(cl)
+      clusterExport(cl,c("a","b","oc_list"))
+      for (i in seq(1,31,2)){
+        # i=1
+        B = 1000
+        n = nn
+        Q0 = oc_list[[i]]
+        SL.library =
+          ALL = foreach(rep=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations"),
+                        .export = c("a","b","i"))%dopar%
+                        {sim_lr(n, g0 = g0_linear, Q0 = Q0, formQ = formula("Y~A*(W1 + W2) +W3 +W4"),
+                                formG = formula("A~."))}
+        
+        results = do.call(rbind,ALL)
+        cnames = colnames(results)
+        results = apply(results,2,as.numeric)
+        colnames(results) = cnames
+        
+        var0 = truevars[ii]
+        ATE0 = trueates[ii]
+        cov = vapply(c(1,4),FUN = function(x){
+          covs = results[,x+1]<=var0&results[,x+2]>=var0
+          mean(covs)
+        }, FUN.VALUE = 1)
+        cov_simulsig = results[,8] <= var0 & results[,9] >= var0
+        cov_simulATE = results[,11] <= ATE0 & results[,12] >= ATE0
+        cov_simul = mean(cov_simulsig * cov_simulATE)
+        cov_ate = mean(results[,14] <= ATE0 & results[,15] >= ATE0)
+        cov = c(cov, cov_simul, cov_ate)
+        coverage = rbind(coverage,cov)
+        
+        MSE = apply(results[,c(1,4,7,16)], 2, perf, var0)
+        MSE = t(MSE)
+        
+        bias1 = MSE[,2]
+        bias = rbind(bias, bias1)
+        
+        type = c(rep("1step tmle",1000), 
+                 rep("initial",1000))
+        types = c("1step tmle", "initial")
+        
+        types = types[c(1,16)]
+        inds = c(1,16)[order(types)]
+        types = types[order(types)]
+        colors = c("red", "blue","green","orange")
+        rbind(colors, types)
+        
+        ests = c(results[,1],results[,16])
+        plotdf = data.frame(ests=ests, type=type)
+        
+        gg_hal = ggplot(plotdf, aes(x=ests, fill = type, color = type))+geom_density(alpha=.5)
+        gg_hal = gg_hal + scale_fill_manual(values=colors)
+        gg_hal = gg_hal + scale_color_manual(values=colors)
+        gg_hal = gg_hal + geom_vline(xintercept = var0, color= "black")+
+          theme(plot.title = element_text(size=12))+
+          ggtitle(paste0("tmle sampling dists \nwell-spec models, n=",nn))+
+          geom_vline(xintercept = mean(as.numeric(results[,inds[1]])), color = colors[1])+
+          geom_vline(xintercept = mean(as.numeric(results[,inds[2]])), color = colors[2])
+        caption = paste0("truth at black line, true blip variance = ",round(var0,6),
+                         "\ntmle bias is ",round(MSE[2,2],6))
+        gg_hal=ggdraw(add_sub(gg_hal,caption,x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                              vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                              colour = "black", size = 10, angle = 0, lineheight = 0.9))
+        gg_hal
+        gg_wells[[count]] = gg_hal
+        count = count+1
+
+      }
+    }
+    data = gendata(1e6, g0_linear, Q0_trig1)
+    pscores = with(data, g0_linear(W1,W2,W3,W4))
+    df = data.frame(pscores=pscores, type = rep("p", 1e6))
+    gg_pscoresWell = ggplot(df, aes(x = pscores, fill = type)) + geom_density()+
+      scale_fill_manual(values=c("blue"))+
+      scale_color_manual(values=c("blue"))+
+      theme(legend.position="none")
+    gg_pscoresWell = ggdraw(add_sub(gg_pscoresWell,"no positivity issues here", 
+                                    x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                                    vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                                    colour = "black", size = 10, angle = 0, lineheight = 0.9))
+  }
+    if (case%in%LRcases) {
+      if(case=="LRcase2a"){
+        g0 = g0_linear
+        Q0 = Q0_trig1
+      }
+      if(case=="LRcase2b"){
+        g0 = g0_linear
+        Q0 = Q0_trig
+      }
+      if(case=="LRcase3"){
+        g0 = g0_1
+        Q0 = Q0_2
+      }
+      if(case=="LRcase4"){
+        g0 = g0_1
+        Q0 = Q0_1
+      }
+      
+      # get the truth
+      testdata=gendata(1000000, g0=g0, Q0 = Q0)
+      blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+      ATE0 = mean(blip_true)
+      var0 = var(blip_true)
+
+      cl = makeCluster(detectCores(), type = "SOCK")
+      registerDoSNOW(cl)
+      clusterExport(cl,cl_export)
+      
+      ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                  .errorhandling = "remove")%dopar%
+                  {LR.BVinference(n, g0 = g0, Q0 = Q0)}
+      
+      resultsLR = data.matrix(data.frame(do.call(rbind, ALL)))
+      coverageLR = c(cov.check(resultsLR, var0, 1),
+                     cov.check(resultsLR, ATE0, 7),
+                     cov.simul(resultsLR, c(ATE0,var0), c(10,4)))
+      names(coverageLR) = c("blip variance", "ATE", "simultaneous")
+      
+    }
+}
+
+
