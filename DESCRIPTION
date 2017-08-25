@@ -32,4 +32,5 @@ Depends: knitr,
     randomForest,
     hal,
     gentmle2,
-    origami
+    origami,
+    stargazer
