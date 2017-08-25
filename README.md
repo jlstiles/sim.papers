@@ -36,7 +36,6 @@ resultsGotten = "TRUE"
 B=n=1000
 no.cores = detectCores()
 source(source_file)
-library(stargazer)
 results
 ggoverLR2
 ```
