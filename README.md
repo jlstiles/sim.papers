@@ -9,6 +9,7 @@ devtools::install_github("jlstiles/Simulations")
 The following knitr file has instructions for how to generate the results, including plots and charts, in the paper.  I will note to the reader in the code comments, how to proceed with parallelizing so the process does not take so much time as well as issues with memory one should consider when running ensemble methods as applied here.
 
 [SET UP: run this first](#setup)
+
 [section 6.1.2 manufactured noise simulations](#section6.1.2)
 
 [section 6.1.3 manufactured noise simulations](#section6.1.3)
@@ -31,13 +32,13 @@ well-spec pscore, mispec. outcome model
 
 mispecified treatment and outcome models
 
-[section 6.4.4 combining cases as in paper](#section 6.4.4 2bcombo)
+[section 6.4.4 combining cases as in paper](#section6.4.4 2bcombo)
 
-[section 6.5.1](#section 6.5.1)
+[section 6.5.1](#section6.5.1)
 
-[section 6.5.2](#section 6.5.2)
+[section 6.5.2](#section6.5.2)
 
-[section 7 real data example](#section 7)
+[section 7 real data example](#section7)
 
 <a name="setup"></a>
 ```R
@@ -257,7 +258,8 @@ source(source_file)
 ggover_cvadvert = ggover
 stargazer(MSE_cov)
 ```       
- 
+
+<a name="section6.5.1"></a>  
 ```R
 # section 6.5.1
 ##### case 3
@@ -276,6 +278,7 @@ stargazer(coverage_case3,summary=FALSE,digits=3)
 stargazer(SL_results_case3,summary=FALSE,digits=5)
 ```
 
+<a name="section6.5.2"></a>  
 ```R
 # section 6.5.2
 ##### case 4 
@@ -293,6 +296,7 @@ stargazer(MSE_cov_case4,summary=FALSE,digits=6)
 stargazer(SL_results_case4,summary=FALSE,digits=5)
 ```
 
+<a name="section6.3"></a>  
 ```R
 ##### section 6.3
 ##### wells
@@ -322,6 +326,7 @@ save(gg_pscoresWell, ml250, ml500, ml1000, gg_wells,
      file = "~/Dropbox/Jonathan/Simulations/results/wells.RData")
 ```
 
+<a name="section6.1.2"></a>  
 ```R
 # noise simulations section 6.1.2
 # set case = "noise" or case = "noise_neg" for negative bias
@@ -353,6 +358,7 @@ save(gg_pscoresWell, ml, ml1, gg_bias, gg_mse, gg_coverage,L,
 
 ```
 
+<a name="section6.1.3"></a>  
 ```R
 # noise simulations section 6.1.3
 # set case = "noise" or case = "noise_neg" for negative bias
@@ -451,6 +457,7 @@ results[order(results[,"Qcoef.rangerFull_screen.Main"]),1]
 hist(results[results[,"Qcoef.rangerFull_screen.Main"]==0,1])
 ```
 
+<a name="section7"></a>  
 ```R
 # section 7
 case = "example"
