@@ -357,8 +357,8 @@ save(gg_pscoresWell, ml, ml1, gg_bias, gg_mse, gg_coverage,L,
 ```R
 # To obtain CIs via delta method for logistic regression plug-in estimates
 # step 1:choose case
-LRcases = list("LRcase2a", "LRcase2b", "LRcase3", "LRcase4")
-case = "LRcase2a"
+LRcases = list("CI_LRcase2a", "CI_LRcase2b", "CI_LRcase3", "CI_LRcase4")
+case = "CI_LRcase2a"
 # number of simulations
 B=1000
 # sample size of each simulation

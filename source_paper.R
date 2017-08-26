@@ -1319,20 +1319,20 @@ if (case == "setup") {
                                     vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
                                     colour = "black", size = 10, angle = 0, lineheight = 0.9))
   }
-    if (case%in%list("LRcase2a", "LRcase2b", "LRcase3", "LRcase4")) {
-      if(case=="LRcase2a"){
+    if (case%in%list("CI_LRcase2a", "CI_LRcase2b", "CI_LRcase3", "CI_LRcase4")) {
+      if(case=="CI_LRcase2a"){
         g0 = g0_linear
         Q0 = Q0_trig1
       }
-      if(case=="LRcase2b"){
+      if(case=="CI_LRcase2b"){
         g0 = g0_linear
         Q0 = Q0_trig
       }
-      if(case=="LRcase3"){
+      if(case=="CI_LRcase3"){
         g0 = g0_1
         Q0 = Q0_2
       }
-      if(case=="LRcase4"){
+      if(case=="CI_LRcase4"){
         g0 = g0_1
         Q0 = Q0_1
       }
@@ -1355,8 +1355,10 @@ if (case == "setup") {
       coverageLR = c(cov.check(resultsLR, var0, 1),
                      cov.check(resultsLR, ATE0, 7),
                      cov.simul(resultsLR, c(ATE0,var0), c(10,4)))
+      
       names(coverageLR) = c("blip variance", "ATE", "simultaneous")
       
+      assign(paste0("coverageLR_",case),coverageLR)
     }
     
     if (case == "case2b_2G") {
