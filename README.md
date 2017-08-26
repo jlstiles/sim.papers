@@ -1,5 +1,5 @@
 # Simulations
-Read the [Blip Variance Paper, full version](http://biostats.bepress.com/ucbbiostat/paper290/)Blip Variance paper, the full version  
+Read the [Blip Variance Paper, full version](https://github.com/jlstiles/Simulations/blob/master/blip-variance-article.pdf) 
 
 To install gentmle and the other tools necessary to obtain results in in the
 Blip Variance paper:
