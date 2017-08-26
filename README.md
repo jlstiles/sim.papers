@@ -28,11 +28,11 @@ well-spec pscore, mispec. outcome model
 
 [section 6.4.4 case2b SuperLearner lib 2 with CV-TMLE](#section6.4.42bCVSL2)
 
-[section 6.4.4 case2b SuperLearner lib 2 with TMLE, overfit hurts without CV](#section6.4.4 2bSL2)
+[section 6.4.4 case2b SuperLearner lib 2 with TMLE, overfit hurts without CV](#section6.4.42bSL2)
+
+[section 6.4.4 combining cases as in paper](#section6.4.42bcombo)
 
 mispecified treatment and outcome models
-
-[section 6.4.4 combining cases as in paper](#section6.4.4 2bcombo)
 
 [section 6.5.1](#section6.5.1)
 
