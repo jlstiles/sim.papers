@@ -954,7 +954,7 @@ if (case == "setup") {
     B = nrow(results)
     
     varind = c("1step tmle LR" = 20,"1step tmle HAL" = 1, "1step tmle HAL+glm" = 5,
-               "init est LR" = 40,"init est HAL" = 4, "init est HAL+glm" = 39)
+               "init est LR" = 42,"init est HAL" = 4, "init est HAL+glm" = 41)
     
     performance.sig = t(apply(results[,varind], 2, perf,var0))
     rownames(performance.sig) = names(varind)
@@ -991,7 +991,7 @@ if (case == "setup") {
             plot.subtitle = element_text(size=10))+
       geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
       geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
-      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])
     cap = paste0("truth at black line.\n",
                  "tmle LR uses glm with interactions for outcome model and glm for\n",
                  "treatment mechanism initial estimates. tmle LR CI's cover at", 
