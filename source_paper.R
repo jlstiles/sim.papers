@@ -1452,7 +1452,62 @@ if (case == "setup") {
       ggover_BVcase2b2G = ggover2
     }
     
-    
-}
+    if (case = "example"){
+      # get rid of a few with missing data
+      nas = apply(wcgs, 1, FUN = function(x) any(is.na(x)))
+      bads  = which(nas)
+      goods = which(!nas)
+      
+      #select covariates as per the paper
+      data = wcgs[goods, c(2:7,9:11)]
+      # assign typical names to treatment and outcome
+      colnames(data)[8:9] = c("A","Y")
+      
+      #####
+      #####
+      X = data
+      X$Y = NULL
+      W = X
+      W$A = NULL
+      A = X$A
+      
+      mainform = paste0(paste(colnames(data)[1:6],"+",collapse=""),colnames(data)[7])
+      
+      squares = paste0(paste0("I(",colnames(data)[1:7]),"^2)")
+      
+      squares = paste0(paste(squares[1:6],"+",collapse=""),squares[7])
+      
+      mainsq = paste0(mainform,"+",squares)
+      
+      mainsq.int = paste0("Y~A*(",mainsq,")")
+      mainsq.int = formula(mainsq.int) 
+      
+      X = model.matrix(mainsq.int,data)
+      X = as.data.frame(X[,-1])
+      colnames(X)[2:ncol(X)] = paste0("X",2:ncol(X))
+      head(X)
+      X1 = X0 = X
+      X0$A = 0
+      X1$A = 1
+      Y = data$Y
+      newdata = rbind(X,X1,X0)
+      
+      SL.library = list(c("nnetMain","screen.Main"),c("nnetMain1","screen.Main"),
+                        c("earthFull", "screen6", "screen12","All"),
+                        c("SL.earth", "screen.Main"),c("xgboostFull","screen12","All"),
+                        c("xgboostMain", "screen.Main"),
+                        c("gamFull", "screen6", "screen12","All"), 
+                        c("SL.gam", "screen.Main"),"SL.rpartPrune",
+                        c("rangerMain", "screen.Main"), c("rpartMain", "screen.Main"),
+                        "SL.stepAIC", c("SL.glm","screen6", "screen12","screen.Main","All"),
+                        c("SL.hal", "screen.Main"), "SL.mean")
+      
+      SL.libraryG = list("nnetMainG","nnetMainG1","SL.earth","SL.rpartPrune",
+                         "SL.gam", "rpartMain", "SL.step.interaction", "SL.glm", 
+                         "SL.hal", "SL.mean","xgboostG")
+      
+      # SL.library = SL.libraryG = c("SL.mean","SL.glm")
+    }
+    }
 
 
