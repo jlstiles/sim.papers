@@ -296,8 +296,8 @@ sim_hal = function(n, g0, Q0) {
   cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,ci_simulATE,ci_ATE)
   names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19)]=
     c("sig", "sigit", "simul", "simul_line", "simul_full","simulATE","ATE")
-  results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
-              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge)
+  results = c(cis, initest = initest,initest_ATE = initest_ATE, 
+              steps = steps, converge = converge)
   # results
   return(results)
 }
