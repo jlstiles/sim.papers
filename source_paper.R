@@ -1211,28 +1211,28 @@ if (case == "setup") {
     
     capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
     "\no_p(n^{-.25}) as required")
-    p250 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+    p250 = ggdraw(add_sub(getRes(L[[1]],1000, ATE0=ATE0, var0=var0)$ggover2,capt, 
                           x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
                           vpadding = grid::unit(1, "lines"), 
                           fontfamily = "", fontface = "plain",
                           colour = "black", size = 9, angle = 0, lineheight = 0.9))
-    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+    capt=paste0("sample size n=1000, blip bias has L2 norm = O_p(n^{-1/3})",
            "\no_p(n^{-.25}) as required")
-    p1000 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+    p1000 = ggdraw(add_sub(getRes(L[[4]],1000, ATE0=ATE0, var0=var0)$ggover2,capt, 
                            x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
                            vpadding = grid::unit(1, "lines"), 
                            fontfamily = "", fontface = "plain",
                            colour = "black", size = 9, angle = 0, lineheight = 0.9))
-    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+    capt=paste0("sample size n=5000, blip bias has L2 norm = O_p(n^{-1/3})",
            "\no_p(n^{-.25}) as required")
-    p5000 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+    p5000 = ggdraw(add_sub(getRes(L[[20]],1000, ATE0=ATE0, var0=var0)$ggover2,capt, 
                            x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
                            vpadding = grid::unit(1, "lines"), 
                            fontfamily = "", fontface = "plain",
                            colour = "black", size = 9, angle = 0, lineheight = 0.9))
-    capt=paste0("sample size n=250, blip bias has L2 norm = O_p(n^{-1/3})",
+    capt=paste0("sample size n=10000, blip bias has L2 norm = O_p(n^{-1/3})",
            "\no_p(n^{-.25}) as required")
-    p10000 = ggdraw(add_sub(getRes(L[[1]],1000)$ggover2,capt, 
+    p10000 = ggdraw(add_sub(getRes(L[[40]],1000, ATE0=ATE0, var0=var0)$ggover2,capt, 
                             x= .05, y = 0.5, hjust = 0, vjust = 0.5, 
                             vpadding = grid::unit(1, "lines"), 
                             fontfamily = "", fontface = "plain",
