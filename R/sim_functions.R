@@ -304,7 +304,6 @@ sim_hal = function(n, g0, Q0) {
 
 #' @export
 sim_single = function(n, g0, Q0, form) {
-  
   X = gendata(n, g0, Q0)
   X$Y = NULL
   X1 = X0 = X
