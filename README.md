@@ -9,22 +9,25 @@ devtools::install_github("jlstiles/Simulations")
 The following knitr file has instructions for how to generate the results, including plots and charts, in the paper.  I will note to the reader in the code comments, how to proceed with parallelizing so the process does not take so much time as well as issues with memory one should consider when running ensemble methods as applied here.
 
 [SET UP: run this first](#setup)
-[section 6.1.2 manufactured noise simulations](#section 6.1.2)
+[section 6.1.2 manufactured noise simulations](#section6.1.2)
 
-[section 6.1.3 manufactured noise simulations](#section 6.1.3)
+[section 6.1.3 manufactured noise simulations](#section6.1.3)
 
-[section 6.3 well specified precaution on skewing](#section 6.3)
+[section 6.3 well specified precaution on skewing](#section6.3)
 
-[section 6.4.1 narrow model failures](#section 6.4.1)
+[section 6.4.1 narrow model failures](#section6.4.1)
 
-[section 6.4.2 narrow model failures](#section 6.4.2)
+[section 6.4.2 narrow model failures](#section6.4.2)
 
 well-spec pscore, mispec. outcome model
 
-[section 6.4.3 case 2a](#section 6.4.3)
-[section 6.4.4 case2b SuperLearner lib 1](#section 6.4.4 2bSL1)
-[section 6.4.4 case2b SuperLearner lib 2 with CV-TMLE](#section 6.4.4 2bCVSL2)
-[section 6.4.4 case2b SuperLearner lib 2 with TMLE, overfit hurts without CV](#section 6.4.4 2bSL2)
+[section 6.4.3 case 2a](#section6.4.3)
+
+[section 6.4.4 case2b SuperLearner lib 1](#section6.4.42bSL1)
+
+[section 6.4.4 case2b SuperLearner lib 2 with CV-TMLE](#section6.4.42bCVSL2)
+
+[section 6.4.4 case2b SuperLearner lib 2 with TMLE, overfit hurts without CV](#section6.4.4 2bSL2)
 
 mispecified treatment and outcome models
 
@@ -49,7 +52,7 @@ source("~/Dropbox/Jonathan/Simulations/WrappersVblip1.R")
 # source('/home/jlstiles/R/WrappersVblip1.R')
 ```
 
-<a name="section 6.4.1"></a>
+<a name="section6.4.1"></a>
 ```R
 # section 6.4.1
 case = "LRcase2a"
@@ -83,7 +86,7 @@ head(results_LRcase2b)
 gg_LRcase2b
 ```
 
-<a name="section 6.4.2"></a>
+<a name="section6.4.2"></a>
 ```R
 # section 6.4.2
 case = "HALcase2a"
@@ -114,7 +117,7 @@ stargazer(coverage_HALcase2b, summary = FALSE)
 stargazer(performance.sig_HALcase2b, summary = FALSE)
 ```
 
-<a name="section 6.4.3"></a>
+<a name="section6.4.3"></a>
 ```R
 # section 6.4.3
 case = "case2a"
@@ -131,7 +134,7 @@ stargazer(coverage_case2a,summary=FALSE,digits=3)
 stargazer(SL_results_case2a,summary=FALSE,digits=5)
 ```
 
-<a name="section 6.4.4 2bSL1"></a>
+<a name="section6.4.42bSL1"></a>
 ```R
 # section 6.4.4 using SuperLearner Library 1
 case = "case2bSL1"
@@ -150,7 +153,7 @@ stargazer(coverage_case2bSL1,summary=FALSE,digits=3)
 stargazer(SL_results_case2bSL1,summary=FALSE,digits=5)
 ```
 
-<a name="section 6.4.4 2bCVSL2"></a>
+<a name="section6.4.42bCVSL2"></a>
 ```R
 # section 6.4.4 using SuperLearner Library 2 but with CV-TMLE
 
@@ -199,7 +202,7 @@ stargazer(coverage_case2bCVSL2,summary=FALSE,digits=3)
 stargazer(SL_results_case2bCVSL2,summary=FALSE,digits=5)
   ```
 
-<a name="section 6.4.4 2bSL2"></a> 
+<a name="section6.4.42bSL2"></a> 
 ```R
 # section 6.4.4 using SuperLearner Library 2 without CV-tmle so 
 # it has a skewed sampling dist
@@ -240,7 +243,7 @@ assholeForest=ggdraw(add_sub(assholeForest,caps,
 assholeForest
 ```
 
-<a name="section 6.4.4 2bcombo"></a>   
+<a name="section6.4.42bcombo"></a>   
 ```R
 # section 6.4.4
 # Have the following variables named as follows 
