@@ -10,32 +10,9 @@ The following file has instructions for how to generate all of the results in th
 
 [SET UP: run this first](#setup)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <a name="setup"></a>
 **Set Up**
+
 Set the source file paths as below for source_paper, WrappersVblip1.R, Wrappers_ex.R (for the example), and the wcgs.dta file.  Always run this chunk first.
 
 ```R
