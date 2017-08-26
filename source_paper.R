@@ -1292,14 +1292,15 @@ if (case == "setup") {
       registerDoSNOW(cl)
       clusterExport(cl,c("a","b","oc_list"))
       for (i in seq(1,31,2)){
-        # i=1
+        print(i)
         B = 1000
         n = nn
         Q0 = oc_list[[i]]
         SL.library =
           ALL = foreach(rep=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations"),
                         .export = c("a","b","i"))%dopar%
-                        {sim_lr(n, g0 = g0_linear, Q0 = Q0, formQ = formula("Y~A*(W1 + W2) +W3 +W4"),
+                        {sim_lr(n, g0 = g0_linear, Q0 = Q0, 
+                                formQ = formula("Y~A*(W1 + W2) +W3 +W4"),
                                 formG = formula("A~."))}
         
         results = do.call(rbind,ALL)
@@ -1307,8 +1308,8 @@ if (case == "setup") {
         results = apply(results,2,as.numeric)
         colnames(results) = cnames
         
-        var0 = truevars[ii]
-        ATE0 = trueates[ii]
+        var0 = truevars[i]
+        ATE0 = trueates[i]
         cov = vapply(c(1,4),FUN = function(x){
           covs = results[,x+1]<=var0&results[,x+2]>=var0
           mean(covs)
