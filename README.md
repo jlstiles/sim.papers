@@ -58,13 +58,14 @@ source("~/Dropbox/Jonathan/Simulations/WrappersVblip1.R")
 # section 6.4.1
 case = "LRcase2a"
 resultsGotten = FALSE
-B=3
+B=1000
 n=1000
 no.cores = detectCores()
 source(source_file)
 
+# save the following objects
 # head of compiled simulation results, all is computed from this data.frame 
-head(results_LRcase2a) 
+results_LRcase2a 
 
 # figure in the paper
 ggoverLRcase2a
@@ -75,47 +76,50 @@ ggoverLRcase2a
 
 case = "LRcase2b"
 resultsGotten = FALSE
-B=3
+B=1000
 n=1000
 no.cores = detectCores()
 source(source_file)
 
+# save the following objects
 # compiled simulation results, all is computed from this data.frame 
-head(results_LRcase2b)
+results_LRcase2b
 
 # figure in the paper
 gg_LRcase2b
+
 ```
 
 <a name="section6.4.2"></a>
 ```R
-# section 6.4.2
 case = "HALcase2a"
 resultsGotten = FALSE
-B=3
-n=100
+B=1000
+n=1000
 no.cores = detectCores()
 source(source_file)
 
-results_HALcase2a
+# save the following objects
+results_HALcase2a = results
 gg_HALcase2a
-stargazer(coverage_HALcase2a, summary = FALSE)
-stargazer(performance.sig_HALcase2a, summary = FALSE)
+coverage_HALcase2a
+performance.sig_HALcase2a
+
 ```
 
 ```R
-# THIS CHUNK FOR HAL tmle vs LR tmle, case 2b
 case = "HALcase2b"
 resultsGotten = FALSE
-B=3
-n=100
+B=1000
+n=1000
 no.cores = detectCores()
 source(source_file)
 
+# save the following objects
 results_HALcase2b = results
 gg_HALcase2b
-stargazer(coverage_HALcase2b, summary = FALSE)
-stargazer(performance.sig_HALcase2b, summary = FALSE)
+coverage_HALcase2b
+performance.sig_HALcase2b
 ```
 
 <a name="section6.4.3"></a>
@@ -126,13 +130,14 @@ resultsGotten = TRUE
 B=n=1000
 no.cores = detectCores()
 source(source_file)
- 
+
+# save the following objects
 gg_ATEcase2a
 gg_BVcase2a
-stargazer(performance.ate_case2a,summary=FALSE,digits=6)
-stargazer(performance.sig_case2a,summary=FALSE,digits=6)
-stargazer(coverage_case2a,summary=FALSE,digits=3)
-stargazer(SL_results_case2a,summary=FALSE,digits=5)
+performance.ate_case2a
+performance.sig_case2a
+coverage_case2a
+SL_results_case2a
 ```
 
 <a name="section6.4.42bSL1"></a>
@@ -140,18 +145,19 @@ stargazer(SL_results_case2a,summary=FALSE,digits=5)
 # section 6.4.4 using SuperLearner Library 1
 case = "case2bSL1"
 resultsGotten = FALSE
-B=3
+B=1000
 n=1000
 no.cores = detectCores()
 source(source_file)
 
+# save the following objects
 results_case2bSL1 = results
 gg_ATEcase2bSL1
 gg_BVcase2bSL1
-stargazer(performance.ate_case2bSL1,summary=FALSE,digits=6)
-stargazer(performance.sig_case2bSL1,summary=FALSE,digits=6)
-stargazer(coverage_case2bSL1,summary=FALSE,digits=3)
-stargazer(SL_results_case2bSL1,summary=FALSE,digits=5)
+performance.ate_case2bSL1
+performance.sig_case2bSL1
+coverage_case2bSL1
+SL_results_case2bSL1
 ```
 
 <a name="section6.4.42bCVSL2"></a>
@@ -173,7 +179,7 @@ cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 
-B=1
+B=100
 n=1000
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
@@ -186,21 +192,19 @@ results = data.matrix(data.frame(do.call(rbind, ALL)))
 # Once you have compiled 10 of these results via rbind, into one results 
 # data.frame do the following for later combining of results
 
-###
-###
-###
-###
-
+# save the following objects
 # rbind all 10 results data.frames into one data.frame named results
-results = results_case2bCVSL2
 case = "case2bCVSL2"
 source(source_file)
+
+# save the following objects
+results_case2bCVSL2
 gg_ATEcase2bCVSL2
 gg_BVcase2bCVSL2
-stargazer(performance.ate_case2bCVSL2,summary=FALSE,digits=6)
-stargazer(performance.sig_case2bCVSL2,summary=FALSE,digits=6)
-stargazer(coverage_case2bCVSL2,summary=FALSE,digits=3)
-stargazer(SL_results_case2bCVSL2,summary=FALSE,digits=5)
+performance.ate_case2bCVSL2
+performance.sig_case2bCVSL2
+coverage_case2bCVSL2
+SL_results_case2bCVSL2
   ```
 
 <a name="section6.4.42bSL2"></a> 
@@ -210,20 +214,19 @@ stargazer(SL_results_case2bCVSL2,summary=FALSE,digits=5)
 
 case = "case2bSL2"
 resultsGotten = FALSE
-B=3
+B=1000
 n=1000
 no.cores = detectCores()
 source(source_file)
 
-# save for later compilation
-results_of = results
-
+# save the following objects 
+results_case2bSL2
 ggover_ATEcase2bSL2
 ggover_BVcase2bSL2
-stargazer(performance.ate_case2bSL2,summary=FALSE,digits=6)
-stargazer(performance.sig_case2bSL2,summary=FALSE,digits=6)
-stargazer(coverage_case2bSL2,summary=FALSE,digits=3)
-stargazer(SL_results_case2bSL2,summary=FALSE,digits=5)
+performance.ate_case2bSL2
+performance.sig_case2bSL2
+coverage_case2bSL2
+SL_results_case2bSL2
 
 results[order(results_case2bSL2[,"Qcoef.rangerFull_screen.Main"]),1]
 
@@ -255,8 +258,9 @@ assholeForest
 case = "combo_case2b"
 source(source_file)
 
-ggover_cvadvert = ggover
-stargazer(MSE_cov)
+# save the following objects
+ggover_cvadvert
+MSE_cov
 ```       
 
 <a name="section6.5.1"></a>  
@@ -265,17 +269,19 @@ stargazer(MSE_cov)
 ##### case 3
 case = "case3"
 resultsGotten = FALSE
-B=3
+B=1000
 n=1000
 no.cores = detectCores()
 source(source_file)
 
+# save the following objects
+results_case3
 ggover_ATEcase3
 ggover_BVcase3
-stargazer(performance.ate_case3,summary=FALSE,digits=6)
-stargazer(performance.sig_case3,summary=FALSE,digits=6)
-stargazer(coverage_case3,summary=FALSE,digits=3)
-stargazer(SL_results_case3,summary=FALSE,digits=5)
+performance.ate_case3
+performance.sig_case3
+coverage_case3
+SL_results_case3
 ```
 
 <a name="section6.5.2"></a>  
@@ -284,16 +290,16 @@ stargazer(SL_results_case3,summary=FALSE,digits=5)
 ##### case 4 
 case = "case4"
 resultsGotten = FALSE
-B=3
-n=100
+B=1000
+n=1000
 no.cores = detectCores()
 source(source_file)
 
+# save the following objects
 results_case4 = results
-# ggover_ATEcase4
-ggover_BVcase4
-stargazer(MSE_cov_case4,summary=FALSE,digits=6)
-stargazer(SL_results_case4,summary=FALSE,digits=5)
+gg_BVcase4
+MSE_cov_case4
+SL_results_case4
 ```
 
 <a name="section6.3"></a>  
@@ -322,6 +328,7 @@ ml1000=marrangeGrob(gg_wells[c(nums+32)],ncol=2,nrow=2, widths = c(3.5,3.5),
 gg_pscoresWell
 # see sim_well_small.R and writeup_wells.Rnw
 
+# save the following objects specifying file path as shown
 save(gg_pscoresWell, ml250, ml500, ml1000, gg_wells,
      file = "~/Dropbox/Jonathan/Simulations/results/wells.RData")
 ```
@@ -340,12 +347,30 @@ source(source_file)
 plotdf  = data.frame(n = sizes,coverage = res_noise[,5])
 gg_coverage = ggplot(plotdf, aes(x = n, y = coverage)) + geom_point() +
   geom_hline(yintercept = .95, color = "green")
+caption = paste0("coverage slowly becomes nominal as expected")
+gg_coverage=ggdraw(add_sub(gg_coverage,caption,x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                      vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                      colour = "black", size = 10, angle = 0, lineheight = 0.9))
+gg_coverage
 
 gg_bias = ggplot(plotdf_biasmse, aes(x = n, y = bias, color = type)) + 
   geom_line() + geom_hline(yintercept = 0, color = "green")
+caption = paste0("TMLE does debias in this case")
+gg_bias=ggdraw(add_sub(gg_bias,caption,x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                      vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+                      colour = "black", size = 10, angle = 0, lineheight = 0.9))
 
+gg_bias
 gg_mse = ggplot(plotdf_biasmse, aes(x = n, y = mse, color = type)) + 
   geom_line() + geom_hline(yintercept = 0, color = "green")
+caption = paste0("TMLE raised MSE due to 2nd order remainder but",
+                 "\nasymptotically behaves as expected.")
+gg_mse=ggdraw(add_sub(gg_mse,caption, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
+
+gg_mse
 
 # plots of sampling dists
 ml
@@ -353,7 +378,8 @@ ml
 # plots of blip dists true overlayed with blip dists tmle
 ml1
 
-save(gg_pscoresWell, ml, ml1, gg_bias, gg_mse, gg_coverage,L,
+# save the following objects specifying file path as shown
+save(ml, ml1, gg_bias, gg_mse, gg_coverage,L,
      file = "~/Dropbox/Jonathan/Simulations/results/noise.RData")
 
 ```
@@ -385,7 +411,8 @@ ml
 # plots of blip dists true overlayed with blip dists tmle
 ml1
 
-save(gg_pscoresWell, ml, ml1, gg_bias, gg_mse, gg_coverage,L,
+# save the following objects specifying file path as shown
+save(ml, ml1, gg_bias, gg_mse, gg_coverage,L,
      file = "~/Dropbox/Jonathan/Simulations/results/noiseneg.RData")
 ```
 
@@ -403,60 +430,6 @@ coverageLR
 # you may rename it according to case
 assign(paste0("coverage",case), coverageLR)
 ```
-
-```R
-# has asshole learners but sample size was 2000 so the assholes didn't win any coeff,
-# hence performance is awesome--included in previous chunck but here has more detail
-
-# run this script for B=500 two times with 12 cores each 
-# if RAM is 64G
-g0 = g0_linear
-Q0 = Q0_trig
-testdata=gendata(1000000, g0=g0, Q0 = Q0)
-blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
-propensity = with(testdata, g0(W1,W2,W3,W4))
-ATE0 = mean(blip_true)
-var0 = var(blip_true)
-
-SL.library = SL.library1
-SL.libraryG = list("SL.glm")
-
-cl = makeCluster(detectCores(), type = "SOCK")
-registerDoSNOW(cl)
-clusterExport(cl,cl_export)
-
-ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
-            .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
-                    SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
-            )}
-
-results = data.matrix(data.frame(do.call(rbind, ALL)))
-results1 = data.matrix(data.frame(do.call(rbind, ALL)))
-results = rbind(results, results1)
-# save for later compilation
-results_2G = results
-
-#####
-####
-####
-
-# rbind all the results files into one fill called results then run
-case = "case2b_2G"
-source(source_file) 
-
-ggover_ATEcase2b2G
-ggover_BVcase2b2G
-stargazer(performance.ate,summary=FALSE,digits=6)
-stargazer(performance.sig,summary=FALSE,digits=6)
-stargazer(coverage,summary=FALSE,digits=3)
-stargazer(SL_results,summary=FALSE,digits=5)
-
-results[order(results[,"Qcoef.rangerFull_screen.Main"]),1]
-
-hist(results[results[,"Qcoef.rangerFull_screen.Main"]==0,1])
-```
-
 <a name="section7"></a>  
 ```R
 # section 7
@@ -520,9 +493,6 @@ ci_simul_log = exp(c(psi_log,psi_log - zscore*sd(IC_log)*sqrt(n-1)/n,
 ci_ate_sd_log = rbind(ci[1,c(2,4,5)], ci_simul_sd, ci_simul_log, ci[2,c(2,4,5)])
 rownames(ci_ate_sd_log) = c("ate", "blip st. dev","blip var log-scaled","blip var")
 
-library(stargazer)
-stargazer(ci_ate_sd_log, summary= FALSE, digits =5)
-
 # steps to convergence
 info$steps
 info$converge
@@ -530,6 +500,5 @@ info$converge
 # superlearner coefficients 
 stack$Qcoef
 stack$Gcoef
-
 
 ```

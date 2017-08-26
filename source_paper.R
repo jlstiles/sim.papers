@@ -457,6 +457,7 @@ if (case == "setup") {
       geom_vline(xintercept = mean(as.numeric(results_SL1[,1])), color = colors[2])+
       geom_vline(xintercept = mean(as.numeric(results_of[,1])), color = colors[3])
     
+    ggover_cvadvert = ggover
   }
   
   if (case == "case2b") {
@@ -947,6 +948,7 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
+    assign(paste0("results_",case), results)
     assign(paste0("gg_BV",case), ggover2)
     assign(paste0("MSE_cov_",case), MSE_cov)
     assign(paste0("SL_results_",case), SL_results) 
