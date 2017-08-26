@@ -279,7 +279,7 @@ sim_hal = function(n, g0, Q0) {
   
   
   steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
-            simuljer_info$steps, ATE_info$steps)
+            simuljer_info$steps, simul_info$converge, ATE_info$steps)
   converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
                simuljl_info$converge, simuljer_info$converge, simul_info$converge, 
                ATE_info$converge)
