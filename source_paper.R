@@ -1143,10 +1143,10 @@ if (case == "setup") {
     }
     res_noise = vapply(1:length(sizes), FUN = function(x) {
       res = getRes(L[[x]],B, ATE0=ATE0, var0=var0)
-      bias_init = res[[2]][1,2]
-      bias_tmle = res[[2]][2,2]
-      mse_init = res[[2]][1,3]
-      mse_tmle = res[[2]][2,3]
+      bias_init = res[[2]][2,2]
+      bias_tmle = res[[2]][1,2]
+      mse_init = res[[2]][2,3]
+      mse_tmle = res[[2]][1,3]
       coverage = res[[3]][2]
       return(c(bias_init, bias_tmle, mse_init, mse_tmle, coverage))
     }, FUN.VALUE = c(1,1,1,1,1))
@@ -1186,16 +1186,16 @@ if (case == "setup") {
                             fontfamily = "", fontface = "plain",
                             colour = "black", size = 9, angle = 0, lineheight = 0.9))
     
-    ml=marrangeGrob(list(p250,p1000,p5000,p10000),ncol=2,nrow=10, 
+    ml=marrangeGrob(list(p250,p1000,p5000,p10000),ncol=2,nrow=2, 
                     widths = c(3.5,3.5),
-                    heights=c(1,1))
+                    heights = c(1,1))
     
     if (case=="noise"){
       truth = gendata_noise(1e6, g0, Q0)
       
       grobs = lapply(c(1,4,10,20), FUN = function(x) {
-        coverage = coverage_n[x,2]
-        noise_analysis(coverage_n[x,1],1/3,truth,coverage=coverage,
+        coverage = res_noise[x,5]
+        noise_analysis(sizes[x],1/3,truth,coverage=coverage,
                        Q0, biasQ, sdQ)[[5]]
       })
       
@@ -1204,8 +1204,8 @@ if (case == "setup") {
     } else {
       truth = gendata_noise(1e6, g0, Q0)
       grobs = lapply(c(1,4,10,160), FUN = function(x) {
-        coverage = coverage_n[x,2]
-        noise_analysis(coverage_n[x,1],1/3,truth,coverage=coverage,
+        coverage = res_noise[x,5]
+        noise_analysis(sizes[x],1/3,truth,coverage=coverage,
                        Q0, biasQ, sdQ)[[5]]
       })
       
@@ -1452,7 +1452,7 @@ if (case == "setup") {
       ggover_BVcase2b2G = ggover2
     }
     
-    if (case = "example"){
+    if (case == "example"){
       # get rid of a few with missing data
       nas = apply(wcgs, 1, FUN = function(x) any(is.na(x)))
       bads  = which(nas)
