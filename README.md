@@ -1,21 +1,31 @@
 # Simulations
-Simulation tools
+To read the Blip Variance paper, the full version, link here.  
+
+To install gentmle and the other tools necessary to obtain results in in the
+Blip Variance paper:
 
 devtools::install_github("jlstiles/Simulations")
 
-The following knitr file has instructions for how to generate the results, including plots and charts, in the paper.  I will note to the reader in the code comments, how to proceed with parallelizing so the process does not take so much time as well as issues with memory one should consider when running ensemble methods as applied here.
+The following file has instructions for how to generate all of the results in the full version of the Blip Variance paper.  I will note to the reader in the code comments, how to proceed with parallelizing so the process does not take so much time as well as issues with memory one should consider when running ensemble methods as applied here.
+
+Set the source file paths as below for source_paper, WrappersVblip1.R, Wrappers_ex.R (for the example), and the wcgs.dta file.  Always run this chunk first.
 
 ```R 
 case = "setup"
-resultsGotten = TRUE
-source_file = "~/Dropbox/Jonathan/Simulations/source_paper.R"
-source(source_file)
+source_file = "/home/jlstiles/R/source_paper.R"
+wrapper_file1 = "/home/jlstiles/R/WrappersVblip1.R"
+wrapper_file2 = /home/jlstiles/R/Wrappers_ex.R"
+wcgs_file = "/home/jlstiles/R/wcgs.dta"
 
-devtools::install_github("jlstiles/Simulations")
+source(source_file)
+source(wrapper_file1)
+source(wrapper_file2)
+read.dta(wcgs_file)
+
 library(Simulations)
-source("~/Dropbox/Jonathan/Simulations/CopyOfR/WrappersVblip1.R")
-# source('/home/jlstiles/R/WrappersVblip1.R')
 ```
+Now you can obtain all the charts and graphs in the paper by running the chunks
+below. Each chunk gives the results of a subsection in the paper (link here).    
 
 ```R
 # case "lr_case2a"
@@ -26,7 +36,7 @@ B=n=1000
 no.cores = detectCores()
 source(source_file)
 
-results
+resultsLR1 = results
 ggoverLR1
 ```
 

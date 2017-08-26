@@ -1370,7 +1370,7 @@ if (case == "setup") {
                                     vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
                                     colour = "black", size = 10, angle = 0, lineheight = 0.9))
   }
-    if (case%in%LRcases) {
+    if (case%in%list("LRcase2a", "LRcase2b", "LRcase3", "LRcase4")) {
       if(case=="LRcase2a"){
         g0 = g0_linear
         Q0 = Q0_trig1
