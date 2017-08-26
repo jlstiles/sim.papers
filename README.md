@@ -8,6 +8,34 @@ devtools::install_github("jlstiles/Simulations")
 
 The following file has instructions for how to generate all of the results in the full version of the Blip Variance paper.  I will note to the reader in the code comments, how to proceed with parallelizing so the process does not take so much time as well as issues with memory one should consider when running ensemble methods as applied here.
 
+[SET UP: run this first](#setup)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<a name="setup"></a>
+**Set Up**
 Set the source file paths as below for source_paper, WrappersVblip1.R, Wrappers_ex.R (for the example), and the wcgs.dta file.  Always run this chunk first.
 
 ```R
