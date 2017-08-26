@@ -27,7 +27,7 @@ if (case == "setup") {
                      "SL.earth","SL.glm","SL.step.interaction",
                      "SL.glm.interaction")
   } else {
-  if (case == "lr_case2a") {
+  if (case == "LRcase2a") {
     g0 = g0_linear
     Q0 = Q0_trig1
     testdata=gendata(1e6, g0=g0, Q0 = Q0)
@@ -72,10 +72,11 @@ if (case == "setup") {
       ggtitle("blip variance sampling distributions", subtitle=
                 "tmle with logistic regression initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")
-    ggoverLRcase2a = ggover
+    assign(paste0("gg_",case), ggover)
+    assign(paste0("results_",case), results)
   }
   
-  if (case == "lr_case2b"){
+  if (case == "LRcase2b"){
     g0 = g0_linear
     Q0 = Q0_trig
     testdata=gendata(1000000, g0=g0, Q0 = Q0)
@@ -120,15 +121,15 @@ if (case == "setup") {
       ggtitle("blip variance sampling distributions", subtitle=
                 "tmle with logistic regression initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")
-    ggoverLRcase2b = ggover
-    
+    assign(paste0("gg_",case), ggover)
+    assign(paste0("results_",case), results)
   }
   
   ####
   ####
   ####
   # hal
-  if (case == "hal_case2a") {
+  if (case == "HALcase2a") {
     
     g0 = g0_linear
     Q0 = Q0_trig1
@@ -174,9 +175,9 @@ if (case == "setup") {
       ggtitle("blip variance sampling distributions", subtitle=
                 "tmle with hal initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")+
-      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])
-    geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
-    ggoverHAL2a = ggover
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
+    assign(paste0("gg_",case), ggover)
     
     coverage = vapply(varind[1], 
                       FUN = function(x) cov.check(results, var0, x),  
@@ -192,9 +193,13 @@ if (case == "setup") {
     
     performance.sig = t(apply(results[,varind], 2, perf,var0))
     rownames(performance.sig) = names(varind)
+    
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
   }
   
-  if (case == "hal_case2b") {
+  if (case == "HALcase2b") {
     g0 = g0_linear
     Q0 = Q0_trig
     testdata=gendata(1000000, g0=g0, Q0 = Q0)
@@ -238,9 +243,10 @@ if (case == "setup") {
       ggtitle("blip variance sampling distributions", subtitle=
                 "tmle with hal initial estimates")
     ggover = ggover+geom_vline(xintercept = var0,color="black")+
-      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])
-    geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
-    ggoverHAL2b = ggover
+      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
+    
+    assign(paste0("gg_",case), ggover)
     
     coverage = vapply(varind[1], 
                       FUN = function(x) cov.check(results, var0, x),  
@@ -256,6 +262,10 @@ if (case == "setup") {
     
     performance.sig = t(apply(results[,varind], 2, perf,var0))
     rownames(performance.sig) = names(varind)
+    
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
   }
   
   if (case == "case2a") {
@@ -355,7 +365,7 @@ if (case == "setup") {
                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
                           fontface = "plain",colour = "black", size = 10, angle = 0, 
                           lineheight = 0.9))
-    ggover_ATEcase2a = ggover
+    assign(paste0("gg_ATE", case), ggover)
     
     
     type = c(rep("TMLE SL1",B), rep("init est SL1",B), 
@@ -392,10 +402,13 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
-    ggover2
+    assign(paste0("gg_BV", case), ggover)
     
-    ggover_BVcase2a = ggover2
-    
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("performance.ate_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
+    assign(paste0("SL_results_",case), SL_results)
   }
   
   if (case == "combo_case2b") {
@@ -542,7 +555,7 @@ if (case == "setup") {
                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
                           fontface = "plain",colour = "black", size = 10, angle = 0, 
                           lineheight = 0.9))
-    ggover_ATEcase2b = ggover
+    assign(paste0("gg_ATE",case), ggover)
     
     
     type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B))
@@ -576,101 +589,16 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
-    ggover_BVcase2b = ggover2
+   
+    assign(paste0("gg_BV",case), ggover2)
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("performance.ate_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
+    assign(paste0("SL_results_",case), SL_results)
   }
-  
-  if (case == "case2b_2G") {
-    B = nrow(results)
     
-    varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
-    ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
-    
-    performance.sig = t(apply(results[,varind], 2, perf,var0))
-    performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
-    
-    rownames(performance.sig) = names(varind)
-    rownames(performance.ate) = names(ateind)
-    
-    coverage = c(cov.check(results, var0, 1),
-                 cov.simul(results, c(var0, ATE0), c(7,25)),
-                 cov.check(results, ATE0, 28))
-    
-    # getting coveage using the true variance of the estimator
-    dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
-                    r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
-                    l = results[,28]-1.96*sqrt(performance.ate[1,1]),
-                    r = results[,28]+1.96*sqrt(performance.ate[1,1]))
-    
-    cov.sig.1step = cov.check(dd, var0, 1)
-    cov.ate = cov.check(dd, ATE0, 4)
-    cov = c(coverage, cov.sig.1step, cov.ate)
-    names(cov) = c("TMLE Blip Variance", "Simultaneous TMLE", "TMLE ATE",
-                   "TMLE Blip Var using true Var", "TMLE ATE using true Var")
-    coverage = data.frame(coverage = cov)
-    rownames(coverage) = names(cov)
-    
-    # getting superlearner results
-    LL = 0
-    for (i in 1:length(SL.library)) {
-      if (length(SL.library[[i]]) > 1) {
-        LL = LL + length(SL.library[[i]])-1} else
-        {LL = LL + 1}
-    }
-    SL_results = data.frame(colMeans(results[,65:(64+LL)]))
-    rownames(SL_results) = colnames(results)[65:(64+LL)]
-
-    type = c(rep("iter TMLE SL1",B), rep("init. est SL1",B),
-             rep("TMLE LR",B), rep("init est. LR",B))
-    types = c("simul TMLE SL1","iter TMLE SL1","init. est SL1","init est. LR")
-    inds = c(25, 39, 34, 40)
-    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
-    inds = inds[order(types)]
-    
-    colors = c("red", "blue","green","orange")
-
-    ateests = data.frame(ests=ests,type=type)
-    ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
-      geom_density(alpha=.5)+
-      scale_fill_manual(values=colors)+
-      scale_color_manual(values=colors)+
-      theme(axis.title.x = element_blank())+
-      ggtitle(paste0("ATE sampling distributions, ", case))
-    ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
-      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
-      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
-      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
-      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
-    ggover_ATEcase2b2G = ggover
-    
-    
-    type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B))
-    types = c("TMLE SL1","init est SL1","init est LR")
-    inds = c(1, 37, 38)
-    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
-    inds = inds[order(types)]
-    
-    colors = c("blue","green","orange","red")
-
-    varests = data.frame(ests=ests,type=type)
-    
-    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
-      geom_density(alpha=.5)+
-      scale_fill_manual(values=colors)+
-      scale_color_manual(values=colors)+
-      theme(axis.title.x = element_blank())+
-      ggtitle(paste0("Blip Variance sampling distributions, ", case))
-    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
-      theme(plot.title = element_text(size=12), 
-            plot.subtitle = element_text(size=10))+
-      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
-      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
-      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
-      geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
-    
-    ggover_BVcase2b2G = ggover2
-  }
-  
-  if (case == "case2b_CV") {
+  if (case == "case2bCVSL2") {
     B = nrow(results)
     varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
     ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
@@ -741,7 +669,7 @@ if (case == "setup") {
                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
                           fontface = "plain",colour = "black", size = 10, angle = 0, 
                           lineheight = 0.9))
-    ggover_ATEcase2bCV = ggover
+    assign(paste0("gg_ATE",case), ggover)
     
     
     type = c(rep("TMLE SL2",B), rep("init est SL2",B), rep("init est LR",B))
@@ -778,9 +706,16 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
-    ggover_BVcase2bCV = ggover2  }
+    
+    assign(paste0("gg_BV",case), ggover2)
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("performance.ate_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
+    assign(paste0("SL_results_",case), SL_results) 
+    }
   
-  if (case == "case2b_OF") { 
+  if (case == "case2bSL2") { 
     
     g0 = g0_linear
     Q0 = Q0_trig
@@ -877,7 +812,7 @@ if (case == "setup") {
                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
                           fontface = "plain",colour = "black", size = 10, angle = 0, 
                           lineheight = 0.9))
-    ggover_ATEcase2bOF = ggover
+    gg_ATEcase2bSL2 = ggover
     
     
     type = c(rep("TMLE SL2",B), rep("init est SL2",B), rep("init est LR",B))
@@ -912,7 +847,12 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
-    ggover_BVcase2bOF = ggover2
+    assign(paste0("gg_BV",case), ggover2)
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("performance.ate_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
+    assign(paste0("SL_results_",case), SL_results) 
   }
   
   if (case == "case4") {
@@ -1007,7 +947,9 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
-    ggover_BVcase4 = ggover2
+    assign(paste0("gg_BV",case), ggover2)
+    assign(paste0("MSE_cov_",case), MSE_cov)
+    assign(paste0("SL_results_",case), SL_results) 
     
   }
   
@@ -1110,7 +1052,7 @@ if (case == "setup") {
                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
                           fontface = "plain",colour = "black", size = 10, angle = 0, 
                           lineheight = 0.9))
-    ggover_ATEcase3 = ggover
+    gg_ATEcase3 = ggover
     
     
     type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B),
@@ -1148,7 +1090,13 @@ if (case == "setup") {
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
                            lineheight = 0.9))
-    ggover_BVcase3 = ggover2
+    
+    assign(paste0("gg_BV",case), ggover2)
+    assign(paste0("results_",case), results)
+    assign(paste0("performance.sig_",case), performance.sig)
+    assign(paste0("performance.ate_",case), performance.sig)
+    assign(paste0("coverage_",case), coverage)
+    assign(paste0("SL_results_",case), SL_results) 
   }
   
   if (case == "noise"|case =="noise_neg"){
@@ -1410,6 +1358,99 @@ if (case == "setup") {
       names(coverageLR) = c("blip variance", "ATE", "simultaneous")
       
     }
+    
+    if (case == "case2b_2G") {
+      B = nrow(results)
+      
+      varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
+      ateind = c("1step tmle" = 28,"simultaneous tmle" = 25, "init est" = 39)
+      
+      performance.sig = t(apply(results[,varind], 2, perf,var0))
+      performance.ate = t(apply(results[,ateind], 2, perf,ATE0))
+      
+      rownames(performance.sig) = names(varind)
+      rownames(performance.ate) = names(ateind)
+      
+      coverage = c(cov.check(results, var0, 1),
+                   cov.simul(results, c(var0, ATE0), c(7,25)),
+                   cov.check(results, ATE0, 28))
+      
+      # getting coveage using the true variance of the estimator
+      dd = data.frame(psi = results[,1],l = results[,1]-1.96*sqrt(performance.sig[1,1]),
+                      r = results[,1]+1.96*sqrt(performance.sig[1,1]), psi = results[,28],
+                      l = results[,28]-1.96*sqrt(performance.ate[1,1]),
+                      r = results[,28]+1.96*sqrt(performance.ate[1,1]))
+      
+      cov.sig.1step = cov.check(dd, var0, 1)
+      cov.ate = cov.check(dd, ATE0, 4)
+      cov = c(coverage, cov.sig.1step, cov.ate)
+      names(cov) = c("TMLE Blip Variance", "Simultaneous TMLE", "TMLE ATE",
+                     "TMLE Blip Var using true Var", "TMLE ATE using true Var")
+      coverage = data.frame(coverage = cov)
+      rownames(coverage) = names(cov)
+      
+      # getting superlearner results
+      LL = 0
+      for (i in 1:length(SL.library)) {
+        if (length(SL.library[[i]]) > 1) {
+          LL = LL + length(SL.library[[i]])-1} else
+          {LL = LL + 1}
+      }
+      SL_results = data.frame(colMeans(results[,65:(64+LL)]))
+      rownames(SL_results) = colnames(results)[65:(64+LL)]
+      
+      type = c(rep("iter TMLE SL1",B), rep("init. est SL1",B),
+               rep("TMLE LR",B), rep("init est. LR",B))
+      types = c("simul TMLE SL1","iter TMLE SL1","init. est SL1","init est. LR")
+      inds = c(25, 39, 34, 40)
+      ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+      inds = inds[order(types)]
+      
+      colors = c("red", "blue","green","orange")
+      
+      ateests = data.frame(ests=ests,type=type)
+      ggover = ggplot(ateests,aes(ests, fill=type,color=type)) + 
+        geom_density(alpha=.5)+
+        scale_fill_manual(values=colors)+
+        scale_color_manual(values=colors)+
+        theme(axis.title.x = element_blank())+
+        ggtitle(paste0("ATE sampling distributions, ", case))
+      ggover = ggover+geom_vline(xintercept = ATE0,color="black")+
+        geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+        geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+        geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+        geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+      ggover_ATEcase2b2G = ggover
+      
+      
+      type = c(rep("TMLE SL1",B), rep("init est SL1",B), rep("init est LR",B))
+      types = c("TMLE SL1","init est SL1","init est LR")
+      inds = c(1, 37, 38)
+      ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+      inds = inds[order(types)]
+      
+      colors = c("blue","green","orange","red")
+      
+      varests = data.frame(ests=ests,type=type)
+      
+      ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+        geom_density(alpha=.5)+
+        scale_fill_manual(values=colors)+
+        scale_color_manual(values=colors)+
+        theme(axis.title.x = element_blank())+
+        ggtitle(paste0("Blip Variance sampling distributions, ", case))
+      ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+        theme(plot.title = element_text(size=12), 
+              plot.subtitle = element_text(size=10))+
+        geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
+        geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
+        geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])+
+        geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
+      
+      ggover_BVcase2b2G = ggover2
+    }
+    
+    
 }
 
 
