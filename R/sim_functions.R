@@ -236,8 +236,7 @@ sim_hal = function(n, g0, Q0) {
                      X = W, family = binomial(),
                      verbose = FALSE, parallel = FALSE)
   gk = halresultsG$pred[1:n]
-  Qcoef = Gcoef = 0
-  
+
   initest = var(Q1k - Q0k)
   initest_ATE = mean(Q1k - Q0k)
   initdata = data.frame(A = X$A, Y = data$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
