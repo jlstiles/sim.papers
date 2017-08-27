@@ -210,12 +210,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 
 #' @export
 sim_hal = function(n, g0, Q0) {
-  # SL.library = SL.libraryG = list("SL.glm","SL.mean")
-  # method = "method.NNloglik"
-  # HAL = FALSE
-  # g0 = g0_1
-  # Q0 = Q0_1
-  # n=1000
+  
   data = gendata(n, g0, Q0)
   # head(simdata)
   X=data
@@ -236,9 +231,6 @@ sim_hal = function(n, g0, Q0) {
   Q0k = halresults$pred[2*n+1:n]
   
   initest = var(Q1k-Q0k)
-  
-  gfit = glm(A~.,data = X, family = 'binomial')
-  gk = predict(gfit, type = 'response')
   
   halresultsG <- hal(Y = data$A,newX = W,
                      X = W, family = binomial(),
