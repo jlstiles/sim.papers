@@ -852,7 +852,7 @@ if (case == "setup") {
         geom_vline(xintercept = mean(as.numeric(results_SL1[,1])), color = colors[2])+
         geom_vline(xintercept = mean(as.numeric(results_of[,1])), color = colors[3])
       
-      ggover_cvadvert = ggover
+      gg_cvadvert = ggover
     }
   if (case == "case4") {
     g0 = g0_1

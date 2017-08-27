@@ -68,7 +68,7 @@ source(source_file)
 results_LRcase2a 
 
 # figure in the paper
-ggoverLRcase2a
+gg_LRcase2a
 
 ```
 
@@ -221,8 +221,8 @@ source(source_file)
 
 # save the following objects 
 results_case2bSL2
-ggover_ATEcase2bSL2
-ggover_BVcase2bSL2
+gg_ATEcase2bSL2
+gg_BVcase2bSL2
 performance.ate_case2bSL2
 performance.sig_case2bSL2
 coverage_case2bSL2
@@ -259,7 +259,7 @@ case = "combo_case2b"
 source(source_file)
 
 # save the following objects
-ggover_cvadvert
+gg_cvadvert
 MSE_cov
 ```       
 
@@ -276,8 +276,8 @@ source(source_file)
 
 # save the following objects
 results_case3
-ggover_ATEcase3
-ggover_BVcase3
+gg_ATEcase3
+gg_BVcase3
 performance.ate_case3
 performance.sig_case3
 coverage_case3
