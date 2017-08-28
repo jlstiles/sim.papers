@@ -36,9 +36,9 @@ mispecified treatment and outcome models
 
 [section 4.5.1](#section4.5.1)
 
-[section 5.5.2](#section4.5.2)
+[section 4.5.2](#section4.5.2)
 
-[section 7 real data example](#section7)
+[section 5 real data example](#section7)
 
 <a name="setup"></a>
 ```R
