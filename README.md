@@ -10,33 +10,33 @@ The following knitr file has instructions for how to generate the results, inclu
 
 [SET UP: run this first](#setup)
 
-[section 6.1.2 manufactured noise simulations](#section6.1.2)
+[section 4.1.2 manufactured noise simulations](#section4.1.2)
 
-[section 6.1.3 manufactured noise simulations](#section6.1.3)
+[section 4.1.3 manufactured noise simulations](#section4.1.3)
 
-[section 6.3 well specified precaution on skewing](#section6.3)
+[section 4.3 well specified precaution on skewing](#section4.3)
 
-[section 6.4.1 narrow model failures](#section6.4.1)
+[section 4.4.1 narrow model failures](#section4.4.1)
 
-[section 6.4.2 narrow model failures](#section6.4.2)
+[section 4.4.2 narrow model failures](#section4.4.2)
 
 well-spec pscore, mispec. outcome model
 
-[section 6.4.3 case 2a](#section6.4.3)
+[section 4.4.3 case 2a](#section4.4.3)
 
-[section 6.4.4 case2b SuperLearner lib 1](#section6.4.42bSL1)
+[section 4.4.4 case2b SuperLearner lib 1](#section4.4.42bSL1)
 
-[section 6.4.4 case2b SuperLearner lib 2 with CV-TMLE](#section6.4.42bCVSL2)
+[section 4.4.4 case2b SuperLearner lib 2 with CV-TMLE](#section4.4.42bCVSL2)
 
-[section 6.4.4 case2b SuperLearner lib 2 with TMLE, overfit hurts without CV](#section6.4.42bSL2)
+[section 4.4.4 case2b SuperLearner lib 2 with TMLE, overfit hurts without CV](#section4.4.42bSL2)
 
-[section 6.4.4 combining cases as in paper](#section6.4.42bcombo)
+[section 4.4.4 combining cases as in paper](#section4.4.42bcombo)
 
 mispecified treatment and outcome models
 
-[section 6.5.1](#section6.5.1)
+[section 4.5.1](#section4.5.1)
 
-[section 6.5.2](#section6.5.2)
+[section 5.5.2](#section4.5.2)
 
 [section 7 real data example](#section7)
 
@@ -53,9 +53,9 @@ source("~/Dropbox/Jonathan/Simulations/WrappersVblip1.R")
 # source('/home/jlstiles/R/WrappersVblip1.R')
 ```
 
-<a name="section6.4.1"></a>
+<a name="section4.4.1"></a>
 ```R
-# section 6.4.1
+# section 4.4.1
 case = "LRcase2a"
 resultsGotten = FALSE
 B=1000
@@ -90,7 +90,7 @@ gg_LRcase2b
 
 ```
 
-<a name="section6.4.2"></a>
+<a name="section4.4.2"></a>
 ```R
 case = "HALcase2a"
 resultsGotten = FALSE
@@ -122,9 +122,9 @@ coverage_HALcase2b
 performance.sig_HALcase2b
 ```
 
-<a name="section6.4.3"></a>
+<a name="section4.4.3"></a>
 ```R
-# section 6.4.3
+# section 4.4.3
 case = "case2a"
 resultsGotten = TRUE
 B=n=1000
@@ -140,9 +140,9 @@ coverage_case2a
 SL_results_case2a
 ```
 
-<a name="section6.4.42bSL1"></a>
+<a name="section4.4.42bSL1"></a>
 ```R
-# section 6.4.4 using SuperLearner Library 1
+# section 4.4.4 using SuperLearner Library 1
 case = "case2bSL1"
 resultsGotten = FALSE
 B=1000
@@ -160,9 +160,9 @@ coverage_case2bSL1
 SL_results_case2bSL1
 ```
 
-<a name="section6.4.42bCVSL2"></a>
+<a name="section4.4.42bCVSL2"></a>
 ```R
-# section 6.4.4 using SuperLearner Library 2 but with CV-TMLE
+# section 4.4.4 using SuperLearner Library 2 but with CV-TMLE
 
 # RUN ten times with B  = 100 on 24 cores each
 g0 = g0_linear
@@ -207,9 +207,9 @@ coverage_case2bCVSL2
 SL_results_case2bCVSL2
   ```
 
-<a name="section6.4.42bSL2"></a> 
+<a name="section4.4.42bSL2"></a> 
 ```R
-# section 6.4.4 using SuperLearner Library 2 without CV-tmle so 
+# section 4.4.4 using SuperLearner Library 2 without CV-tmle so 
 # it has a skewed sampling dist
 
 case = "case2bSL2"
@@ -247,9 +247,9 @@ assholeForest=ggdraw(add_sub(assholeForest,caps,
 assholeForest
 ```
 
-<a name="section6.4.42bcombo"></a>   
+<a name="section4.4.42bcombo"></a>   
 ```R
-# section 6.4.4
+# section 4.4.4
 # Have the following variables named as follows 
 # results_case2bSL1 = results for case 2b with SL.library1
 # results_case2bSL2 = results for case 2b with SL.library2, the overfitting lib.
@@ -263,9 +263,9 @@ gg_cvadvert
 MSE_cov
 ```       
 
-<a name="section6.5.1"></a>  
+<a name="section4.5.1"></a>  
 ```R
-# section 6.5.1
+# section 4.5.1
 ##### case 3
 case = "case3"
 resultsGotten = FALSE
@@ -284,9 +284,9 @@ coverage_case3
 SL_results_case3
 ```
 
-<a name="section6.5.2"></a>  
+<a name="section4.5.2"></a>  
 ```R
-# section 6.5.2
+# section 4.5.2
 ##### case 4 
 case = "case4"
 resultsGotten = FALSE
@@ -302,9 +302,9 @@ MSE_cov_case4
 SL_results_case4
 ```
 
-<a name="section6.3"></a>  
+<a name="section4.3"></a>  
 ```R
-##### section 6.3
+##### section 4.3
 ##### wells
 case = "wells"
 source(source_file)
@@ -333,9 +333,9 @@ save(gg_pscoresWell, ml250, ml500, ml1000, gg_wells,
      file = "~/Dropbox/Jonathan/Simulations/results/wells.RData")
 ```
 
-<a name="section6.1.2"></a>  
+<a name="section4.1.2"></a>  
 ```R
-# noise simulations section 6.1.2
+# noise simulations section 4.1.2
 # set case = "noise" or case = "noise_neg" for negative bias
 case = "noise"
 # case = "noise_neg"
@@ -384,9 +384,9 @@ save(ml, ml1, gg_bias, gg_mse, gg_coverage,L,
 
 ```
 
-<a name="section6.1.3"></a>  
+<a name="section4.1.3"></a>  
 ```R
-# noise simulations section 6.1.3
+# noise simulations section 4.1.3
 # set case = "noise" or case = "noise_neg" for negative bias
 # case = "noise"
 case = "noise_neg"
