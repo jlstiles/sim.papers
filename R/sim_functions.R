@@ -222,21 +222,45 @@ sim_hal = function(n, g0, Q0) {
   W = X
   W$A = NULL
   
-  halresults <- hal(Y = data$Y,newX = newdata,
-                    X = X, family = binomial(),
-                    verbose = FALSE, parallel = FALSE)
+  n = length(Y)
+  folds = make_folds(n, V=V)
+  stack = lapply(folds, FUN = function(x) {
+    # x=folds[[5]]
+    tr = x$training_set
+    val = x$validation_set
+    nt=length(tr)
+    nv = length(val)
+    
+    Y = Y[tr]
+    X = X[tr,]
+    newtr = c(val, (n+val),(2*n+val))
+    newdata = newdata[newtr,]
+    
+    halresults <- hal(Y = data$Y,newX = newdata,
+                      X = X, family = binomial(),
+                      verbose = FALSE, parallel = FALSE)
+    
+    Qk = halresults$pred[1:nv]
+    Q1k = halresults$pred[nv+1:nv]
+    Q0k = halresults$pred[2*nv+1:nv]
+    
+    A = A[tr]
+    W1 = W[tr,]
+    newW = W[val,]
+    
+    halresultsG <- hal(Y = data$A,newX = W,
+                       X = W, family = binomial(),
+                       verbose = FALSE, parallel = FALSE)
+    gk = halresultsG$pred[1:nv]
+    
+    return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk,inds = x$validation_set))
+  })
   
-  Qk = halresults$pred[1:n]
-  Q1k = halresults$pred[n+1:n]
-  Q0k = halresults$pred[2*n+1:n]
+  Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
+  Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
+  Q0k = unlist(lapply(stack, FUN = function(x) x$Q0k))
+  gk = unlist(lapply(stack, FUN = function(x) x$gk))
   
-  initest = var(Q1k-Q0k)
-  
-  halresultsG <- hal(Y = data$A,newX = W,
-                     X = W, family = binomial(),
-                     verbose = FALSE, parallel = FALSE)
-  gk = halresultsG$pred[1:n]
-
   initest = var(Q1k - Q0k)
   initest_ATE = mean(Q1k - Q0k)
   initdata = data.frame(A = X$A, Y = data$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)

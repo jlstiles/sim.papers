@@ -807,38 +807,45 @@ if (case == "setup") {
     assign(paste0("SL_results_",case), SL_results) 
   }
     if (case == "combo_case2b") {
+      g0 = g0_linear
+      Q0 = Q0_trig
+      testdata=gendata(1000000, g0=g0, Q0 = Q0)
+      blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+      propensity = with(testdata, g0(W1,W2,W3,W4))
+      ATE0 = mean(blip_true)
+      var0 = var(blip_true)
       
-      coverage_case2b = c(cov.check(results_SL1, var0, c(1)),
-                          cov.check(results_of, var0, c(1)),
-                          cov.check(results_cv, var0, c(1)))
+      coverage_case2b = c(cov.check(results_case2bSL1, var0, c(1)),
+                          cov.check(results_case2bSL2, var0, c(1)),
+                          cov.check(results_case2bCVSL2, var0, c(1)))
       
-      coverage_simulcase2b = c(cov.simul(results_SL1, c(var0,ATE0), c(7,25)),
-                               cov.simul(results_of, c(var0,ATE0), c(7,25)),
-                               cov.simul(results_cv, c(var0,ATE0), c(7,25)))
+      coverage_simulcase2b = c(cov.simul(results_case2bSL1, c(var0,ATE0), c(7,25)),
+                               cov.simul(results_case2bSL2, c(var0,ATE0), c(7,25)),
+                               cov.simul(results_case2bCVSL2, c(var0,ATE0), c(7,25)))
       
       coverage_case2b = c(coverage_case2b, coverage_simulcase2b, 
                           rep(NA,3))[c(1,4,7,2,5,7,3,6,7)]
       
-      MSE_case2b = rbind(t(apply(results_SL1[,c(1,7,37)],2,perf,var0)),
-                         MSE_of = t(apply(results_of[,c(1,7,37)],2,perf,var0)),
-                         MSE_cv = t(apply(results_cv[,c(1,7,37)],2,perf,var0)))
+      MSE_case2b = rbind(t(apply(results_case2bSL1[,c(1,7,37)],2,perf,var0)),
+                         MSE_of = t(apply(results_case2bSL2[,c(1,7,37)],2,perf,var0)),
+                         MSE_cv = t(apply(results_case2bCVSL2[,c(1,7,37)],2,perf,var0)))
       
       MSE_cov = cbind(MSE_case2b, coverage_case2b)
       rownames(MSE_cov) = c("TMLE SL1","Simul. TMLE SL1","init est SL1",
                             "TMLE SL2","Simul. TMLE SL2","init est SL2",
                             "CV-TMLE SL2","Simul. CV-TMLE SL2","init est CV-SL1")
       
-      B1 = nrow(results_SL1)
-      B2 = nrow(results_of)
-      B3 = nrow(results_cv)
+      B1 = nrow(results_case2bSL1)
+      B2 = nrow(results_case2bSL2)
+      B3 = nrow(results_case2bCVSL2)
       
       type = c(rep("tmle SL1",B1), rep("tmle SL2",B2),
                rep("cv-tmle SL2",B3))
       types = c("tmle SL1","tmle SL2",
                 "cv-tmle SL2")
-      
-      ests = c(results_SL1[,1], results_of[,1], 
-               results_cv[,1])
+      colors = c("red","green","blue")
+      ests = c(results_case2bSL1[,1], results_case2bSL2[,1], 
+               results_case2bCVSL2[,1])
       plotdf = data.frame(ests=ests, type=type)
       
       ggover = ggplot(plotdf, aes(x=ests, fill = type, color = type))+geom_density(alpha=.5)
@@ -848,9 +855,9 @@ if (case == "setup") {
         ggtitle("The virtue of cv-tmle, case 2b",
                 subtitle = "cv-tmle maintains normality, eliminates skewing, bad outliers")+
         theme(plot.title = element_text(size=12), plot.subtitle = element_text(size=10))+
-        geom_vline(xintercept = mean(as.numeric(results_cv[,1])), color = colors[1])+
-        geom_vline(xintercept = mean(as.numeric(results_SL1[,1])), color = colors[2])+
-        geom_vline(xintercept = mean(as.numeric(results_of[,1])), color = colors[3])
+        geom_vline(xintercept = mean(as.numeric(results_case2bCVSL2[,1])), color = colors[1])+
+        geom_vline(xintercept = mean(as.numeric(results_case2bSL1[,1])), color = colors[2])+
+        geom_vline(xintercept = mean(as.numeric(results_case2bSL2[,1])), color = colors[3])
       
       gg_cvadvert = ggover
     }
