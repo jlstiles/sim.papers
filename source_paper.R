@@ -994,8 +994,9 @@ if (case == "setup") {
                 {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
                         SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
                 )}
-    }
     results = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
+    
     B = nrow(results)
     
     varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
@@ -1062,7 +1063,7 @@ if (case == "setup") {
     capt = paste0("Truth is at black vline.\n",
                   "\ninitial est using SuperLearner library 1 is excellent", 
                   "\nTMLE for ATE using IC approx for variance covers at ", 
-                  100*round(coverage[3,1],3),"%",
+                  100*round(coverage[3,1],3),"%", 
                   "\ninit est. LR which is Logistic Reg. with main terms and interactions ",
                   "\nplug-in unbiased and TMLE keeps it as is, covering at ",
                   100*round(coverage[4,],3),"%\n")
@@ -1098,10 +1099,13 @@ if (case == "setup") {
       geom_vline(xintercept=mean(results[,inds[4]]),color = colors[4])
     cap = paste0("truth is black line\n",
                  "tmle SL1, which used Superlearner Library 1 for initial ests\n", 
-                 "attains near nominal coverage at ", 100*round(coverage[1,1],3),"%\n", 
+                 "attains very good coverage at ", 100*round(coverage[1,1],3),"%\n", 
                  "and debiases initial SuperLearner lib 1 estimate.\n", 
+                 "Simultaneous TMLE covers both ATE and blip var at ", 
+                 100*round(coverage[2,1],3),
+                 "%\n",
                  "init est LR, which used logistic regression with main terms and\n",
-                 "interactions, and corresponding TMLE are much more biased.\n",
+                 "interactions, and corresponding TMLE and more biased.\n",
                  "This underscores the importance of machine learning in making\n",
                  "the initial estimates for both propensity score and outcome here.")
     ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
