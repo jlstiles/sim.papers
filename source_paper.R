@@ -58,10 +58,10 @@ if (case == "setup") {
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
     types = c("tmle with lr initial","lr initial")
     inds = c(1,37)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
     inds = inds[order(types)]
     colors = c("red","blue")
-    
-    ests = c(results[,1], results[,37])
+
     plotdf = data.frame(ests=ests, type=type)
     
     ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
@@ -107,10 +107,10 @@ if (case == "setup") {
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
     types = c("tmle with lr initial","lr initial")
     inds = c(1,37)
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
     inds = inds[order(types)]
     colors = c("red","blue")
-    
-    ests = c(results[,1], results[,37])
+
     plotdf = data.frame(ests=ests, type=type)
     
     ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
@@ -142,29 +142,29 @@ if (case == "setup") {
     SL.library = list(c("SL.hal","screen.Main"))
     SL.libraryG = c("SL.glm")
     
-    cl = makeCluster(no.cores, type = "SOCK")
-    registerDoSNOW(cl)
-    clusterExport(cl,cl_export)
-    
     if (!resultsGotten) {
-    # run this on a 24 core node
-    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+      cl = makeCluster(no.cores, type = "SOCK")
+      registerDoSNOW(cl)
+      clusterExport(cl,cl_export)
+      # run this on a 24 core node
+      ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                   .errorhandling = "remove")%dopar%
                   {sim_hal(n, g0 = g0, Q0 = Q0)}
-    
-    results = data.matrix(data.frame(do.call(rbind, ALL)))
+      
+      results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
     B = nrow(results)
     
     varind = c("1step tmle HAL" = 1,"init est HAL" = 22)
     
-    type= c(rep("initial est HAL",B),rep("TMLE HAL",B))
-    types = c("initial est HAL","TMLE HAL")
+    type= c(rep("TMLE HAL",B), rep("initial est HAL",B))
+    types = c("TMLE HAL", "initial est HAL")
     inds = varind
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    
     inds = inds[order(types)]
     colors = c("red","blue")
     
-    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
     plotdf = data.frame(ests=ests, type=type)
     
     ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
@@ -177,6 +177,12 @@ if (case == "setup") {
     ggover = ggover+geom_vline(xintercept = var0,color="black")+
       geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
       geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
+    
+    capt = "Truth is at black vline."
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
     assign(paste0("gg_",case), ggover)
     
     coverage = vapply(varind[1], 
@@ -229,10 +235,10 @@ if (case == "setup") {
     type= c(rep("initial est HAL",B),rep("TMLE HAL",B))
     types = c("initial est HAL","TMLE HAL")
     inds = varind
+    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
     inds = inds[order(types)]
     colors = c("red","blue")
-    
-    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+
     plotdf = data.frame(ests=ests, type=type)
     
     ggover = ggplot(plotdf,aes(x=ests, color = type, fill=type)) + 
@@ -245,7 +251,11 @@ if (case == "setup") {
     ggover = ggover+geom_vline(xintercept = var0,color="black")+
       geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
       geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])
-    
+    capt = "Truth is at black vline."
+    ggover=ggdraw(add_sub(ggover,capt, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                          vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                          fontface = "plain",colour = "black", size = 10, angle = 0, 
+                          lineheight = 0.9))
     assign(paste0("gg_",case), ggover)
     
     coverage = vapply(varind[1], 
