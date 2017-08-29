@@ -211,7 +211,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 #' @export
 sim_hal = function(n, g0, Q0) {
   
-  data = gendata(n, g0, Q0)
+  data = gendata(n, g0, Q0, gform=NULL)
   # head(simdata)
   X=data
   X$Y = NULL
@@ -248,10 +248,14 @@ sim_hal = function(n, g0, Q0) {
     W1 = W[tr,]
     newW = W[val,]
     
-    halresultsG <- hal(Y = data$A,newX = W,
-                       X = W, family = binomial(),
-                       verbose = FALSE, parallel = FALSE)
-    gk = halresultsG$pred[1:nv]
+    if (gform == NULL){
+      halresultsG <- hal(Y = data$A,newX = W,
+                         X = W, family = binomial(),
+                         verbose = FALSE, parallel = FALSE)
+      gk = halresultsG$pred[1:nv]} else {
+        halresultsG = glm(gform, data = X, family = 'binomial')
+        gk = predict(halresultsG, newdata = newW, type = 'response')
+      }
     
     return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk,inds = x$validation_set))
   })

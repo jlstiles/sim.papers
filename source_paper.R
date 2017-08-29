@@ -149,7 +149,7 @@ if (case == "setup") {
       # run this on a 24 core node
       ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                   .errorhandling = "remove")%dopar%
-                  {sim_hal(n, g0 = g0, Q0 = Q0)}
+                  {sim_hal(n, g0 = g0, Q0 = Q0, gform = formula("A~."))}
       
       results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
@@ -225,7 +225,7 @@ if (case == "setup") {
     # run this on a 24 core node
     ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                 .errorhandling = "remove")%dopar%
-                {sim_hal(n, g0 = g0, Q0 = Q0)}
+                {sim_hal(n, g0 = g0, Q0 = Q0, gform = formula("A~."))}
     
     results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
@@ -871,7 +871,7 @@ if (case == "setup") {
       
       gg_cvadvert = ggover
     }
-  if (case == "case4") {
+  if (case == "case4_hal") {
     g0 = g0_1
     Q0 = Q0_1
     testdata=gendata(1000000, g0=g0, Q0 = Q0)
