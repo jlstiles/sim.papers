@@ -872,19 +872,6 @@ if (case == "setup") {
       gg_cvadvert = ggover
     }
   if (case == "case4_hal") {
-    g0 = g0_1
-    Q0 = Q0_1
-    testdata=gendata(1000000, g0=g0, Q0 = Q0)
-    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
-    propensity = with(testdata, g0(W1,W2,W3,W4))
-    ATE0 = mean(blip_true)
-    var0 = var(blip_true)
-    
-    SL.library = list(c("glm.mainint", "screen.Main"), 
-                      c("SL.hal", "screen.Main"))
-    SL.libraryG = list("SL.glm", "SL.hal")
-    
-    if (!resultsGotten) {
     cl = makeCluster(no.cores, type = "SOCK")
     registerDoSNOW(cl)
     clusterExport(cl,cl_export)
@@ -893,20 +880,34 @@ if (case == "setup") {
                 .errorhandling = "remove")%dopar%
                 {sim_hal(n, g0 = g0, Q0 = Q0)}
     
-    cl = makeCluster(detectCores(), type = "SOCK")
-    registerDoSNOW(cl)
-    clusterExport(cl,cl_export)
-    
-    ALL_halglm=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
-                .errorhandling = "remove")%dopar%
-                {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
-                        SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
-                )}
+
     results_hal = data.matrix(data.frame(do.call(rbind, ALL_hal)))
-    results_halglm = data.matrix(data.frame(do.call(rbind, ALL_halglm)))
-    results = cbind(results_hal[,c(1:3,22)],results_halglm)
+  }
+    if (case == "case4_halglm"){
+      SL.library = list(c("glm.mainint", "screen.Main"), 
+                        c("SL.hal", "screen.Main"))
+      SL.libraryG = list("SL.glm", "SL.hal")
+      
+      cl = makeCluster(detectCores(), type = "SOCK")
+      registerDoSNOW(cl)
+      clusterExport(cl,cl_export)
+      
+      ALL_halglm=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                         .errorhandling = "remove")%dopar%
+                         {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                                 SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
+                         )}
+      results_halglm = data.matrix(data.frame(do.call(rbind, ALL_halglm)))
     }
     
+    if (case == "case4"){
+    g0 = g0_1
+    Q0 = Q0_1
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
     B = nrow(results)
     
     varind = c("1step tmle LR" = 20,"1step tmle HAL" = 1, "1step tmle HAL+glm" = 5,
@@ -969,7 +970,7 @@ if (case == "setup") {
     assign(paste0("SL_results_",case), SL_results) 
     
   }
-  
+
   if (case == "case3") {
     
     g0 = g0_1

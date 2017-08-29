@@ -209,10 +209,12 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 }
 
 #' @export
-sim_hal = function(n, g0, Q0) {
-  
-  data = gendata(n, g0, Q0, gform=NULL)
+sim_hal = function(n, g0, Q0, gform=NULL, V=10) {
+  gform = formula("A~.")
+  data = gendata(n, g0, Q0)
   # head(simdata)
+  Y=data$Y
+  A=data$A
   X=data
   X$Y = NULL
   X1 = X0 = X
@@ -222,7 +224,6 @@ sim_hal = function(n, g0, Q0) {
   W = X
   W$A = NULL
   
-  n = length(Y)
   folds = make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
@@ -236,7 +237,7 @@ sim_hal = function(n, g0, Q0) {
     newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
     
-    halresults <- hal(Y = data$Y,newX = newdata,
+    halresults <- hal(Y = Y,newX = newdata,
                       X = X, family = binomial(),
                       verbose = FALSE, parallel = FALSE)
     
@@ -248,9 +249,9 @@ sim_hal = function(n, g0, Q0) {
     W1 = W[tr,]
     newW = W[val,]
     
-    if (gform == NULL){
-      halresultsG <- hal(Y = data$A,newX = W,
-                         X = W, family = binomial(),
+    if (is.null(gform)){
+      halresultsG <- hal(Y = A,newX = newW,
+                         X = W1, family = binomial(),
                          verbose = FALSE, parallel = FALSE)
       gk = halresultsG$pred[1:nv]} else {
         halresultsG = glm(gform, data = X, family = 'binomial')
