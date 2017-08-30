@@ -874,6 +874,8 @@ if (case == "setup") {
     gg_cvadvert = ggover
   }
   if (case == "case4_hal") {
+    g0 = g0_1
+    Q0 = Q0_1
     cl = makeCluster(no.cores, type = "SOCK")
     registerDoSNOW(cl)
     clusterExport(cl,cl_export)
@@ -885,6 +887,9 @@ if (case == "setup") {
     results_hal = data.matrix(data.frame(do.call(rbind, ALL_hal)))
   }
   if (case == "case4_halglm"){
+    g0 = g0_1
+    Q0 = Q0_1
+    
     SL.library = list(c("glm.mainint", "screen.Main"), 
                       c("SL.hal", "screen.Main"))
     SL.libraryG = list("SL.glm", "SL.hal")
