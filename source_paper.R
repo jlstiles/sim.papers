@@ -30,14 +30,17 @@ if (case == "setup") {
   if (case == "LRcase2a") {
     g0 = g0_linear
     Q0 = Q0_trig1
-    testdata=gendata(1e6, g0=g0, Q0 = Q0)
+    testdata=gendata(1e6, g0 = g0, Q0 = Q0)
     blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
     propensity = with(testdata, g0(W1,W2,W3,W4))
     ATE0 = mean(blip_true)
     var0 = var(blip_true)
     
-    SL.library = c("glm.mainint")
-    SL.libraryG = c("SL.glm")
+    Qform = paste(colnames(gendata(1,g0 = g0, Q0 = Q0))[2:5], collapse = "+")
+    Qform = paste0("Y ~ A*(", Qform, ")")
+    
+    # SL.library = c("glm.mainint")
+    # SL.libraryG = c("SL.glm")
     
     if (!resultsGotten) {
       cl = makeCluster(no.cores, type = "SOCK")
@@ -47,9 +50,8 @@ if (case == "setup") {
       # run this on a 24 core node
       ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                   .errorhandling = "remove")%dopar%
-                  {sim_cv(n=n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
-                          SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
-                  )}
+                  {sim_hal(n, g0, Q0, gform=formula("A~."), 
+                           Qform = formula(Qform), V=10)}
       
       results = data.matrix(data.frame(do.call(rbind, ALL)))
     }

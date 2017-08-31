@@ -209,7 +209,7 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 }
 
 #' @export
-sim_hal = function(n, g0, Q0, gform=NULL, V=10) {
+sim_hal = function(n, g0, Q0, gform = NULL, Qform = NULL, V = 10) {
   gform = formula("A~.")
   data = gendata(n, g0, Q0)
   # head(simdata)
@@ -232,18 +232,26 @@ sim_hal = function(n, g0, Q0, gform=NULL, V=10) {
     nt=length(tr)
     nv = length(val)
     
+    data = data[tr,]
     Y = Y[tr]
     X = X[tr,]
     newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
     
-    halresults <- hal(Y = Y,newX = newdata,
-                      X = X, family = binomial(),
-                      verbose = FALSE, parallel = FALSE)
-    
-    Qk = halresults$pred[1:nv]
-    Q1k = halresults$pred[nv+1:nv]
-    Q0k = halresults$pred[2*nv+1:nv]
+    if (is.null(Qform)){
+      halresults <- hal(Y = Y,newX = newdata,
+                        X = X, family = binomial(),
+                        verbose = FALSE, parallel = FALSE)
+      
+      Qk = halresults$pred[1:nv]
+      Q1k = halresults$pred[nv+1:nv]
+      Q0k = halresults$pred[2*nv+1:nv]} else {
+        halresults = glm(Qform, data = data, family = 'binomial')
+        Qk = predict(halresults, newdata = newdata[1:nv,], type = 'response')
+        Q1k = predict(halresults, newdata = newdata[nv + 1:nv,], type = 'response')
+        Q0k = predict(halresults, newdata = newdata[2*nv + 1:nv,], type = 'response')
+      }
+
     
     A = A[tr]
     W1 = W[tr,]
