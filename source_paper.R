@@ -87,8 +87,11 @@ if (case == "setup") {
     ATE0 = mean(blip_true)
     var0 = var(blip_true)
     
-    SL.library = c("glm.mainint")
-    SL.libraryG = c("SL.glm")
+    Qform = paste(colnames(gendata(1,g0 = g0, Q0 = Q0))[2:5], collapse = "+")
+    Qform = paste0("Y ~ A*(", Qform, ")")
+    
+    # SL.library = c("glm.mainint")
+    # SL.libraryG = c("SL.glm")
     
     if (!resultsGotten) {
       cl = makeCluster(no.cores, type = "SOCK")
@@ -98,13 +101,11 @@ if (case == "setup") {
       # run this on a 24 core node
       ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
                   .errorhandling = "remove")%dopar%
-                  {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
-                          SL.libraryG=SL.libraryG, method = "method.NNloglik", cv=FALSE
-                  )}
+                  {sim_hal(n, g0, Q0, gform=formula("A~."), 
+                           Qform = formula(Qform), V=10)}
       
       results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
-    B = nrow(results)
     
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
     types = c("tmle with lr initial","lr initial")
