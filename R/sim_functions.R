@@ -210,7 +210,6 @@ sim_lr = function(n, g0, Q0, formQ, formG) {
 
 #' @export
 sim_hal = function(n, g0, Q0, gform = NULL, Qform = NULL, V = 10) {
-  gform = formula("A~.")
   data = gendata(n, g0, Q0)
   # head(simdata)
   Y=data$Y
