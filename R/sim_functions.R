@@ -226,7 +226,7 @@ sim_hal = function(n, g0, Q0, gform = NULL, Qform = NULL, V = 10) {
   folds = make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
-    if (!cv) {tr = val = 1:n} else {
+    if (V==1) {tr = val = 1:n} else {
       tr = x$training_set
       val = x$validation_set
     }
