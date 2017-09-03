@@ -274,10 +274,11 @@ sim_hal = function(n, g0, Q0, gform = NULL, Qform = NULL, V = 10) {
   Q1k = unlist(lapply(stack, FUN = function(x) x$Q1k))
   Q0k = unlist(lapply(stack, FUN = function(x) x$Q0k))
   gk = unlist(lapply(stack, FUN = function(x) x$gk))
+  inds = unlist(lapply(stack, FUN = function(x) x$inds))
   
   initest = var(Q1k - Q0k)
   initest_ATE = mean(Q1k - Q0k)
-  initdata = data.frame(A = X$A, Y = data$Y, gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
+  initdata = data.frame(A = A[inds], Y = Y[inds], gk = gk, Qk = Qk, Q1k = Q1k, Q0k = Q0k)
   
   sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                  submodel = submodel_logit, loss = loss_loglik,

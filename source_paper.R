@@ -53,13 +53,15 @@ if (case == "setup") {
                   {sim_hal(n, g0, Q0, gform=formula("A~."), 
                            Qform = formula(Qform), V=10)}
       
-      results = data.matrix(data.frame(do.call(rbind, ALL)))
+      
     }
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
     B = nrow(results)
     
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
     types = c("tmle with lr initial","lr initial")
-    inds = c(1,37)
+    inds = c(1,22)
     ests = unlist(lapply(inds, FUN = function(x) results[,x]))
     inds = inds[order(types)]
     colors = c("red","blue")
@@ -104,12 +106,12 @@ if (case == "setup") {
                   {sim_hal(n, g0, Q0, gform=formula("A~."), 
                            Qform = formula(Qform), V=10)}
       
-      results = data.matrix(data.frame(do.call(rbind, ALL)))
     }
     
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
     types = c("tmle with lr initial","lr initial")
-    inds = c(1,37)
+    inds = c(1,22)
     ests = unlist(lapply(inds, FUN = function(x) results[,x]))
     inds = inds[order(types)]
     colors = c("red","blue")
@@ -154,8 +156,10 @@ if (case == "setup") {
                   .errorhandling = "remove")%dopar%
                   {sim_hal(n, g0 = g0, Q0 = Q0, gform = formula("A~."))}
       
-      results = data.matrix(data.frame(do.call(rbind, ALL)))
+      
     }
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
     B = nrow(results)
     
     varind = c("1step tmle HAL" = 1,"init est HAL" = 22)
@@ -229,8 +233,10 @@ if (case == "setup") {
                   .errorhandling = "remove")%dopar%
                   {sim_hal(n, g0 = g0, Q0 = Q0, gform = formula("A~."))}
       
-      results = data.matrix(data.frame(do.call(rbind, ALL)))
+      
     }
+    
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
     B = nrow(results)
     
     varind = c("1step tmle HAL" = 1,"init est HAL" = 22)
@@ -306,9 +312,9 @@ if (case == "setup") {
                   {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
                           SL.libraryG=SL.libraryG,method = "method.NNloglik",cv=FALSE
                   )}
-      results = data.matrix(data.frame(do.call(rbind, ALL)))
-    }
+      }
     
+    results = data.matrix(data.frame(do.call(rbind, ALL)))
     B = nrow(results)
     
     varind = c("1step tmle" = 1,"simultaneous tmle" = 7, "init est" = 37)
@@ -412,7 +418,8 @@ if (case == "setup") {
                  "attains near nominal coverage at ", 100*round(coverage[1,1],3),"%\n", 
                  "and debiases initial SuperLearner lib 1 estimate.\n", 
                  "tmle LR used logistic regression with main terms and interactions\n",
-                 "is a disaster as TMLE holds no promises for terrible initial estimates.\n")
+                 "has very biased initial estimates and leads to bad targeting for computing\n",
+                 "the accompanying TMLE.")
     ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
                            fontface = "plain",colour = "black", size = 10, angle = 0, 
@@ -424,6 +431,109 @@ if (case == "setup") {
     assign(paste0("performance.ate_",case), performance.ate)
     assign(paste0("coverage_",case), coverage)
     assign(paste0("SL_results_",case), SL_results)
+  }
+  
+  if (case == "combo_LRandSL1case2a") {
+    
+    g0 = g0_linear
+    Q0 = Q0_trig1
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = SL.library1
+    
+    SL.libraryG = list("SL.glm")
+    
+    varind = c("1step tmle LR" = 1,"1step tmle SL1" = 5,
+               "init est LR" = 22,"init est tmle SL1" = 41)
+    
+    performance.sig = lapply(results[varind],perf,var0)
+    performance.sig = t(as.data.frame(performance.sig))
+    rownames(performance.sig) = names(varind)
+    
+    coverage_tmle = cov.check(results_case2a, var0, 1)
+    coverage_tmle
+    coverage_tmlesimul = cov.simul(results_case2a, c(ATE0, var0), c(25,7))
+    coverage_tmlesimul
+    coverage_LR = cov.check(results_LRcase2a, var0, 1)
+    coverage_LR
+    coverage_LRsimul = cov.simul(results_LRcase2a, c(ATE0, var0), c(16,7))
+    coverage_LRsimul
+    coverage = c(coverage_halglm, coverage_hal, .434, NA, NA)
+    
+    cov.check(results_LRcase2a, ATE0, 16)
+    MSE_cov = cbind(performance.sig, coverage)
+    MSE_cov
+    # getting superlearner results
+    LL = 0
+    for (i in 1:length(SL.library)) {
+      if (length(SL.library[[i]]) > 1) {
+        LL = LL + length(SL.library[[i]])-1} else
+        {LL = LL + 1}
+    }
+    SL_results = data.frame(colMeans(results_halglm[,65:(65+LL-1)]))
+    rownames(SL_results) = colnames(results)[65:(65+LL-1)]
+    
+    LG=0
+    for (i in 1:length(SL.libraryG)) {
+      if (length(SL.libraryG[[i]]) > 1) {
+        LG = LG + length(SL.libraryG[[i]])-1} else
+        {LG = LG + 1}
+    }
+    SL_resultsG = data.frame(colMeans(results_halglm[,(65+LL):(65+LL+LG-1)]))
+    rownames(SL_results) = colnames(results)[(65+LL):(65+LL+LG-1)]
+    
+    B = nrow(results_halglm)
+    B1 = nrow(results_hal)
+    type = c(rep(names(varind)[1],B), rep(names(varind)[2],B1), rep(names(varind)[3],B),
+             rep(names(varind)[4],B), rep(names(varind)[5],B1), rep(names(varind)[6],B))
+    # types = c("1step TMLE LR","1step TMLE HAL","1step TMLE HAL+glm")
+    types = names(varind)
+    inds = varind
+    ests = unlist(lapply(inds, FUN = function(x) results[[x]]))
+    inds = inds[order(types)]
+    
+    colors = c("blue","green","orange","red", "purple", "yellow")
+    varests = data.frame(ests=ests,type=type)
+    
+    ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
+      geom_density(alpha=.5)+
+      scale_fill_manual(values=colors)+
+      scale_color_manual(values=colors)+
+      theme(axis.title.x = element_blank())+
+      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+    ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
+      theme(plot.title = element_text(size=12), 
+            plot.subtitle = element_text(size=10))+
+      geom_vline(xintercept=mean(results[[inds[1]]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[[inds[2]]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[[inds[3]]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[[inds[4]]]),color = colors[4])+
+      geom_vline(xintercept=mean(results[[inds[5]]]),color = colors[5])+
+      geom_vline(xintercept=mean(results[[inds[6]]]),color = colors[6])
+    cap = paste0("truth at black line.\n",
+                 "tmle LR uses glm with interactions for outcome model and glm for\n",
+                 "treatment mechanism initial estimates. tmle LR CI's cover at", 
+                 round(MSE_cov[3,4] ,1),"\n",
+                 "hal tmle uses highly adaptive lasso for initial estimates of both\n",
+                 "outcome and treatment mech initial estimates and these cover\n",
+                 "at", round(MSE_cov[3,4] ,2),
+                 "\ntmle hal+glm SL uses a SuperLearner with hal and glm for\n",
+                 "outcome and treatment mechanism initial estimates and cover at ",
+                 round(MSE_cov[3,4] ,3),"\n",
+                 "All coverage here is using infuence curve approx for inference.")
+    ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
+    assign(paste0("results_",case), results)
+    assign(paste0("gg_BV",case), ggover2)
+    assign(paste0("MSE_cov_",case), MSE_cov)
+    assign(paste0("SL_results_",case), SL_results) 
+    assign(paste0("SL_resultsG_",case), SL_resultsG) 
   }
   
   if (case == "case2bSL1") {
@@ -850,6 +960,20 @@ if (case == "setup") {
                           "TMLE SL2","Simul. TMLE SL2","init est SL2",
                           "CV-TMLE SL2","Simul. CV-TMLE SL2","init est CV-SL1")
     
+    # df_trueSL1 = data.frame(results_case2bSL1[,1], 
+    #                      results_case2bSL1[,1]-1.96*sqrt(MSE_cov[1,1]),
+    #                      results_case2bSL1[,1]+1.96*sqrt(MSE_cov[1,1]))
+    # df_trueSL2 = data.frame(results_case2bSL1[,1], 
+    #                         results_case2bSL1[,1]-1.96*sqrt(MSE_cov[4,1]),
+    #                         results_case2bSL1[,1]+1.96*sqrt(MSE_cov[4,1]))
+    # df_trueCVSL2 = data.frame(results_case2bSL1[,1], 
+    #                         results_case2bSL1[,1]-1.96*sqrt(MSE_cov[7,1]),
+    #                         results_case2bSL1[,1]+1.96*sqrt(MSE_cov[7,1]))
+    # 
+    # cov_true = unlist(lapply(list(df_trueSL1, df_trueSL2, df_trueCVSL2), 
+    #        FUN = function(x) cov.check(x, var0, c(1))))
+    # names(cov_true) = c("TMLE SL1", "TMLE SL2", "CV-TMLE SL2")
+    
     B1 = nrow(results_case2bSL1)
     B2 = nrow(results_case2bSL2)
     B3 = nrow(results_case2bCVSL2)
@@ -873,6 +997,21 @@ if (case == "setup") {
       geom_vline(xintercept = mean(as.numeric(results_case2bCVSL2[,1])), color = colors[1])+
       geom_vline(xintercept = mean(as.numeric(results_case2bSL1[,1])), color = colors[2])+
       geom_vline(xintercept = mean(as.numeric(results_case2bSL2[,1])), color = colors[3])
+    
+    cap = paste0("truth is black line\n",
+                 "tmle SL2, which used Superlearner Library 2 for initial ests\n", 
+                 "is skewed, has many outliers and covers at ", 100*round(MSE_cov[4,4],3),"%\n", 
+                 "has over double the MSE of the other two and is less efficient.\n",
+                 "tmle SL1 uses a non-overfitting SuperLearner and covers near nominally at ", 
+                 100*round(MSE_cov[1,4],3), "%\n",
+                 "cv-tmle SL2 uses the overfitting SuperLearner library which defies the donsker\n",
+                 "condition for initial ests, but cv-tmle does not require the donsker condition.\n",
+                 "cv-tmle has lowest MSE, no skewing and covers respectably at ",
+                 100*round(MSE_cov[8,4],3),"%.")
+    ggover=ggdraw(add_sub(ggover,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+                           vpadding = grid::unit(1, "lines"), fontfamily = "", 
+                           fontface = "plain",colour = "black", size = 10, angle = 0, 
+                           lineheight = 0.9))
     
     gg_cvadvert = ggover
   }
@@ -917,16 +1056,26 @@ if (case == "setup") {
     propensity = with(testdata, g0(W1,W2,W3,W4))
     ATE0 = mean(blip_true)
     var0 = var(blip_true)
-    B = nrow(results)
+    
+    SL.library = list(c("glm.mainint", "screen.Main"), 
+                      c("SL.hal", "screen.Main"))
+    SL.libraryG = list("SL.glm", "SL.hal")
     
     varind = c("1step tmle LR" = 20,"1step tmle HAL" = 1, "1step tmle HAL+glm" = 5,
                "init est LR" = 42,"init est HAL" = 4, "init est HAL+glm" = 41)
     
-    performance.sig = t(apply(results[,varind], 2, perf,var0))
+    performance.sig = lapply(results[varind],perf,var0)
+    performance.sig = t(as.data.frame(performance.sig))
     rownames(performance.sig) = names(varind)
-    coverage = c(cov.check(results, var0, varind[1:3]), 0.434, NA, NA)
-    MSE_cov = cbind(performance.sig, coverage)
     
+    coverage_halglm = cov.check(results_halglm, var0, c(16,1))
+    coverage_halglm 
+    coverage_hal = cov.check(results_hal, var0, 1)
+    coverage_hal
+    coverage = c(coverage_halglm, coverage_hal, .434, NA, NA)
+    
+    MSE_cov = cbind(performance.sig, coverage)
+    MSE_cov
     # getting superlearner results
     LL = 0
     for (i in 1:length(SL.library)) {
@@ -934,16 +1083,29 @@ if (case == "setup") {
         LL = LL + length(SL.library[[i]])-1} else
         {LL = LL + 1}
     }
-    SL_results = data.frame(colMeans(results[,69:(68+LL)]))
-    rownames(SL_results) = colnames(results)[69:(68+LL)]
+    SL_results = data.frame(colMeans(results_halglm[,65:(65+LL-1)]))
+    rownames(SL_results) = colnames(results)[65:(65+LL-1)]
     
-    type = c(rep("1step TMLE LR",B), rep("1step TMLE HAL",B), rep("1step TMLE HAL+glm",B))
-    types = c("1step TMLE LR","1step TMLE HAL","1step TMLE HAL+glm")
-    inds = c(20, 1, 5)
-    ests = unlist(lapply(inds, FUN = function(x) results[,x]))
+    LG=0
+    for (i in 1:length(SL.libraryG)) {
+      if (length(SL.libraryG[[i]]) > 1) {
+        LG = LG + length(SL.libraryG[[i]])-1} else
+        {LG = LG + 1}
+    }
+    SL_resultsG = data.frame(colMeans(results_halglm[,(65+LL):(65+LL+LG-1)]))
+    rownames(SL_results) = colnames(results)[(65+LL):(65+LL+LG-1)]
+    
+    B = nrow(results_halglm)
+    B1 = nrow(results_hal)
+    type = c(rep(names(varind)[1],B), rep(names(varind)[2],B1), rep(names(varind)[3],B),
+             rep(names(varind)[4],B), rep(names(varind)[5],B1), rep(names(varind)[6],B))
+    # types = c("1step TMLE LR","1step TMLE HAL","1step TMLE HAL+glm")
+    types = names(varind)
+    inds = varind
+    ests = unlist(lapply(inds, FUN = function(x) results[[x]]))
     inds = inds[order(types)]
     
-    colors = c("blue","green","orange","red")
+    colors = c("blue","green","orange","red", "purple", "yellow")
     varests = data.frame(ests=ests,type=type)
     
     ggover2 = ggplot(varests,aes(ests, color = type, fill=type)) + 
@@ -955,9 +1117,12 @@ if (case == "setup") {
     ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
       theme(plot.title = element_text(size=12), 
             plot.subtitle = element_text(size=10))+
-      geom_vline(xintercept=mean(results[,inds[1]]),color = colors[1])+
-      geom_vline(xintercept=mean(results[,inds[2]]),color = colors[2])+
-      geom_vline(xintercept=mean(results[,inds[3]]),color = colors[3])
+      geom_vline(xintercept=mean(results[[inds[1]]]),color = colors[1])+
+      geom_vline(xintercept=mean(results[[inds[2]]]),color = colors[2])+
+      geom_vline(xintercept=mean(results[[inds[3]]]),color = colors[3])+
+      geom_vline(xintercept=mean(results[[inds[4]]]),color = colors[4])+
+      geom_vline(xintercept=mean(results[[inds[5]]]),color = colors[5])+
+      geom_vline(xintercept=mean(results[[inds[6]]]),color = colors[6])
     cap = paste0("truth at black line.\n",
                  "tmle LR uses glm with interactions for outcome model and glm for\n",
                  "treatment mechanism initial estimates. tmle LR CI's cover at", 
@@ -977,7 +1142,7 @@ if (case == "setup") {
     assign(paste0("gg_BV",case), ggover2)
     assign(paste0("MSE_cov_",case), MSE_cov)
     assign(paste0("SL_results_",case), SL_results) 
-    
+    assign(paste0("SL_resultsG_",case), SL_resultsG) 
   }
   
   if (case == "case3") {
@@ -1098,7 +1263,8 @@ if (case == "setup") {
       scale_fill_manual(values=colors)+
       scale_color_manual(values=colors)+
       theme(axis.title.x = element_blank())+
-      ggtitle(paste0("Blip Variance sampling distributions, ", case))
+      ggtitle(paste0("Blip Variance sampling distributions, ", case),
+              subtitle = "Recovering both treatment mech and outcome")
     ggover2 = ggover2+geom_vline(xintercept = var0,color="black")+
       theme(plot.title = element_text(size=12), 
             plot.subtitle = element_text(size=10))+
