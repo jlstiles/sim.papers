@@ -57,6 +57,7 @@ if (case == "setup") {
     }
     
     results = data.matrix(data.frame(do.call(rbind, ALL)))
+    results = results_LRcase2a
     B = nrow(results)
     
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
@@ -109,6 +110,7 @@ if (case == "setup") {
     }
     
     results = data.matrix(data.frame(do.call(rbind, ALL)))
+    B = nrow(results)
     type= c(rep("tmle with lr initial",B),rep("lr initial",B))
     types = c("tmle with lr initial","lr initial")
     inds = c(1,22)
