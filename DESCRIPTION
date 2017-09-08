@@ -35,5 +35,5 @@ Depends: knitr,
     origami,
     stargazer
 Remotes:
-    github::jeremyrcoyle/gentmle2
+    github::jeremyrcoyle/gentmle2,
     github::benkeser/halplus
