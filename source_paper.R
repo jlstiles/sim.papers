@@ -23,6 +23,14 @@ if (case == "setup") {
                      c("SL.glm","screen.Main","screen6","screen10","All"),
                      "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
   
+  SL.library3 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),
+                     "SL.glmnet_1","SL.glmnet_2","SL.glmnet_3",
+                     c("SL.rpartPrune", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
+                     c("nnetMain","screen.Main"), c("earthMain","screen.Main"),
+                     c("rangerFull","screen.Main"),
+                     c("SL.glm","screen.Main","screen6","screen10","All"),
+                     "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
+  
   SL.libraryG = list("nnetMain","SL.mean","SL.hal",
                      "SL.earth","SL.glm","SL.step.interaction",
                      "SL.glm.interaction")
@@ -434,6 +442,34 @@ if (case == "setup") {
     assign(paste0("coverage_",case), coverage)
     assign(paste0("SL_results_",case), SL_results)
   }
+  
+  if (case == "case2aCV") {
+    
+    g0 = g0_linear
+    Q0 = Q0_trig1
+    testdata=gendata(1000000, g0=g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    SL.library = SL.library1
+    SL.libraryG = list("SL.glm")
+    
+    if (!resultsGotten) {
+      cl = makeCluster(no.cores, type = "SOCK")
+      registerDoSNOW(cl)
+      clusterExport(cl,cl_export)
+      
+      ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                  .errorhandling = "remove")%dopar%
+                  {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
+                          SL.libraryG=SL.libraryG,method = "method.NNloglik",cv = TRUE
+                  )}
+    }
+  }
+    
+    
   
   if (case == "combo_LRandSL1case2a") {
     
@@ -1049,6 +1085,30 @@ if (case == "setup") {
                        )}
     results_halglm = data.matrix(data.frame(do.call(rbind, ALL_halglm)))
   }
+  if (case == "case4_LR") {
+    g0 = g0_1
+    Q0 = Q0_1
+    
+    testdata=gendata(1e6, g0 = g0, Q0 = Q0)
+    blip_true = with(testdata,Q0(1,W1,W2,W3,W4)-Q0(0,W1,W2,W3,W4))
+    propensity = with(testdata, g0(W1,W2,W3,W4))
+    ATE0 = mean(blip_true)
+    var0 = var(blip_true)
+    
+    Qform = paste(colnames(gendata(1,g0 = g0, Q0 = Q0))[2:5], collapse = "+")
+    Qform = paste0("Y ~ A*(", Qform, ")")
+    
+    cl = makeCluster(no.cores, type = "SOCK")
+    registerDoSNOW(cl)
+    clusterExport(cl,cl_export)
+    
+    # run this on a 24 core node
+    ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+                .errorhandling = "remove")%dopar%
+                {sim_hal(n, g0, Q0, gform=formula("A~."), 
+                         Qform = formula(Qform), V=10)}
+    results_case4_LR = data.matrix(data.frame(do.call(rbind, ALL)))
+    }
   
   if (case == "case4"){
     g0 = g0_1
@@ -1063,18 +1123,19 @@ if (case == "setup") {
                       c("SL.hal", "screen.Main"))
     SL.libraryG = list("SL.glm", "SL.hal")
     
-    varind = c("1step tmle LR" = 20,"1step tmle HAL" = 1, "1step tmle HAL+glm" = 5,
-               "init est LR" = 42,"init est HAL" = 4, "init est HAL+glm" = 41)
+    varind = c("1step tmle LR" = 1,"1step tmle HAL" = 5, "1step tmle HAL+glm" = 9,
+               "init est LR" = 4,"init est HAL" = 8, "init est HAL+glm" = 45)
     
     performance.sig = lapply(results[varind],perf,var0)
     performance.sig = t(as.data.frame(performance.sig))
     rownames(performance.sig) = names(varind)
     
-    coverage_halglm = cov.check(results_halglm, var0, c(16,1))
+    coverage_halglm = cov.check(results_halglm, var0, c(1))
     coverage_halglm 
     coverage_hal = cov.check(results_hal, var0, 1)
     coverage_hal
-    coverage = c(coverage_halglm, coverage_hal, .434, NA, NA)
+    coverage_LR = cov.check(results_case4_LR, var0, 1)
+    coverage = c(coverage_halglm, coverage_hal, coverage_LR,.434, NA, NA)
     
     MSE_cov = cbind(performance.sig, coverage)
     MSE_cov
@@ -1099,8 +1160,9 @@ if (case == "setup") {
     
     B = nrow(results_halglm)
     B1 = nrow(results_hal)
-    type = c(rep(names(varind)[1],B), rep(names(varind)[2],B1), rep(names(varind)[3],B),
-             rep(names(varind)[4],B), rep(names(varind)[5],B1), rep(names(varind)[6],B))
+    B2 = nrow(results_case4_LR)
+    type = c(rep(names(varind)[1],B2), rep(names(varind)[2],B1), rep(names(varind)[3],B),
+             rep(names(varind)[4],B2), rep(names(varind)[5],B1), rep(names(varind)[6],B))
     # types = c("1step TMLE LR","1step TMLE HAL","1step TMLE HAL+glm")
     types = names(varind)
     inds = varind
@@ -1281,9 +1343,10 @@ if (case == "setup") {
                  "Simultaneous TMLE covers both ATE and blip var at ", 
                  100*round(coverage[2,1],3),
                  "%\n",
-                 "init est LR, which used logistic regression with main terms and\n",
-                 "interactions, and corresponding TMLE and more biased.\n",
-                 "This underscores the importance of machine learning in making\n",
+                 "init est LR used logistic regression with main terms and\n",
+                 "interactions.  Corresponding TMLE was much more biased, covering at ",
+                 100*round(coverage[5,1],3),"%",
+                 "\nThis underscores the importance of machine learning in making\n",
                  "the initial estimates for both propensity score and outcome here.")
     ggover2=ggdraw(add_sub(ggover2,cap, x= 0, y = 0.5, hjust = 0, vjust = 0.5,
                            vpadding = grid::unit(1, "lines"), fontfamily = "", 
