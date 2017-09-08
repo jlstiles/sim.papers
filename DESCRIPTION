@@ -36,3 +36,4 @@ Depends: knitr,
     stargazer
 Remotes:
     github::jeremyrcoyle/gentmle2
+    github::benkeser/halplus
