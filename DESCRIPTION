@@ -34,3 +34,5 @@ Depends: knitr,
     gentmle2,
     origami,
     stargazer
+Remotes:
+    github::jeremyrcoyle/gentmle2
