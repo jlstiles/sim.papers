@@ -1,4 +1,3 @@
-
 case = "setup"
 source_file = "source_paper.R"
 source(source_file)
@@ -8,7 +7,9 @@ library(Simulations)
 source("WrappersVblip1.R")
 
 SL.library = SL.library1
-SL.libraryG = SL.libraryG
+
+SL.library = SL.library1[c(8,10)]
+SL.libraryG = SL.libraryG[c(1,3)]
 
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
@@ -23,7 +24,7 @@ debug(sim_cv)
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
-                    SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 10
+                    SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 2, SL = 2L
             )}
 results = data.matrix(data.frame(do.call(rbind, ALL)))
 
