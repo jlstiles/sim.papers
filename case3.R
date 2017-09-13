@@ -19,8 +19,8 @@ B=4
 
 g0 = g0_1
 Q0 = Q0_2
-undebug(SL.stack1)
-debug(sim_cv)
+# undebug(SL.stack1)
+# debug(sim_cv)
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
