@@ -62,7 +62,7 @@ R=nohup nice -n 19 R CMD BATCH --no-restore --no-save
 # Run an R file via "make analysis"
 analysis: case3.R
 ifeq (${JOB_ENGINE},slurm)
-	${SBATCH} --nodes 4 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
