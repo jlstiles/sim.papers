@@ -1,6 +1,6 @@
 
 case = "setup"
-source_file = "~/Simulations/source_paper.R"
+source_file = "~/source_paper.R"
 source(source_file)
 
 # devtools::install_github("jlstiles/Simulations")

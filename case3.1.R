@@ -1,4 +1,4 @@
-
+print(getwd())
 case = "setup"
 source_file = "~/Simulations/source_paper.R"
 source(source_file)

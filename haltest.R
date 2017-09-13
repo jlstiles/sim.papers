@@ -4,6 +4,7 @@ devtools::install_github("jlstiles/Simulations", force = TRUE)
 
 library(Simulations)
 get.truth(g0_linear, Q0_trig1)
+g = getwd()
 
 set.seed(14819)
 n=200
@@ -56,7 +57,7 @@ esthal1 = var(Q1_1-Q1_0)
 esthalATE = mean(Q1-Q0)
 esthal1ATE = mean(Q1_1-Q1_0)
 
-save(esthal, esthal1, esthalATE, esthal1ATE, risk, file = "test.RData")
+save(esthal, esthal1, esthalATE, esthal1ATE, g, risk, file = "test.RData")
 
 # time = proc.time()
 # halres9001 <- fit_hal(Y = Y, X = X, family = 'binomial')
