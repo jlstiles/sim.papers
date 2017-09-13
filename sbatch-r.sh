@@ -12,16 +12,16 @@
 # Wall clock limit:
 #SBATCH --time=48:00:00
 #
-#### Done configuring sbatch.
-
-# Output to current directory by default. Overriden by --dir option.
-dir_output=.
-
 # Mail type:
 #SBATCH --mail-type=all
 #
 # Mail user:
 #SBATCH --mail-user=jl@jlstiles.com
+#
+#### Done configuring sbatch.
+
+# Output to current directory by default. Overriden by --dir option.
+dir_output=.
 
 # Extract command line arguments
 for i in "$@"
