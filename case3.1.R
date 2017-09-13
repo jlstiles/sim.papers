@@ -15,6 +15,8 @@ registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 n=1000
 B=100
+g0 = g0_1
+Q0 = Q0_2
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library=SL.library, 
