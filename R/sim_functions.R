@@ -552,7 +552,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   # time = proc.time()
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                      SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv)
+                      SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V)
   # proc.time() - time
   
   initdata = stack$initdata
