@@ -13,15 +13,15 @@ SL.libraryG = SL.libraryG
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
-n=1000
+n=100
 B=2
 
 g0 = g0_1
 Q0 = Q0_2
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library1[1:8], 
-                    SL.libraryG = SL.libraryG[c(1:3,4,5)], method = "method.NNloglik", cv = TRUE
+            {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library[1:8], 
+                    SL.libraryG = SL.libraryG[c(1:2,5)], method = "method.NNloglik", cv = TRUE
             )}
 results = data.matrix(data.frame(do.call(rbind, ALL)))
 

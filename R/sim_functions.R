@@ -565,7 +565,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                  submodel = submodel_logit, loss = loss_loglik,
-                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+                                 approach = "recursive", max_iter = 100, g.trunc = 1e-2)
   
   sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                    submodel = submodel_logit, loss = loss_loglik,
@@ -573,7 +573,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
                                  submodel = submodel_logit, loss = loss_loglik,
-                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
+                                 approach = "recursive", max_iter = 100, g.trunc = 1e-2,
                                  simultaneous.inference = TRUE)
   
   simuljl_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
@@ -608,11 +608,11 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
                                        approach = "full", max_iter = 100,g.trunc = 1e-2)
   sigma_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                      submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+                                     approach = "recursive", max_iter = 100, g.trunc = 1e-2)
   
   simul_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE,param_sigmaATE), 
                                      submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "full", max_iter = 10000, g.trunc = 1e-2,
+                                     approach = "full", max_iter = 100, g.trunc = 1e-2,
                                      simultaneous.inference = TRUE)
   
   ATE_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
