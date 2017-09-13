@@ -30,6 +30,6 @@ Depends: knitr,
     randomForest,
     gentmle2,
     origami,
-    stargazer
-Remotes:
-    github::benkeser/halplus
+    stargazer,
+    hal
+
