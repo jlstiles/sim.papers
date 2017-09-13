@@ -7,8 +7,8 @@ source(source_file)
 library(Simulations)
 source("WrappersVblip1.R")
 
-SL.library = SL.library1
-SL.libraryG = SL.libraryG
+SL.library = SL.library1[c(2,8)]
+SL.libraryG = SL.libraryG[1:2]
 
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
@@ -20,8 +20,8 @@ g0 = g0_1
 Q0 = Q0_2
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library[1:8], 
-                    SL.libraryG = SL.libraryG[c(1:2,5)], method = "method.NNloglik", cv = TRUE
+            {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
+                    SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE
             )}
 results = data.matrix(data.frame(do.call(rbind, ALL)))
 

@@ -515,7 +515,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, single = FALSE) {
+                  cv = TRUE, single = FALSE, V = 10) {
   data = gendata(n, g0, Q0)
   
   X = data
