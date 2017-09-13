@@ -5,7 +5,7 @@ source(source_file)
 
 # devtools::install_github("jlstiles/Simulations")
 library(Simulations)
-source("~/Simulations/WrappersVblip1.R")
+source("WrappersVblip1.R")
 
 SL.library = SL.library1
 SL.libraryG = SL.libraryG
