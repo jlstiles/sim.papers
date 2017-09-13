@@ -60,7 +60,7 @@ R=nohup nice -n 19 R CMD BATCH --no-restore --no-save
 # Tasks that can be run.
 
 # Run an R file via "make analysis"
-analysis: test.R
+analysis: haltest.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 4 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
