@@ -364,7 +364,7 @@ sim_single = function(n, g0, Q0, form) {
 
 #' @export
 SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, 
-                     cv = TRUE, V=10, ...) {
+                     cv = TRUE, V=10, SL = 10L, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -392,7 +392,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     Qfit=SuperLearner(Y,X,newX=newdata, family = binomial(),
                       SL.library=SL.library, method=method,
                       id = NULL, verbose = FALSE, control = list(),
-                      cvControl = list(V=10), obsWeights = NULL)
+                      cvControl = list(V=SL), obsWeights = NULL)
     
     A = A[tr]
     W1 = W[tr,]
@@ -400,7 +400,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomial(),
                         SL.library=SL.libraryG,method = method, 
                         id = NULL, verbose = FALSE, control = list(),
-                        cvControl = list(V=10), obsWeights = NULL)
+                        cvControl = list(V=SL), obsWeights = NULL)
     
     
     if (length(gfit$coef[gfit$coef!=0])==1){

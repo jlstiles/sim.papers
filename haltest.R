@@ -8,7 +8,7 @@ g = getwd()
 
 set.seed(14819)
 n=200
-data =gendata(n, g0=g0_linear,Q0=Q0_trig1)
+data =gendata(n, g0=g0_1,Q0=Q0_2)
 X=data
 X$Y=NULL
 Y=data$Y
@@ -19,7 +19,7 @@ newdata = rbind(X,X1,X0)
 # 
 # undebug(SL.hal)
 Qfit = SuperLearner(Y=Y, X=X, newX = newdata, family = binomial(), method = "method.NNloglik",
-             SL.library = c("SL.hal","SL.glm"), cvControl = list(V=10L))
+             SL.library = c("SL.hal","SL.glm"), cvControl = list(V=2L))
 
 Qfit$Z
 Qfit$cvControl
