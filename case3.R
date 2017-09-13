@@ -14,9 +14,8 @@ cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 n=1000
-B=100
-SL.libraryG = c("SL.glm")
-SL.library = c("SL.glm")
+B=2
+
 g0 = g0_1
 Q0 = Q0_2
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
