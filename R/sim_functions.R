@@ -515,7 +515,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, single = FALSE, V = 10) {
+                  cv = TRUE, single = FALSE, V = 10, SL = 10L) {
   data = gendata(n, g0, Q0)
   
   X = data
@@ -552,7 +552,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   # time = proc.time()
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                      SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V)
+                      SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL)
   # proc.time() - time
   
   initdata = stack$initdata
