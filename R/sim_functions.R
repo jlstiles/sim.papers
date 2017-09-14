@@ -454,7 +454,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
   Grisk_mat = vapply(stack, FUN = function(x) x$Grisk,
                      FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
   
-  if (length(SL.library)==1) {
+  if (nrow(Qcoef_mat) == 1) {
     Qcoef = mean(Qcoef_mat)
     Qrisk = mean(Qrisk_mat)
   } else {
@@ -462,7 +462,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     Qrisk = rowMeans(Qrisk_mat)
   }
   
-  if (length(SL.libraryG)==1) {
+  if (nrow(Gcoef_mat) == 1) {
     Gcoef = mean(Gcoef_mat)
     Grisk = mean(Grisk_mat)
   } else {

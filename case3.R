@@ -6,10 +6,11 @@ source(source_file)
 library(Simulations)
 source("WrappersVblip1.R")
 
-SL.library = SL.library1
+SL.library1
+SL.libraryG
 
-SL.library = SL.library1[c(8,10)]
-SL.libraryG = SL.libraryG[c(1,3)]
+SL.library = SL.library1[1]
+SL.libraryG = SL.libraryG[5]
 
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
@@ -19,8 +20,8 @@ B=4
 
 g0 = g0_1
 Q0 = Q0_2
-# undebug(SL.stack1)
-# debug(sim_cv)
+debug(SL.stack1)
+debug(sim_cv)
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
