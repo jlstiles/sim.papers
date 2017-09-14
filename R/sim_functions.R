@@ -651,7 +651,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
     
     cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer, ci_simulATE, ci_ATE)
-    names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31,34)]=
+    names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19)]=
       c("sig", "sigit", "simul", "simul_line", "simul_full","simulATE","ATE")
     # results
     

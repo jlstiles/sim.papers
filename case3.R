@@ -31,7 +31,7 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 10, SL = 10L, 
-                    gform = gform, Qform = Qform, single = TRUE
+                    gform = gform, Qform = Qform, single = FALSE
             )}
 results = data.matrix(data.frame(do.call(rbind, ALL)))
 
