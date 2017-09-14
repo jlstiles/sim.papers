@@ -182,6 +182,16 @@ environment(nnetFull) <- asNamespace("SuperLearner")
 # rpart
 #######################
 #######################
+# n=1000
+# data = gendata(n,g0_1,Q0_2)
+# Y=data$Y
+# X=data
+# X$Y=NULL
+# X1=X0=X
+# X1$A=1
+# X0$A=0
+# newX = rbind(X,X1,X0)
+
 rpartPrune = function (Y, X, newX, family, obsWeights, cp = 0.001, minsplit = 5,
           xval = 5, maxdepth = 15, minbucket = 5, ...)
 {
@@ -202,15 +212,47 @@ rpartPrune = function (Y, X, newX, family, obsWeights, cp = 0.001, minsplit = 5,
     CP <- fit.rpart$cptable[which.min(fit.rpart$cptable[,
                                                         "xerror"]), "CP"]
     fitPrune <- prune(fit.rpart, cp = CP)
-    pred <- predict(fitPrune, newdata = newX)[, 2]
+    pred <- vapply(predict(fitPrune, newdata = newX)[, 2], FUN = function(x) {
+      min(max(.01, x), .99)
+    }, FUN.VALUE = 1)
   }
   fit <- list(object = fitPrune, fit = fit.rpart, cp = CP)
   out <- list(pred = pred, fit = fit)
   class(out$fit) <- c("SL.rpart")
   return(out)
 }
-
 environment(rpartPrune) <- asNamespace("SuperLearner")
+
+
+rpartPruneSL = function (Y, X, newX, family, obsWeights, cp = 0.001, minsplit = 20,
+                       xval = 10, maxdepth = 20, minbucket = 5, ...)
+{
+  SuperLearner:::.SL.require("rpart")
+  if (family$family == "gaussian") {
+    fit.rpart <- rpart(Y ~ ., data = data.frame(Y, X), control = rpart.control(cp = cp,
+                                                                               minsplit = minsplit, xval = xval, maxdepth = maxdepth,
+                                                                               minbucket = minbucket), method = "anova", weights = obsWeights)
+    CP <- fit.rpart$cptable[which.min(fit.rpart$cptable[,
+                                                        "xerror"]), "CP"]
+    fitPrune <- prune(fit.rpart, cp = CP)
+    pred <- predict(fitPrune, newdata = newX)
+  }
+  if (family$family == "binomial") {
+    fit.rpart <- rpart(Y ~ ., data = data.frame(Y, X), control = rpart.control(cp = cp,
+                                                                               minsplit = minsplit, xval = xval, maxdepth = maxdepth,
+                                                                               minbucket = minbucket), method = "class", weights = obsWeights)
+    CP <- fit.rpart$cptable[which.min(fit.rpart$cptable[,
+                                                        "xerror"]), "CP"]
+    fitPrune <- prune(fit.rpart, cp = CP)
+    pred <- vapply(predict(fitPrune, newdata = newX)[, 2], FUN = function(x) {
+      min(max(.01, x), .99)
+    }, FUN.VALUE = 1)
+  }
+  fit <- list(object = fitPrune, fit = fit.rpart, cp = CP)
+  out <- list(pred = pred, fit = fit)
+  class(out$fit) <- c("SL.rpart")
+  return(out)
+}
 
 #######################
 #######################

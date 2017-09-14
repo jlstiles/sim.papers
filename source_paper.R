@@ -1,22 +1,22 @@
 if (case == "setup") {
   cl_export = c("SL.gam3","screen.Main","screen10","screen6","SL.glmnet_1","SL.glmnet_2",
                 "SL.glmnet_3","xgbFull","xgbMain","screen.Main",
-                "xgb6","screen6","xgb10","screen10","rpartPrune","nnetFull",
+                "xgb6","screen6","xgb10","screen10","rpartPrune","nnetFull", "rpartPruneSL",
                 "nnetMain","screen.Main","earthFull","All","screen10","screen6",
                 "earthMain","screen.Main","rangerFull","All","screen.Main",
                 "ranger10","screen10","screen6","SL.glm","screen6","screen10",
                 "SL.stepAIC","SL.hal","glm.mainint")
   
   SL.library1 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),"SL.glmnet_1",
-                     "SL.glmnet_2","SL.glmnet_3", c("SL.rpartPrune", "screen.Main"), 
-                     c("nnetMain","screen.Main"), 
+                     "SL.glmnet_2","SL.glmnet_3", 
+                     c("nnetMain","screen.Main"), c("rpartPruneSL", "screen.Main"),
                      c("earthMain","screen.Main"),
                      c("SL.glm","screen.Main","screen6","screen10","All"),
                      "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
   
   SL.library2 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),
                      "SL.glmnet_1","SL.glmnet_2","SL.glmnet_3",
-                     c("SL.rpartPrune", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
+                     c("rpartPruneSL", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
                      c("nnetMain","screen.Main"), c("earthMain","screen.Main"),
                      c("rangerFull","screen.Main"),
                      c("SL.glm","screen.Main","screen6","screen10","All"),
@@ -24,13 +24,13 @@ if (case == "setup") {
   
   SL.library3 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),
                      "SL.glmnet_1","SL.glmnet_2","SL.glmnet_3",
-                     c("SL.rpartPrune", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
+                     c("rpartPruneSL", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
                      c("nnetMain","screen.Main"), c("earthMain","screen.Main"),
                      c("rangerFull","screen.Main"),
                      c("SL.glm","screen.Main","screen6","screen10","All"),
                      "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
   
-  SL.libraryG = list("nnetMain","SL.mean","SL.hal",
+  SL.libraryG = list("nnetMain","SL.mean","SL.hal", "rpartPruneSL", 
                      "SL.earth","SL.glm","SL.step.interaction",
                      "SL.glm.interaction")
 } else {
