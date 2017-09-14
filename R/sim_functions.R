@@ -378,10 +378,12 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
   folds = make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
-    if (!cv) {tr = val = 1:n} else {
-    tr = x$training_set
-    val = x$validation_set
-  }
+    if (!cv) {
+      tr = val = 1:n
+      } else {
+      tr = x$training_set
+      val = x$validation_set
+    }
     nt=length(tr)
     nv = length(val)
     
