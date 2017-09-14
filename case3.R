@@ -12,6 +12,7 @@ SL.libraryG
 SL.library = SL.library1
 SL.libraryG = SL.libraryG
 
+detectCores()
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
@@ -20,8 +21,8 @@ B=24
 
 g0 = g0_1
 Q0 = Q0_2
-debug(SL.stack1)
-debug(sim_cv)
+# debug(SL.stack1)
+# debug(sim_cv)
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
