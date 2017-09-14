@@ -380,7 +380,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     # x=folds[[5]]
     if (!cv) {
       tr = val = 1:n
-      } else {
+    } else {
       tr = x$training_set
       val = x$validation_set
     }
@@ -405,25 +405,25 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
                         cvControl = list(V=SL), obsWeights = NULL)
     
     
-    if (length(gfit$coef[gfit$coef!=0])==1){
+    if (length(gfit$coef[gfit$coef!=0])==1) {
       gk = gfit$library.predict[1:nv,gfit$coef!=0]
     } else {
       gk = gfit$library.predict[1:nv,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
     }
     
-    if (length(Qfit$coef[Qfit$coef!=0])==1){
+    if (length(Qfit$coef[Qfit$coef!=0])==1) {
       Qk = Qfit$library.predict[1:nv,Qfit$coef!=0]
     } else {
       Qk = Qfit$library.predict[1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     }
     
-    if (length(Qfit$coef[Qfit$coef!=0])==1){
+    if (length(Qfit$coef[Qfit$coef!=0])==1) {
       Q1k = Qfit$library.predict[nv+1:nv,Qfit$coef!=0]
     } else {
       Q1k = Qfit$library.predict[nv+1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
     }
     
-    if (length(Qfit$coef[Qfit$coef!=0])==1){
+    if (length(Qfit$coef[Qfit$coef!=0])==1) {
       Q0k = Qfit$library.predict[2*nv+1:nv,Qfit$coef!=0]
     } else {
       Q0k = Qfit$library.predict[2*nv+1:nv,Qfit$coef!=0] %*% Qfit$coef[Qfit$coef!=0]
@@ -517,7 +517,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, single = FALSE, V = 10, SL = 10L) {
+                  cv = TRUE, V = 10, SL = 10L) {
   data = gendata(n, g0, Q0)
   
   X = data
@@ -530,7 +530,6 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   W$A = NULL
   W$Y = NULL
   
-  if (single) {} else{
   newdata = rbind(X,X1,X0)
   
   mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
@@ -558,7 +557,6 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   # proc.time() - time
   
   initdata = stack$initdata
-  }
   
   # stack
   initest = with(initdata,var(Q1k - Q0k))
