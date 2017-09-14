@@ -16,7 +16,7 @@ cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 n=1000
-B=24
+B=4
 
 g0 = g0_1
 Q0 = Q0_2
@@ -25,8 +25,10 @@ debug(sim_cv)
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
-                    SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 2, SL = 2L
+                    SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 2, SL = 2L
             )}
 results = data.matrix(data.frame(do.call(rbind, ALL)))
 
 save(results, ALL, file = "case3.RData")
+screen.Main
+

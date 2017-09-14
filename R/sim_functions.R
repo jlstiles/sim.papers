@@ -517,7 +517,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, V = 10, SL = 10L) {
+                  cv = TRUE, V = 10, SL = 10L, single = TRUE) {
   data = gendata(n, g0, Q0)
   
   X = data
@@ -553,7 +553,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   # time = proc.time()
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                      SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL)
+                    SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL)
   # proc.time() - time
   
   initdata = stack$initdata
@@ -565,26 +565,27 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                  submodel = submodel_logit, loss = loss_loglik,
-                                 approach = "recursive", max_iter = 100, g.trunc = 1e-2)
-  
-  sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  if (!single) {
+    sigmait_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                     submodel = submodel_logit, loss = loss_loglik,
+                                     approach = "full", max_iter = 100,g.trunc = 1e-2)
+    
+    simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
                                    submodel = submodel_logit, loss = loss_loglik,
-                                   approach = "full", max_iter = 100,g.trunc = 1e-2)
-  
-  simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
-                                 submodel = submodel_logit, loss = loss_loglik,
-                                 approach = "recursive", max_iter = 100, g.trunc = 1e-2,
-                                 simultaneous.inference = TRUE)
-  
-  simuljl_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
-                                   submodel = submodel_logit, loss = loss_loglik,
-                                   approach = "line", max_iter = 100,g.trunc = 1e-2,
+                                   approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
                                    simultaneous.inference = TRUE)
-  
-  simuljer_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
-                                    submodel = submodel_logit, loss = loss_loglik,
-                                    approach = "full", max_iter = 100,g.trunc = 1e-2,
-                                    simultaneous.inference = TRUE)
+    
+    simuljl_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                     submodel = submodel_logit, loss = loss_loglik,
+                                     approach = "line", max_iter = 100,g.trunc = 1e-2,
+                                     simultaneous.inference = TRUE)
+    
+    simuljer_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
+                                      submodel = submodel_logit, loss = loss_loglik,
+                                      approach = "full", max_iter = 100,g.trunc = 1e-2,
+                                      simultaneous.inference = TRUE)
+  }
   
   ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
                                submodel = submodel_logit, loss = loss_loglik,
@@ -603,57 +604,75 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   initdata = data.frame(A = X$A, Y = data$Y, gk = gk_glm, Qk = Qk_glm, 
                         Q1k = Q1k_glm, Q0k = Q0k_glm)
   
-  sigmait_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
-                                       submodel = submodel_logit, loss = loss_loglik,
-                                       approach = "full", max_iter = 100,g.trunc = 1e-2)
   sigma_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                      submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "recursive", max_iter = 100, g.trunc = 1e-2)
-  
-  simul_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE,param_sigmaATE), 
-                                     submodel = submodel_logit, loss = loss_loglik,
-                                     approach = "full", max_iter = 100, g.trunc = 1e-2,
-                                     simultaneous.inference = TRUE)
+                                     approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+  if (!single) {
+    sigmait_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                         submodel = submodel_logit, loss = loss_loglik,
+                                         approach = "full", max_iter = 100,g.trunc = 1e-2)
+    
+    simul_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE,param_sigmaATE), 
+                                       submodel = submodel_logit, loss = loss_loglik,
+                                       approach = "full", max_iter = 10000, g.trunc = 1e-2,
+                                       simultaneous.inference = TRUE)
+  }
   
   ATE_info_glm = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
                                    submodel = submodel_logit, loss = loss_loglik,
                                    approach = "full", max_iter = 100, g.trunc = 1e-2)
   
-  steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
-            simuljer_info$steps, sigma_info_glm$steps,sigmait_info_glm$steps, 
-            simul_info_glm$steps,simul_info$steps, ATE_info$steps, simul_info_glm$steps
-            ,ATE_info_glm$steps)
-  converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
-               simuljl_info$converge, simuljer_info$converge, sigma_info_glm$converge,
-               sigmait_info_glm$converge,simul_info_glm$converge,simul_info$converge, 
-               ATE_info$converge, simul_info_glm$converge, ATE_info_glm$converge)
-  
-  ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
-  ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
-  ci_simul = ci_gentmle(simul_info)[2,c(2,4,5)]
-  ci_simuljl = ci_gentmle(simuljl_info)[2,c(2,4,5)]
-  ci_simuljer = ci_gentmle(simuljer_info)[2,c(2,4,5)]
-  ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
-  ci_sigit_glm = ci_gentmle(sigmait_info_glm)[c(2,4,5)]
-  ci_simul_glm = ci_gentmle(simul_info_glm)[2,c(2,4,5)]
-  
-  ci_simulATE = ci_gentmle(simul_info)[1,c(2,4,5)]
-  ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
-  ci_simulATE_glm = ci_gentmle(simul_info_glm)[1,c(2,4,5)]
-  ci_ATE_glm = ci_gentmle(ATE_info_glm)[c(2,4,5)]
-  
-  cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,
-          ci_sig_glm, ci_sigit_glm, ci_simul_glm, ci_simulATE,ci_ATE, ci_simulATE_glm, 
-          ci_ATE_glm)
-  names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31,34)]=
-    c("sig", "sigit", "simul", "simul_line", "simul_full","sig_glm", 
-      "sigit_glm","simul_glm","simulATE","ATE","simulATE_glm","ATE_glm")
-  results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
-              initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, 
-            Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
-            Grisk = stack$Grisk)
-  # results
+  if (!single) {
+    steps = c(sigma_info$steps, sigmait_info$steps, simul_info$steps, simuljl_info$steps,
+              simuljer_info$steps, sigma_info_glm$steps,sigmait_info_glm$steps, 
+              simul_info_glm$steps,simul_info$steps, ATE_info$steps, simul_info_glm$steps
+              ,ATE_info_glm$steps)
+    converge = c(sigma_info$converge, sigmait_info$converge,simul_info$converge, 
+                 simuljl_info$converge, simuljer_info$converge, sigma_info_glm$converge,
+                 sigmait_info_glm$converge,simul_info_glm$converge,simul_info$converge, 
+                 ATE_info$converge, simul_info_glm$converge, ATE_info_glm$converge)
+    
+    ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
+    ci_sigit = ci_gentmle(sigmait_info)[c(2,4,5)]
+    ci_simul = ci_gentmle(simul_info)[2,c(2,4,5)]
+    ci_simuljl = ci_gentmle(simuljl_info)[2,c(2,4,5)]
+    ci_simuljer = ci_gentmle(simuljer_info)[2,c(2,4,5)]
+    ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
+    ci_sigit_glm = ci_gentmle(sigmait_info_glm)[c(2,4,5)]
+    ci_simul_glm = ci_gentmle(simul_info_glm)[2,c(2,4,5)]
+    
+    ci_simulATE = ci_gentmle(simul_info)[1,c(2,4,5)]
+    ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
+    ci_simulATE_glm = ci_gentmle(simul_info_glm)[1,c(2,4,5)]
+    ci_ATE_glm = ci_gentmle(ATE_info_glm)[c(2,4,5)]
+    
+    cis = c(ci_sig,ci_sigit, ci_simul, ci_simuljl, ci_simuljer,
+            ci_sig_glm, ci_sigit_glm, ci_simul_glm, ci_simulATE,ci_ATE, ci_simulATE_glm, 
+            ci_ATE_glm)
+    names(converge) = names(steps) = names(cis)[c(1,4,7,10,13,16,19,22,25,28,31,34)]=
+      c("sig", "sigit", "simul", "simul_line", "simul_full","sig_glm", 
+        "sigit_glm","simul_glm","simulATE","ATE","simulATE_glm","ATE_glm")
+    # results
+    
+  } else {
+    
+    steps = c(sigma_info$steps, sigma_info_glm$steps, ATE_info$steps, ATE_info_glm$steps)
+    
+    converge = c(sigma_info$converge, sigma_info_glm$converge, ATE_info$converge, ATE_info_glm$converge)
+    ci_sig = ci_gentmle(sigma_info)[c(2,4,5)]
+    ci_sig_glm = ci_gentmle(sigma_info_glm)[c(2,4,5)]
+    ci_ATE = ci_gentmle(ATE_info)[c(2,4,5)]  
+    ci_ATE_glm = ci_gentmle(ATE_info_glm)[c(2,4,5)]
+    
+    cis = c(ci_sig,ci_sig_glm, ci_ATE, ci_ATE_glm)
+    
+    results = c(cis, initest = initest, initest_lr = initest_lr,initest_ATE = initest_ATE, 
+                initest_lr_ATE = initest_lr_ATE, steps = steps, converge = converge, 
+                Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
+                Grisk = stack$Grisk)
+  }
   return(results)
+
 }
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
