@@ -9,14 +9,14 @@ source("WrappersVblip1.R")
 SL.library1
 SL.libraryG
 
-SL.library = SL.library1[1]
-SL.libraryG = SL.libraryG[5]
+SL.library = SL.library1
+SL.libraryG = SL.libraryG
 
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
-n=200
-B=4
+n=1000
+B=24
 
 g0 = g0_1
 Q0 = Q0_2
