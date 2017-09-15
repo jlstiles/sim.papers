@@ -95,35 +95,35 @@ else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
-analysis: case2a.R
+analysis2a: case2a.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
-analysis1: case2a.1.R
+analysis2a1: case2a.1.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
-analysis2: case2a.2.R
+analysis2a2: case2a.2.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
-analysis3: case2a.3.R
+analysis2a3: case2a.3.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
-analysis4: case2a.4.R
+analysis2a4: case2a.4.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
