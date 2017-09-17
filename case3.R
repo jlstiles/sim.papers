@@ -39,7 +39,7 @@ results = data.matrix(data.frame(do.call(rbind, ALL)))
 #                      {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
 #                              SL.libraryG = SL.libraryG[c(1:3,5:7)[1:it]], method = "method.NNLS", cv = TRUE, V = 2, SL = 2L, single = TRUE
 #                      )}}
-# 
+
 # lapply(ALL, length)
 save(ALL, file = "case3SL2.RData")
 
