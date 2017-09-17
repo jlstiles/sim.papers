@@ -41,4 +41,4 @@ results = data.matrix(data.frame(do.call(rbind, ALL)))
 #                      )}}
 # 
 # lapply(ALL, length)
-save(ALL, file = "case2a.3.RData")
+save(ALL, file = "case2aSL2.3.RData")

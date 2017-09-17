@@ -38,7 +38,7 @@ done
 
 # Load R if we are using the built-in R module:
 # Here we are using a custom compiled version of R, so we don't load the r module.
-module load r
+# module load r
 
 # Load a newer version of gcc than the default.
 module load gcc/4.8.5
