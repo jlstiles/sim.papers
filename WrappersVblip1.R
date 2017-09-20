@@ -264,7 +264,7 @@ rpartPruneSL = function (Y, X, newX, family, obsWeights, cp = 0.001, minsplit = 
 
 create.Learner("SL.ranger",tune=list(min.node.size = 10, mtry = 3, num.trees=2500))
 rangerFull = SL.ranger_1
-create.Learner("SL.ranger",tune=list(min.node.size = 10, mtry = 3, num.trees=2500))
+create.Learner("SL.ranger",tune=list(min.node.size = 10, mtry = 4, num.trees=5000))
 ranger10 = SL.ranger_1
 
 #######################

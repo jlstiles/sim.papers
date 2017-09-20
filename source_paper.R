@@ -10,14 +10,16 @@ if (case == "setup") {
   SL.library1 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),"SL.glmnet_1",
                      "SL.glmnet_2","SL.glmnet_3", 
                      c("nnetMain","screen.Main"), c("rpartPruneSL", "screen.Main"),
-                     c("earthMain","screen.Main"),
+                     c("earthMain","screen.Main"), 
                      c("SL.glm","screen.Main","screen6","screen10","All"),
                      "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
   
   SL.library2 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),
                      "SL.glmnet_1","SL.glmnet_2","SL.glmnet_3",
                      c("rpartPruneSL", "screen.Main"),"xgbFull",c("xgbMain","screen.Main"),
+                     c("xgb6","screen6"), c("xgb10","screen10"),
                      c("nnetMain","screen.Main"), c("earthMain","screen.Main"),
+                     c("earthFull","screenFull"),
                      "rangerFull",c("ranger10", "screen10"),"nnetFull",
                      c("SL.glm","screen.Main","screen6","screen10","All"),
                      "SL.stepAIC", c("SL.hal","screen.Main"),"SL.mean","glm.mainint")
