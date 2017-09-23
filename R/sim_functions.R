@@ -387,9 +387,8 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     Qrisk = with(initdata, mean((Y - Qk)^2))
     Grisk = with(initdata, -mean(A*log(gk) + (1 - A)*log(1 - gk)))
   }
-  if (is.null(Qform)) {
+  if (!is.null(Qform)) {
   cis = c(cis, ci_lr)
-  return()
   }
   
   results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
