@@ -6,15 +6,15 @@ source(source_file)
 library(Simulations)
 source("WrappersVblip1.R")
 
-SL.library = c("SL.glm","SL.mean")
-SL.libraryG = c("SL.glm","SL.mean")
+SL.library = SL.library3
+SL.libraryG = SL.libraryG
 
 detectCores()
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 n = 1000
-B = 3
+B = 100
 
 # SL.library = c("SL.glm", "SL.mean")
 # SL.libraryG = "SL.glm"
@@ -41,6 +41,6 @@ results = data.matrix(data.frame(do.call(rbind, ALL)))
 #                      )}}
 # 
 # lapply(ALL, length)
-save(ALL, file = "case3SL2.1.RData")
+save(ALL, file = "case3SL3.1.RData")
 
 
