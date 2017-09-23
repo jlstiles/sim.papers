@@ -6,15 +6,15 @@ source(source_file)
 library(Simulations)
 source("WrappersVblip1.R")
 
-SL.library = SL.library2
+SL.library = SL.library3
 SL.libraryG = "SL.glm"
 
 detectCores()
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
-n=1000
-B=100
+n = 1000
+B = 100
 
 # SL.library = c("SL.glm", "SL.mean")
 # SL.libraryG = "SL.glm"
@@ -28,10 +28,10 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
-                    gform = gform, Qform = Qform, single = TRUE
+                    gform = gform, Qform = Qform, estimator = c("single 1step")
             )}
 results = data.matrix(data.frame(do.call(rbind, ALL)))
-
+# results
 # ALL = list()
 # for (it in 1:6) {
 #   ALL[[it]] = foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
@@ -41,4 +41,6 @@ results = data.matrix(data.frame(do.call(rbind, ALL)))
 #                      )}}
 # 
 # lapply(ALL, length)
-save(ALL, file = "case2aSL2.2.RData")
+save(ALL, file = "case2aSL3.2.RData")
+
+
