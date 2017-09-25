@@ -8,15 +8,8 @@
 #$ -m beas
 export OMP_NUM_THREADS=1
 
-module load gcc/4.9.3
+module load gcc-4.9.3
 
-# Load Java if any R packages need RJava (bartMachine, h2o, etc.)
-module load java
-
-# Load a better linear algebra system.
-module load lapack
-
-# GPU computation modules. CUDA is 7.5, cudnn is 4.0.
-module load cuda cudnn
+R --vanilla < test.R > test.Rout
 
 
