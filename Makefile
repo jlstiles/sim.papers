@@ -67,6 +67,27 @@ else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
+analysisRandom: caseRandom.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
+analysisRandom1: caseRandom.1.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
+analysisRandom2: caseRandom.2.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
 analysis: case3.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
