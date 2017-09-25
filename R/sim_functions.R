@@ -588,7 +588,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     BV0 = info$BV0
     ATE0 = info$ATE0
     parsQ = info$parsQ
-    parsG = infor$parsG
+    parsG = info$parsG
   } else {
     data = gendata(n, g0, Q0)
   }
@@ -729,9 +729,9 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   }
   
   if (is.null(g0)) {
-    results = list(res = c(sigmait_ci = sigmait_ci, ci_sigma = sigma_ci, ATE_ci = ATE_ci,
-                           sigma_init = initest, ATE_init = ATE_info$initests,
-                           steps = steps, converges = converges, BV0 = BV0, ATE0 = ATE0), parsG = parsG,
+    results = list(res = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
+                           Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
+                           Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0), parsG = parsG,
                    parsQ = parsQ)
   } else {
     results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
