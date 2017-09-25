@@ -12,12 +12,13 @@ get.info = function(n, d, truth) {
   # n=1000
   # d=4
   # truth=TRUE
+  # sample size for getting the truth
   N = 1e6
-  # choose binaries
+  # choose binaries--possibly 0 or 1 for now
   binaries = c(as.logical(rbinom(1, 1, .5)), rep(FALSE, 3))
   binaries = (1:d)[binaries]
   
-  # make all variables, n  copies of covariates
+  # make all variables, n  copies of covariates--this is our draw of confounders
   W = matrix(rep(NA, d*n), ncol = d)
   for (a in 1:d) {
     nombre = paste0("W", a)
@@ -30,6 +31,7 @@ get.info = function(n, d, truth) {
     W[,a] = V 
   }
   
+  # If seeking the truth we need to draw a big W
   if (truth) {
     Wbig = matrix(rep(NA, d*N), ncol = d)
     for (a in 1:d) {
@@ -46,7 +48,7 @@ get.info = function(n, d, truth) {
   # We then choose functions for the continuous variables
   # We choose from trig functions, squares, 1st deg, categorical breaks
   
-  # get conins cols
+  # get contins cols
   conts = vapply(1:d, FUN = function(x) !(x %in% binaries), FUN.VALUE = TRUE)
   contins  = (1:d)[conts]
 
@@ -59,6 +61,7 @@ get.info = function(n, d, truth) {
   # amplify the binary or not
   bin_coef = runif(1, -5, 5)
   
+  # choosing functions to apply to each variable
   funclist = list()
   for (x in 1:d) {
     if (x %in% binaries) {
@@ -68,16 +71,25 @@ get.info = function(n, d, truth) {
     }
   }
   
+  # choosing from combos of 2, 2 and whether we have 4 way interaction
+  # This should be generalized to larger dimensions but for now only 4
   choo2 = as.logical(rbinom(6, 1, .5))
   choo3 = as.logical(rbinom(4, 1, .5))
   way4 = rbinom(1, 1, .5)
+  # choosing which main terms to include
   MTnum = sample(1:d, 1)
   MT = sample(1:d, MTnum)
   MT = MT[order(MT)]
   
+  # storing for later use
   pars[[F]] = list(choo2 = choo2, choo3 = choo3, way4 = way4, MT = MT, funclist = funclist, bin_coef = bin_coef)
   } 
   
+  #####
+  #####
+  # we use the previous parameters to generate the transformed vars and truth
+  #####
+  #####
   dfs = lapply(pars, FUN = function(x){
     
     # make df of main terms and form fcns
@@ -141,7 +153,6 @@ get.info = function(n, d, truth) {
         df1_final = cbind(df1_final, df_3way)
       }
       
-      
       if (way4) {
         df_4way = df1[, 1]*df1[, 2]*df1[, 3]*df1[, 4]
         df1_final = cbind(df1_final, df_4way)
@@ -155,18 +166,19 @@ get.info = function(n, d, truth) {
     if (truth) return(list(df_final, df1_final)) else return(list(df_final, list()))
   })
   
-  
+  # generating coeffs for prop score 
   a = .7 
   coef_G = runif(ncol(dfs[[1]][[1]]), -a, a)
   PG_n  = gentmle2::truncate(plogis(dfs[[1]][[1]] %*% coef_G), .05)
   A = rbinom(n, 1, PG_n)
-  mean(A)
   
+  # setting up dataframe for both Q0k found previously and Bk, the interactions terms
   inters = rbinom(ncol(dfs[[2]][[1]]), 1, .5)
   dfinter_n = vapply(which(inters == 1), FUN = function(col) dfs[[2]][[1]][,col]*A, FUN.VALUE = rep(1, n))
   dfQn = cbind(dfs[[2]][[1]], dfinter_n)
   df1n = cbind(dfs[[2]][[1]], dfs[[2]][[1]][, inters])
   
+  # choosing coeffs for the Q generator
   a = .3
   coef_Q = runif(ncol(dfQn), -a, a)
 
@@ -174,18 +186,18 @@ get.info = function(n, d, truth) {
   
   if (truth) {
     
+    # getting huge draw for A
     PG_true  = gentmle2::truncate(plogis(dfs[[1]][[2]] %*% coef_G), .05)
     Abig = rbinom(N, 1, PG_true)
-    length(Abig)
-    mean(Abig)
     
-    
+    # getting huge draw for blip
     dfinter_true = vapply(which(inters == 1), FUN = function(col) {
       dfs[[2]][[2]][,col]*Abig
       }, FUN.VALUE = rep(1, N))
     df1_true = cbind(dfs[[2]][[2]], dfs[[2]][[2]][, inters])
     dfQ_true = cbind(dfs[[2]][[2]], dfinter_true)
     
+    # The following assures the blip var is over .025
     BV0 = 0
     C = 1
     mm = 5
@@ -202,6 +214,7 @@ get.info = function(n, d, truth) {
     }
   } 
   
+  # now that we have our coeffs, get true probs of sample and draw Y
   coef_Q[(ncol(dfs[[2]][[1]]) + 1):ncol(dfQn)] = coef_Q[(ncol(dfs[[2]][[1]]) + 1):ncol(dfQn)]
   PQ_n  = gentmle2::truncate(plogis(dfQn %*% coef_Q), .05)
   # hist(PQ_true0, breaks = 200)
