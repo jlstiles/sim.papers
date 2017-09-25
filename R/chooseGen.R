@@ -21,21 +21,22 @@ get.info = function(n, d, truth) {
   # make all variables, n  copies of covariates--this is our draw of confounders
   W = matrix(rep(NA, d*n), ncol = d)
   for (a in 1:d) {
-    nombre = paste0("W", a)
     if (a %in% binaries) {
       r = runif(1, .3, .7)
       V = rbinom(n, 1, r)
     } else {
       V = rnorm(n, 0, 1)
     }
-    W[,a] = V 
+    W[,a] = V
   }
+  
+  W = as.data.frame(W)
+  colnames(W) = paste0("W", 1:d)
   
   # If seeking the truth we need to draw a big W
   if (truth) {
     Wbig = matrix(rep(NA, d*N), ncol = d)
     for (a in 1:d) {
-      nombre = paste0("W", a)
       if (a %in% binaries) {
         V = rbinom(n, 1, r)
       } else {
@@ -45,6 +46,8 @@ get.info = function(n, d, truth) {
     }
   }
   
+  Wbig = as.data.frame(Wbig)
+  colnames(Wbig) = paste0("W", 1:d)
   # We then choose functions for the continuous variables
   # We choose from trig functions, squares, 1st deg, categorical breaks
   
@@ -229,24 +232,31 @@ get.info = function(n, d, truth) {
     BVn = var(blip_n)
   }
   if (truth) {
-    return(list(BV0 = BV0, ATE0 = ATE0, W = W, A = A, Y = Y))
+    DF = cbind(A, W, Y)
+    colnames(DF)[c(1,(d+2))] = c("A", "Y")
+    return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, parsG = pars[[1]], parsQ = pars[[2]]))
   } else {
-    return(list(BVn = BVn, ATEn = ATEn, W = W, A = A, Y = Y))
+    DF = cbind(A, W, Y)
+    colnames(DF)[c(1,(d+2))] = c("A", "Y")
+    return(list(BVn = BVn, ATEn = ATEn, DF = DF, parsG = pars[[1]], parsQ = pars[[2]]))
   }
 }
 
-# A = get.info(1000, 4, FALSE) 
+# A = get.info(1000, 4, FALSE)
 # 
 # A$BVn
 # A$ATEn
-# mean(A$A)
+# is.data.frame(A$DF)
+# mean(A$DF$A)
 # mean(A$Y)
-# head(A$W)
+# head(A$DF)
 # 
-# A = get.info(1000, 4, TRUE) 
+# A = get.info(1000, 4, TRUE)
+# A$parsQ
+# A$parsG
 # A$BV0
 # A$ATE0
-# mean(A$A)
-# mean(A$Y)
-# head(A$W)
+# mean(A$DF$A)
+# mean(A$DF$Y)
+# head(A$DF)
 

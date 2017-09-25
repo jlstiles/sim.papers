@@ -581,7 +581,18 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                   cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator) {
-  data = gendata(n, g0, Q0)
+  
+  if (is.null(g0)) {
+    info = get.info(n, 4, TRUE)
+    data = info$DF
+    BV0 = info$BV0
+    ATE0 = info$ATE0
+    parsQ = info$parsQ
+    parsG = infor$parsG
+  } else {
+    data = gendata(n, g0, Q0)
+  }
+  
   
   X = data
   X1 = X0 = X
@@ -654,11 +665,11 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   if ("single iterative" %in% estimator) {
     sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
                                    submodel = submodel_logit, loss = loss_loglik,
-                                   approach = "full", max_iter = 10000, g.trunc = 1e-2)
+                                   approach = "full", max_iter = 100, g.trunc = 1e-2)
     
     ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
                                  submodel = submodel_logit, loss = loss_loglik,
-                                 approach = "full", max_iter = 10000,g.trunc = 1e-2)
+                                 approach = "full", max_iter = 100,g.trunc = 1e-2)
     steps1 = c(sigma_info$steps, ATE_info$steps)
     converge1 = c(sigma_info$converge, ATE_info$converge)
     cis1 = c(ci_gentmle(sigma_info)[c(2,4,5)], ci_gentmle(ATE_info)[c(2,4,5)])  
@@ -717,9 +728,16 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     steps = c(steps, steps1)
   }
   
-  results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
-              Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
-              Grisk = stack$Grisk, single = single_info)
+  if (is.null(g0)) {
+    results = list(res = c(sigmait_ci = sigmait_ci, ci_sigma = sigma_ci, ATE_ci = ATE_ci,
+                           sigma_init = initest, ATE_init = ATE_info$initests,
+                           steps = steps, converges = converges, BV0 = BV0, ATE0 = ATE0), parsG = parsG,
+                   parsQ = parsQ)
+  } else {
+    results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
+                Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
+                Grisk = stack$Grisk, single = single_info)
+  }
   return(results)
 
 }
