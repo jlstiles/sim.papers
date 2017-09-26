@@ -29,7 +29,7 @@ library(doParallel)
 # registerDoParallel(cl)
 # clusterExport(cl,cl_export)
 
-registerDoParallel(24)
+registerDoParallel(20)
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
