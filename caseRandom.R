@@ -20,6 +20,7 @@ info = lapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
 })
 
+gc()
 # detectCores()
 # cl = makeCluster(detectCores(), type = "SOCK")
 # registerDoSNOW(cl)
