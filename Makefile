@@ -62,28 +62,28 @@ R=nohup nice -n 19 R CMD BATCH --no-restore --no-save
 # Run an R file via "make analysis"
 analysisTest: test.R
 ifeq (${JOB_ENGINE},slurm)
-	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
 analysisRandom: caseRandom.R
 ifeq (${JOB_ENGINE},slurm)
-	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
 analysisRandom1: caseRandom.1.R
 ifeq (${JOB_ENGINE},slurm)
-	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
 analysisRandom2: caseRandom.2.R
 ifeq (${JOB_ENGINE},slurm)
-	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/blip_test.sh --file=$< --dir=${OUTPUT_DIR}
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
 else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
