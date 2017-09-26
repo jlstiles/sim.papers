@@ -9,9 +9,9 @@
 #' @export
 get.info = function(n, d, truth) {
 
-  # n=1000
-  # d=4
-  # truth=TRUE
+  n=1000
+  d=4
+  truth=TRUE
   # sample size for getting the truth
   N = 1e6
   # choose binaries--possibly 0 or 1 for now
@@ -76,13 +76,17 @@ get.info = function(n, d, truth) {
   
   # choosing from combos of 2, 2 and whether we have 4 way interaction
   # This should be generalized to larger dimensions but for now only 4
-  choo2 = as.logical(rbinom(6, 1, .5))
-  choo3 = as.logical(rbinom(4, 1, .5))
-  way4 = rbinom(1, 1, .5)
-  # choosing which main terms to include
-  MTnum = sample(1:d, 1)
-  MT = sample(1:d, MTnum)
-  MT = MT[order(MT)]
+  s = 0
+  while (s <= 1) {
+    choo2 = as.logical(rbinom(6, 1, .5))
+    choo3 = as.logical(rbinom(4, 1, .5))
+    way4 = rbinom(1, 1, .5)
+    # choosing which main terms to include
+    MTnum = sample(1:d, 1)
+    MT = sample(1:d, MTnum)
+    MT = MT[order(MT)]
+    s = sum(choo2) + sum(choo3) + way4 + MTnum
+  }
   
   # storing for later use
   pars[[F]] = list(choo2 = choo2, choo3 = choo3, way4 = way4, MT = MT, funclist = funclist, bin_coef = bin_coef)
@@ -106,6 +110,7 @@ get.info = function(n, d, truth) {
     # make number of interactions and which ones
     ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
     df_final = df[,MT]
+    
     if (sum(choo2) != 0) {
       df_2way = vapply(which(choo2), FUN = function(combo) {
         df[, ways2[combo,1]]*df[, ways2[combo, 2]]
@@ -177,7 +182,12 @@ get.info = function(n, d, truth) {
   A = rbinom(n, 1, PG_n)
   
   # setting up dataframe for both Q0k found previously and Bk, the interactions terms
-  inters = rbinom(ncol(dfs[[2]][[1]]), 1, .5)
+  s = 0
+  while (s == 0) {
+    inters = rbinom(ncol(dfs[[2]][[1]]), 1, .5)
+    s = sum(inters)
+  }
+ 
   dfinter_n = vapply(which(inters == 1), FUN = function(col) dfs[[2]][[1]][,col]*A, FUN.VALUE = rep(1, n))
   dfQn = cbind(dfs[[2]][[1]], dfinter_n)
   df1n = cbind(dfs[[2]][[1]], dfs[[2]][[1]][, inters])
