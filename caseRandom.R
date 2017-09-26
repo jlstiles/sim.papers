@@ -26,7 +26,7 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
                     SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
                     gform = gform, Qform = Qform, estimator = c("single 1step")
             )}
-results = data.matrix(data.frame(do.call(rbind, ALL)))
+# results = data.matrix(data.frame(do.call(rbind, ALL)))
 # results
 # ALL = list()
 # for (it in 1:6) {
