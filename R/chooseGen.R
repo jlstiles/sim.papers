@@ -105,12 +105,12 @@ get.info = function(n, d, truth) {
     bin_coef = x$bin_coef
     # make number of interactions and which ones
     ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
-    
+    df_final = df[,MT]
     if (sum(choo2) != 0) {
       df_2way = vapply(which(choo2), FUN = function(combo) {
         df[, ways2[combo,1]]*df[, ways2[combo, 2]]
       }, FUN.VALUE = rep(1,n))
-      df_final = cbind(df[,MT], df_2way)
+      df_final = cbind(df_final, df_2way)
     }
     
     # make number of 3 ways interactions
@@ -139,12 +139,13 @@ get.info = function(n, d, truth) {
       bin_coef = x$bin_coef
       # make number of interactions and which ones
       ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
+      df1_final = df1[,MT]
       
       if (sum(choo2) != 0) {
         df_2way = vapply(which(choo2), FUN = function(combo) {
           df1[, ways2[combo,1]]*df1[, ways2[combo, 2]]
         }, FUN.VALUE = rep(1,N))
-        df1_final = cbind(df1[,MT], df_2way)
+        df1_final = cbind(df1_final, df_2way)
       }
       
       # make number of 3 ways interactions
