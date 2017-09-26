@@ -110,7 +110,7 @@ get.info = function(n, d, truth) {
       df_2way = vapply(which(choo2), FUN = function(combo) {
         df[, ways2[combo,1]]*df[, ways2[combo, 2]]
       }, FUN.VALUE = rep(1,n))
-      df = cbind(df[,MT], df_2way)
+      df_final = cbind(df[,MT], df_2way)
     }
     
     # make number of 3 ways interactions
@@ -119,13 +119,13 @@ get.info = function(n, d, truth) {
       df_3way = vapply(which(choo3), FUN = function(combo) {
         df[, ways3[combo,1]]*df[, ways3[combo, 2]]*df[, ways3[combo, 3]]
       }, FUN.VALUE = rep(1,n))
-      df = cbind(df, df_3way)
+      df_final = cbind(df_final, df_3way)
     } 
     
     
     if (way4) {
       df_4way = df[, 1]*df[, 2]*df[, 3]*df[, 4]
-      df = cbind(df, df_4way)
+      df_final = cbind(df_final, df_4way)
     }
     
     if (truth) {
@@ -144,7 +144,7 @@ get.info = function(n, d, truth) {
         df_2way = vapply(which(choo2), FUN = function(combo) {
           df1[, ways2[combo,1]]*df1[, ways2[combo, 2]]
         }, FUN.VALUE = rep(1,N))
-        df1 = cbind(df1[,MT], df_2way)
+        df1_final = cbind(df1[,MT], df_2way)
       }
       
       # make number of 3 ways interactions
@@ -153,12 +153,12 @@ get.info = function(n, d, truth) {
         df_3way = vapply(which(choo3), FUN = function(combo) {
           df1[, ways3[combo,1]]*df1[, ways3[combo, 2]]*df1[, ways3[combo, 3]]
         }, FUN.VALUE = rep(1,N))
-        df1 = cbind(df1, df_3way)
+        df1_final = cbind(df1_final, df_3way)
       }
       
       if (way4) {
         df_4way = df1[, 1]*df1[, 2]*df1[, 3]*df1[, 4]
-        df1 = cbind(df1, df_4way)
+        df1_final = cbind(df1_final, df_4way)
       }
     }
     # 
@@ -166,7 +166,7 @@ get.info = function(n, d, truth) {
     #   df_final = df
     #   df_final1 = df1_true
     # }
-    if (truth) return(list(df, df1)) else return(list(df, list()))
+    if (truth) return(list(df_final, df1_final)) else return(list(df_final, list()))
   })
   
   # generating coeffs for prop score 
