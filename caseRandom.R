@@ -21,6 +21,7 @@ info = mclapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
 }, mc.cores = 24)
 
+save(info, dgps, file = "info.RData")
 # detectCores()
 # cl = makeCluster(detectCores(), type = "SOCK")
 # registerDoSNOW(cl)
@@ -30,7 +31,7 @@ info = mclapply(dgps, FUN = function(x) {
 # registerDoParallel(cl)
 # clusterExport(cl,cl_export)
 
-registerDoParallel(24)
+# registerDoParallel(24)
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
@@ -38,14 +39,14 @@ registerDoParallel(24)
 # SL.libraryG = c("SL.glm", "SL.nnet")
 # SL.library = list("SL.nnet", "glm.mainint")
 
-gform = formula("A~.")
-Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
-            .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
-                    SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
-                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = info[[i]]
-            )}
+# gform = formula("A~.")
+# Qform = formula("Y~A*(W1+W2+W3+W4)")
+# ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+#             .errorhandling = "remove")%dopar%
+#             {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
+#                     SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
+#                     gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = info[[i]]
+#             )}
 
 # results = data.matrix(data.frame(do.call(rbind, ALL)))
 # results
@@ -58,5 +59,5 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
 #                      )}}
 # 
 # lapply(ALL, length)
-save(ALL, dgps, file = "caseRandom.RData")
+# save(ALL, dgps, file = "caseRandom.RData")
 
