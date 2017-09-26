@@ -54,17 +54,23 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
     X = X[tr,]
     newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
+    if (method == "method.NNloglik") {
+      control = list(saveFitLibrary = TRUE, trimLogit = .001)
+    } else {control = list(saveFitLibrary = TRUE)}
     Qfit=SuperLearner(Y,X,newX=newdata, family = binomial(),
                       SL.library=SL.library, method=method,
-                      id = NULL, verbose = FALSE, control = list(),
+                      id = NULL, verbose = FALSE, control = control,
                       cvControl = list(V=10), obsWeights = NULL)
     
     A = A[tr]
     W1 = W[tr,]
     newW = W[val,]
+    if (method == "method.NNloglik") {
+      control = list(saveFitLibrary = TRUE, trimLogit = .001)
+      } else {control = list(saveFitLibrary = TRUE)}
     gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomial(),
                         SL.library=SL.libraryG,method = method, 
-                        id = NULL, verbose = FALSE, control = list(),
+                        id = NULL, verbose = FALSE, control = control,
                         cvControl = list(V=10), obsWeights = NULL)
     
     
@@ -171,17 +177,23 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     X = X[tr,]
     newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
+    if (method == "method.NNloglik") {
+      control = list(saveFitLibrary = TRUE, trimLogit = .001)
+    } else {control = list(saveFitLibrary = TRUE)}
     Qfit=SuperLearner(Y,X,newX=newdata, family = binomial(),
                       SL.library=SL.library, method = method,
-                      id = NULL, verbose = FALSE, control = list(),
+                      id = NULL, verbose = FALSE, control = control,
                       cvControl = list(V=SL), obsWeights = NULL)
     
     A = A[tr]
     W1 = W[tr,]
     newW = W[val,]
+    if (method == "method.NNloglik") {
+      control = list(saveFitLibrary = TRUE, trimLogit = .001)
+    } else {control = list(saveFitLibrary = TRUE)}
     gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomial(),
                         SL.library=SL.libraryG, method = "method.NNloglik", 
-                        id = NULL, verbose = FALSE, control = list(),
+                        id = NULL, verbose = FALSE, control = control,
                         cvControl = list(V=SL), obsWeights = NULL)
     
     
