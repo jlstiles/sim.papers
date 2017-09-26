@@ -16,28 +16,47 @@ clusterExport(cl,cl_export)
 n = 1000
 B = 100
 
+dgps = mclapply(1:B, FUN = function(x) {
+  info = get.info(1000,4,TRUE)
+  dgp = list(DF = info$DF, BV0 = info$BV0, ATE0 = info$ATE0)
+}, mc.cores = 4)
+             
 # debug(SL.stack1)
 # debug(sim_cv)
-# SL.libraryG = c("SL.glm", "SL.nnet")
-# SL.library1 = c("SL.nnet", "glm.mainint")
+# SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
+# SL.library = list("SL.nnet", "glm.mainint", c("SL.hal", "screen.Main"))
+# # SL.libraryG = c("SL.glm", "SL.nnet")
+# SL.library = list("SL.nnet", "glm.mainint")
+
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
-                    gform = gform, Qform = Qform, estimator = c("single iterative")
+                    gform = gform, Qform = Qform, estimator = c("single iterative"), dgp = dgps[[i]]
             )}
+
 
 
 # results = data.matrix(data.frame(do.call(rbind, ALL)))
 # 
 # res = lapply(ALL, FUN = function(x) x$res)
 # results = data.matrix(data.frame(do.call(rbind, res)))
-# 
-# vapply(c(1,21,27), FUN = function(ind) {
+# colnames(results)
+# testerBV = vapply(c(1,21,27), FUN = function(ind) {
 #   results[,"BV0"] >= results[, (ind+1)] & results[,"BV0"] <= results[, (ind+2)]
-# }, FUN.VALUE = rep(TRUE, 10))
+# }, FUN.VALUE = rep(TRUE, length(ALL)))
+# 
+# testerATE = vapply(c(4,24,30), FUN = function(ind) {
+#   results[,"ATE0"] >= results[, (ind+1)] & results[,"ATE0"] <= results[, (ind+2)]
+# }, FUN.VALUE = rep(TRUE, length(ALL)))
+# 
+# testerATE
+# testerBV
+# 
+# results[,c(1,21,27,41)]
+# results[,c(4,24,30,42)]
 
 # res[[1]]
 # results
@@ -50,5 +69,5 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
 #                      )}}
 # 
 # lapply(ALL, length)
-save(ALL, file = "caseRandom.1.RData")
+save(ALL, dgps, file = "caseRandom.1.RData")
 
