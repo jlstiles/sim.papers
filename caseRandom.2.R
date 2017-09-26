@@ -2,7 +2,7 @@ case = "setup"
 source_file = "source_paper.R"
 source(source_file)
 
-# devtools::install_github("jlstiles/Simulations")
+# devtools::install_github("jlstiles/Simulations", force = TRUE)
 library(Simulations)
 source("WrappersVblip1.R")
 
@@ -20,11 +20,14 @@ info = lapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
 })
 
-detectCores()
-cl = makeCluster(detectCores(), type = "SOCK")
-registerDoSNOW(cl)
+# detectCores()
+# cl = makeCluster(detectCores(), type = "SOCK")
+# registerDoSNOW(cl)
+# clusterExport(cl,cl_export)
+library(doParallel)
+cl <- makePSOCKcluster(24)
+registerDoParallel(cl)
 clusterExport(cl,cl_export)
-
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")

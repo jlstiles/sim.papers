@@ -20,11 +20,14 @@ info = lapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
 })
 
-detectCores()
-cl = makeCluster(detectCores(), type = "SOCK")
-registerDoSNOW(cl)
+# detectCores()
+# cl = makeCluster(detectCores(), type = "SOCK")
+# registerDoSNOW(cl)
+# clusterExport(cl,cl_export)
+library(doParallel)
+cl <- makePSOCKcluster(24)
+registerDoParallel(cl)
 clusterExport(cl,cl_export)
-
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
@@ -34,7 +37,7 @@ clusterExport(cl,cl_export)
 
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+ALL=foreach(i=1:4,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 

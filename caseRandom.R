@@ -24,7 +24,7 @@ info = lapply(dgps, FUN = function(x) {
 # cl = makeCluster(detectCores(), type = "SOCK")
 # registerDoSNOW(cl)
 # clusterExport(cl,cl_export)
-
+library(doParallel)
 cl <- makePSOCKcluster(24)
 registerDoParallel(cl)
 clusterExport(cl,cl_export)
