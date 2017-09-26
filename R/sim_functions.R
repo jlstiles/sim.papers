@@ -224,15 +224,12 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator) {
+                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   
-  if (is.null(g0)) {
-    info = get.info(n, 4, TRUE)
-    data = info$DF
-    BV0 = info$BV0
-    ATE0 = info$ATE0
-    parsQ = info$parsQ
-    parsG = info$parsG
+  if (!is.null(dgp)) {
+    data = dgp$DF
+    BV0 = dgp$BV0
+    ATE0 = dgp$ATE0
   } else {
     data = gendata(n, g0, Q0)
   }
@@ -373,10 +370,9 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   }
   
   if (is.null(g0)) {
-    results = list(res = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
+    results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
                            Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
-                           Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0), parsG = parsG,
-                   parsQ = parsQ)
+                           Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0)
   } else {
     results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
                 Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
