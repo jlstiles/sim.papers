@@ -203,32 +203,31 @@ get.info = function(n, d, truth) {
   # BV0
   Y = rbinom(n, 1, PQ_n)
   
-  if (!truth) {
-    PQ_n1  = truncate(plogis(df1n %*% coef_Q), .05)
-    PQ_n0 = truncate(plogis(dfs[[2]][[1]] %*% coef_Q[1:ncol(dfs[[2]][[1]])]))
-    blip_n = PQ_n1 - PQ_n0
-    ATEn = mean(blip_n)
-    BVn = var(blip_n)
-  }
+  PQ_n1  = truncate(plogis(df1n %*% coef_Q), .05)
+  PQ_n0 = truncate(plogis(dfs[[2]][[1]] %*% coef_Q[1:ncol(dfs[[2]][[1]])]))
+  blip_n = PQ_n1 - PQ_n0
+  ATEn = mean(blip_n)
+  BVn = var(blip_n)
+
   if (truth) {
-    return(list(BV0 = BV0, ATE0 = ATE0, W = W, A = A, Y = Y))
+    return(list(BV0 = BV0, ATE0 = ATE0, W = W, A = A, Y = Y, blip_n))
   } else {
-    return(list(BVn = BVn, ATEn = ATEn, W = W, A = A, Y = Y))
+    return(list(BVn = BVn, ATEn = ATEn, W = W, A = A, Y = Y, blip_n))
   }
 }
 
-A = get.info(1000, 4, FALSE) 
-
-A$BVn
-A$ATEn
-mean(A$A)
-mean(A$Y)
-head(A$W)
-
-A = get.info(1000, 4, TRUE) 
-A$BV0
-A$ATE0
-mean(A$A)
-mean(A$Y)
-head(A$W)
+# A = get.info(1000, 4, FALSE) 
+# 
+# A$BVn
+# A$ATEn
+# mean(A$A)
+# mean(A$Y)
+# head(A$W)
+# 
+# A = get.info(1000, 4, TRUE) 
+# A$BV0
+# A$ATE0
+# mean(A$A)
+# mean(A$Y)
+# head(A$W)
 
