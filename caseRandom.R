@@ -25,7 +25,7 @@ info = lapply(dgps, FUN = function(x) {
 # registerDoSNOW(cl)
 # clusterExport(cl,cl_export)
 
-cl <- makePSOCKcluster(2)
+cl <- makePSOCKcluster(24)
 registerDoParallel(cl)
 clusterExport(cl,cl_export)
 
