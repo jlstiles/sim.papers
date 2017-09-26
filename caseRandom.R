@@ -5,6 +5,7 @@ source(source_file)
 # devtools::install_github("jlstiles/Simulations")
 library(Simulations)
 source("WrappersVblip1.R")
+library(doParallel)
 
 SL.library = SL.library1
 SL.libraryG = SL.libraryG
@@ -12,25 +13,24 @@ SL.libraryG = SL.libraryG
 n = 1000
 B = 100
 
-dgps = lapply(1:B, FUN = function(x) {
+dgps = mclapply(1:B, FUN = function(x) {
   info = get.info(1000,4,TRUE)
-})
+}, mc.cores = 24)
 
-info = lapply(dgps, FUN = function(x) {
+info = mclapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
-})
+}, mc.cores = 24)
 
-gc()
 # detectCores()
 # cl = makeCluster(detectCores(), type = "SOCK")
 # registerDoSNOW(cl)
 # clusterExport(cl,cl_export)
-library(doParallel)
+
 # cl <- makePSOCKcluster(24)
 # registerDoParallel(cl)
 # clusterExport(cl,cl_export)
 
-registerDoParallel(20)
+registerDoParallel(24)
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
