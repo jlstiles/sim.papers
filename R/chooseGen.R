@@ -7,8 +7,8 @@
 # we can now interact these fcns and create new variables
 
 #' @export
-get.info = function(n, d) {
-  
+get.info = function(n, d, pos = .01, minBV = .03) {
+  # n=1000; d=4;pos=.01;minBV=.03
   # sample size for getting the truth
   N = 1e6
   # choose binaries--possibly 0 or 1 for now
@@ -83,7 +83,7 @@ get.info = function(n, d) {
   # create the transformed covariates--coeffs to be added
   dfs = lapply(pars, FUN = function(x){
     N = 1e6
-    df1 = vapply(1:d, FUN = function(i) {
+    df = vapply(1:d, FUN = function(i) {
       bin_coef = x$bin_coef
       funclist[[i]](Wbig[,i])
     }, FUN.VALUE = rep(1, N))
@@ -96,27 +96,27 @@ get.info = function(n, d) {
     
     # make number of interactions and which ones
     ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
-    df1_final = df1[,MT]
+    df_final = df[,MT]
     
     if (sum(choo2) != 0) {
       df_2way = vapply(which(choo2), FUN = function(combo) {
-        df1[, ways2[combo,1]]*df1[, ways2[combo, 2]]
+        df[, ways2[combo,1]]*df[, ways2[combo, 2]]
       }, FUN.VALUE = rep(1,N))
-      df1_final = cbind(df1_final, df_2way)
+      df_final = cbind(df_final, df_2way)
     }
     
     # make number of 3 ways interactions
     ways3 = matrix(c(1, 2, 3, 1, 2, 4, 1, 3, 4, 2, 3, 4), byrow = TRUE, nrow = 4)
     if (sum(choo3) != 0) {
       df_3way = vapply(which(choo3), FUN = function(combo) {
-        df1[, ways3[combo,1]]*df1[, ways3[combo, 2]]*df1[, ways3[combo, 3]]
+        df[, ways3[combo,1]]*df[, ways3[combo, 2]]*df[, ways3[combo, 3]]
       }, FUN.VALUE = rep(1,N))
-      df1_final = cbind(df1_final, df_3way)
+      df_final = cbind(df_final, df_3way)
     }
     
     if (way4) {
-      df_4way = df1[, 1]*df1[, 2]*df1[, 3]*df1[, 4]
-      df1_final = cbind(df1_final, df_4way)
+      df_4way = df[, 1]*df[, 2]*df[, 3]*df[, 4]
+      df_final = cbind(df_final, df_4way)
     }
     
     # 
@@ -124,7 +124,7 @@ get.info = function(n, d) {
     #   df_final = df
     #   df_final1 = df1_true
     # }
-    return(df1_final) 
+    return(df_final) 
   })
   
   # generating coeffs for prop score 
@@ -136,7 +136,7 @@ get.info = function(n, d) {
   maxG = max(PG0)
   minG = min(PG0)
   g_iter = 0
-  while ((maxG >= .99 | minG <= .01) & g_iter < 10) {
+  while ((maxG >= (1 - pos) | minG <= pos) & g_iter < 10) {
     coef_G = .8*coef_G
     PG0  = plogis(dfs[[1]] %*% coef_G)
     maxG = max(PG0)
@@ -167,7 +167,7 @@ get.info = function(n, d) {
   C = 1
   mm = 5
   jj = 1
-  while (BV0 <= .025 & jj < 11) {
+  while (BV0 <= minBV & jj < 11) {
     coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)] = C*coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)]
     PQ1  = plogis(dfQ1 %*% coef_Q)
     PQ0 = plogis(dfs[[2]] %*% coef_Q[1:ncol(dfs[[2]])])
@@ -202,7 +202,7 @@ get.info = function(n, d) {
   
 }
 
-# info = get.info(1000, 4)
+# info = get.info(n = 1000, d = 4)
 # info$BV0
 # info$ATE0
 # mean(info$DF$A)
