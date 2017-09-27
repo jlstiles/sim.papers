@@ -10,7 +10,7 @@ SL.library = SL.library1
 SL.libraryG = SL.libraryG
 
 n = 1000
-B = 4
+B = 100
 
 dgps = lapply(1:B, FUN = function(x) {
   info = get.info(1000,4,FALSE)
