@@ -6,8 +6,20 @@
 # now we have W1, W2, W3, W4 which are random variables as plain binomials and fcns of normals
 # we can now interact these fcns and create new variables
 
+#' @title get.dgp
+#' @description randomly creates a dgp, for now only 4 dimensional of confounders, binary 
+#' treatment.
+#' @param n, sample size
+#' @param d, set to 4 only
+#' @param pos, a small value to make sure prop scores are between in (pos, 1 - pos)
+#' @param minBV, minimum blip variance
+#' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
+#' BV0, the sample pscores, PGn, the sample true blips, blip_n, the sample 
+#' true prob of death under treatment, PQ1n, and prob of death under control
+#' PQ0n
 #' @export
-get.info = function(n, d, pos = .01, minBV = .03) {
+#' @example /inst/examples/example_get.dgp.R
+get.dgp = function(n, d, pos = .01, minBV = .03) {
   # n=1000; d=4;pos=.01;minBV=.03
   # sample size for getting the truth
   N = 1e6
@@ -198,16 +210,8 @@ get.info = function(n, d, pos = .01, minBV = .03) {
   colnames(DF)[c(1,(d+2))] = c("A", "Y")
   
   # return the sample true blips and sample barQ1, barQ0, as well as truths and the DF
-  return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n, PQ1n = PQ1n, PGn = PGn))
+  return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n, PQ1n = PQ1n, PQ0n = PQ0n, PGn = PGn))
   
 }
 
-# info = get.info(n = 1000, d = 4)
-# info$BV0
-# info$ATE0
-# mean(info$DF$A)
-# mean(info$DF$Y)
-# min(info$PGn)
-# max(info$PGn)
-# head(info$DF)
-# hist(info$blip_n)
+
