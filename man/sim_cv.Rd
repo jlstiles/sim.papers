@@ -10,42 +10,46 @@ sim_cv(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
 \arguments{
 \item{n, }{sample size}
 
-\item{g0, }{treatment mechanism formula}
+\item{g0, }{treatment mechanism function, call g0_linear to see the format}
 
-\item{Q0, }{outcome model formula}
+\item{Q0, }{outcome model function, call Q0 linear to see the format--WILL
+be more generalized but for now rather limited}
 
 \item{SL.library, }{SuperLearner library for outcome predictions}
 
 \item{SL.libraryG, }{SuperLearner Library for treatment mechanism}
 
+\item{method, }{SuperLearner meta fitting method}
+
 \item{cv, }{set to TRUE for CV-TMLE}
 
-\item{single, }{always set to FALSE.}
+\item{V, }{number of folds for the CV tmle}
+
+\item{SL, }{number of folds for each superlearner}
+
+\item{gform, }{a linear form to specify for estimating pscore}
+
+\item{Qform, }{a linear form to specify for estimating outcome prediction}
+
+\item{estimator, }{a character vector containing any set of "single 1step" for
+one step tmle single param estimates for ATE and blip variance, "single iterative"
+for the same with iterative tmle, or "simul 1 step", "simul line", "simul full"
+to compute simultaneous estimates and CI's for ATE and blip variance.  line, full
+and 1 step are just different targeting methods for tmle}
+
+\item{dgp, }{a list containing an element named DF for the data.frame with A, Y and 
+covariates which are named whatever, BV0 and ATE0 for true blip variance and 
+average treatment effect respectively.}
 }
 \value{
 a vector with the following elements in this order:
-TMLE confidence intervals each with estimate, left and right bounds
-one step single parameter TMLE for blip variance, the iterative one
-step TMLE for blip variance, simultaneous one step TMLE (which 
-estimates average treatment effect and blip variance) for blip 
-variance, simultaneous iterative TMLE "line" option
-(estimates average treatment effect and blip variance) for blip 
-variance, simultaneous iterative TMLE "full" option
-(estimates average treatment effect and blip variance) for blip 
-variance. All of the same CI's just mentioned except for initial
-estimate that is main terms and interactions glm excep the "line"
-and "full" models. one step simultaneous TMLE (estimating average
-treatment effect and blip variance) for average treatment effect,
-TMLE just for Average Treatment Effect, the same as the previous
-two CI's where initial estimates for the TMLE's are glm with 
-main terms and interactions. initial estimate for blip variance
-using SuperLearner, initial estimate for blip variance using glm 
-with main terms and interactions, initial estimate for ATE using
-superlearner, initial estimate for ATE using glm with main terms
-and interactions, steps to convergence, logical of whether the 
-algorithm converged, Outcome SuperLearner coefficients, treatment
-mechanism SuperLearner coefficients, Outcome SuperLearner risk,
-Propensity score SuperLearner risk
+TMLE pt estimates and confidence intervals each with estimate, 
+left and right bounds and initial estimates for BV and ATE
+Superlearner coefficients and risks for both pscore and outcome
+estimation, tmle pt estimates, CI's for BV and ATE for Qform model 
+assumed plus initial estimates for these as well as pt estimates and
+CI's for BV and ATE using the delta method, ie sandwich estimator
+under non-parametric model
 }
 \description{
 Function that simulates data and performs TMLE estimates
@@ -57,10 +61,12 @@ are generated according to the gendata function.
 SL.library = c("SL.glm", "SL.mean")
 SL.libraryG = c("SL.glm", "SL.mean")
 n=1000
-result = sim_cv(n, g0 = g0_1, Q0 = Q0_1, SL.library=SL.library,
-       SL.libraryG=SL.libraryG,
-       method = "method.NNloglik",cv=TRUE)
+g0 = g0_linear
+Q0 = Q0_trig
+gform = formula("A ~.")
+Qform = formula("Y ~ A*(W1 + W2 + W3 + W4)")
+result = sim_cv(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
+                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL)
           
-names(result)
-result
+
 }
