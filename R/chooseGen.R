@@ -235,22 +235,16 @@ get.info = function(n, d, truth) {
   # BV0
   Y = rbinom(n, 1, PQ_n)
   
-  if (!truth) {
+
     PQ_n1  = gentmle2::truncate(plogis(df1n %*% coef_Q), .05)
     PQ_n0 = gentmle2::truncate(plogis(dfs[[2]][[1]] %*% coef_Q[1:ncol(dfs[[2]][[1]])]), .05)
     blip_n = PQ_n1 - PQ_n0
     ATEn = mean(blip_n)
     BVn = var(blip_n)
-  }
-  if (truth) {
     DF = cbind(A, W, Y)
     colnames(DF)[c(1,(d+2))] = c("A", "Y")
-    return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, parsG = pars[[1]], parsQ = pars[[2]]))
-  } else {
-    DF = cbind(A, W, Y)
-    colnames(DF)[c(1,(d+2))] = c("A", "Y")
-    return(list(BVn = BVn, ATEn = ATEn, DF = DF, parsG = pars[[1]], parsQ = pars[[2]]))
-  }
+    return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n))
+
 }
 
 # A = get.info(1000, 4, FALSE)
