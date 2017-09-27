@@ -2,10 +2,9 @@ case = "setup"
 source_file = "source_paper.R"
 source(source_file)
 
-# devtools::install_github("jlstiles/Simulations")
+# devtools::install_github("jlstiles/Simulations", force = TRUE)
 library(Simulations)
 source("WrappersVblip1.R")
-library(doParallel)
 
 SL.library = SL.library1
 SL.libraryG = SL.libraryG
@@ -13,25 +12,20 @@ SL.libraryG = SL.libraryG
 n = 1000
 B = 100
 
-dgps = mclapply(1:B, FUN = function(x) {
-  info = get.info(1000,4,TRUE)
-}, mc.cores = 24)
+dgps = lapply(1:B, FUN = function(x) {
+  info = get.info(1000,4,FALSE)
+})
 
-info = mclapply(dgps, FUN = function(x) {
+
+info = lapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
-}, mc.cores = 24)
+})
 
-save(info, dgps, file = "info.RData")
-# detectCores()
-# cl = makeCluster(detectCores(), type = "SOCK")
-# registerDoSNOW(cl)
-# clusterExport(cl,cl_export)
+detectCores()
+cl = makeCluster(detectCores(), type = "SOCK")
+registerDoSNOW(cl)
+clusterExport(cl,cl_export)
 
-# cl <- makePSOCKcluster(24)
-# registerDoParallel(cl)
-# clusterExport(cl,cl_export)
-
-# registerDoParallel(24)
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
@@ -39,14 +33,14 @@ save(info, dgps, file = "info.RData")
 # SL.libraryG = c("SL.glm", "SL.nnet")
 # SL.library = list("SL.nnet", "glm.mainint")
 
-# gform = formula("A~.")
-# Qform = formula("Y~A*(W1+W2+W3+W4)")
-# ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
-#             .errorhandling = "remove")%dopar%
-#             {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
-#                     SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
-#                     gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = info[[i]]
-#             )}
+gform = formula("A~.")
+Qform = formula("Y~A*(W1+W2+W3+W4)")
+ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+            .errorhandling = "remove")%dopar%
+            {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
+                    SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
+                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = info[[i]]
+            )}
 
 # results = data.matrix(data.frame(do.call(rbind, ALL)))
 # results
@@ -59,5 +53,5 @@ save(info, dgps, file = "info.RData")
 #                      )}}
 # 
 # lapply(ALL, length)
-# save(ALL, dgps, file = "caseRandom.RData")
+save(ALL, dgps, file = "caseRandom.RData")
 

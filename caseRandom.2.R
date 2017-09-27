@@ -13,21 +13,19 @@ n = 1000
 B = 100
 
 dgps = lapply(1:B, FUN = function(x) {
-  info = get.info(1000,4,TRUE)
+  info = get.info(1000,4,FALSE)
 })
+
 
 info = lapply(dgps, FUN = function(x) {
   list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
 })
 
-# detectCores()
-# cl = makeCluster(detectCores(), type = "SOCK")
-# registerDoSNOW(cl)
-# clusterExport(cl,cl_export)
-library(doParallel)
-cl <- makePSOCKcluster(24)
-registerDoParallel(cl)
+detectCores()
+cl = makeCluster(detectCores(), type = "SOCK")
+registerDoSNOW(cl)
 clusterExport(cl,cl_export)
+
 # debug(SL.stack1)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
