@@ -10,7 +10,7 @@ SL.library = SL.library1
 SL.libraryG = SL.libraryG
 
 n = 1000
-B = 100
+B = 4
 
 dgps = lapply(1:B, FUN = function(x) {
   info = get.info(1000,4,FALSE)
@@ -42,6 +42,8 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
                     gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = info[[i]]
             )}
 
+# ALL[[1]]
+# 
 # results = data.matrix(data.frame(do.call(rbind, ALL)))
 # results
 # ALL = list()

@@ -8,7 +8,7 @@
 
 #' @export
 get.info = function(n, d, truth) {
-
+  
   n=1000
   d=4
   truth=TRUE
@@ -34,17 +34,17 @@ get.info = function(n, d, truth) {
   colnames(W) = paste0("W", 1:d)
   
   # If seeking the truth we need to draw a big W
-  if (truth) {
-    Wbig = matrix(rep(NA, d*N), ncol = d)
-    for (a in 1:d) {
-      if (a %in% binaries) {
-        V = rbinom(n, 1, r)
-      } else {
-        V = rnorm(n, 0, 1)
-      }
-      Wbig[,a] = V 
+  
+  Wbig = matrix(rep(NA, d*N), ncol = d)
+  for (a in 1:d) {
+    if (a %in% binaries) {
+      V = rbinom(n, 1, r)
+    } else {
+      V = rnorm(n, 0, 1)
     }
+    Wbig[,a] = V 
   }
+  
   
   Wbig = as.data.frame(Wbig)
   colnames(Wbig) = paste0("W", 1:d)
@@ -54,42 +54,42 @@ get.info = function(n, d, truth) {
   # get contins cols
   conts = vapply(1:d, FUN = function(x) !(x %in% binaries), FUN.VALUE = TRUE)
   contins  = (1:d)[conts]
-
+  
   types = list(function(x) sin(x), function(x) cos(x), function(x) x^2, 
                function(x) x)
   
   # get forms for both Q and G
   pars = list()
   for (F in 1:2) {
-  # amplify the binary or not
-  bin_coef = runif(1, -5, 5)
-  
-  # choosing functions to apply to each variable
-  funclist = list()
-  for (x in 1:d) {
-    if (x %in% binaries) {
-      funclist[[x]] = function(g) bin_coef*g
-    } else {
-      funclist[[x]] = types[[sample(1:4, 1)]]
+    # amplify the binary or not
+    bin_coef = runif(1, -5, 5)
+    
+    # choosing functions to apply to each variable
+    funclist = list()
+    for (x in 1:d) {
+      if (x %in% binaries) {
+        funclist[[x]] = function(g) bin_coef*g
+      } else {
+        funclist[[x]] = types[[sample(1:4, 1)]]
+      }
     }
-  }
-  
-  # choosing from combos of 2, 2 and whether we have 4 way interaction
-  # This should be generalized to larger dimensions but for now only 4
-  s = 0
-  while (s <= 1) {
-    choo2 = as.logical(rbinom(6, 1, .5))
-    choo3 = as.logical(rbinom(4, 1, .5))
-    way4 = rbinom(1, 1, .5)
-    # choosing which main terms to include
-    MTnum = sample(1:d, 1)
-    MT = sample(1:d, MTnum)
-    MT = MT[order(MT)]
-    s = sum(choo2) + sum(choo3) + way4 + MTnum
-  }
-  
-  # storing for later use
-  pars[[F]] = list(choo2 = choo2, choo3 = choo3, way4 = way4, MT = MT, funclist = funclist, bin_coef = bin_coef)
+    
+    # choosing from combos of 2, 2 and whether we have 4 way interaction
+    # This should be generalized to larger dimensions but for now only 4
+    s = 0
+    while (s <= 1) {
+      choo2 = as.logical(rbinom(6, 1, .5))
+      choo3 = as.logical(rbinom(4, 1, .5))
+      way4 = rbinom(1, 1, .5)
+      # choosing which main terms to include
+      MTnum = sample(1:d, 1)
+      MT = sample(1:d, MTnum)
+      MT = MT[order(MT)]
+      s = sum(choo2) + sum(choo3) + way4 + MTnum
+    }
+    
+    # storing for later use
+    pars[[F]] = list(choo2 = choo2, choo3 = choo3, way4 = way4, MT = MT, funclist = funclist, bin_coef = bin_coef)
   } 
   
   #####
@@ -100,13 +100,17 @@ get.info = function(n, d, truth) {
   dfs = lapply(pars, FUN = function(x){
     
     # make df of main terms and form fcns
-    df = vapply(1:d, FUN = function(i) x$funclist[[i]](W[,i]), FUN.VALUE = rep(1, n))
+    df = vapply(1:d, FUN = function(i) {
+      bin_coef = x$bin_coef
+      x$funclist[[i]](W[,i])
+    }, FUN.VALUE = rep(1, n))
+    
     choo2 = x$choo2
     choo3 = x$choo3
     way4 = x$way4
     MT = x$MT
     funclist = x$funclist
-    bin_coef = x$bin_coef
+    
     # make number of interactions and which ones
     ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
     df_final = df[,MT]
@@ -133,46 +137,50 @@ get.info = function(n, d, truth) {
       df_final = cbind(df_final, df_4way)
     }
     
-    if (truth) {
-      N = 1e6
-      df1 = vapply(1:d, FUN = function(x) funclist[[x]](Wbig[,x]), FUN.VALUE = rep(1, N))
-      choo2 = x$choo2
-      choo3 = x$choo3
-      way4 = x$way4
-      MT = x$MT
-      funclist = x$funclist
+    
+    N = 1e6
+    df1 = vapply(1:d, FUN = function(x) {
       bin_coef = x$bin_coef
-      # make number of interactions and which ones
-      ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
-      df1_final = df1[,MT]
-      
-      if (sum(choo2) != 0) {
-        df_2way = vapply(which(choo2), FUN = function(combo) {
-          df1[, ways2[combo,1]]*df1[, ways2[combo, 2]]
-        }, FUN.VALUE = rep(1,N))
-        df1_final = cbind(df1_final, df_2way)
-      }
-      
-      # make number of 3 ways interactions
-      ways3 = matrix(c(1, 2, 3, 1, 2, 4, 1, 3, 4, 2, 3, 4), byrow = TRUE, nrow = 4)
-      if (sum(choo3) != 0) {
-        df_3way = vapply(which(choo3), FUN = function(combo) {
-          df1[, ways3[combo,1]]*df1[, ways3[combo, 2]]*df1[, ways3[combo, 3]]
-        }, FUN.VALUE = rep(1,N))
-        df1_final = cbind(df1_final, df_3way)
-      }
-      
-      if (way4) {
-        df_4way = df1[, 1]*df1[, 2]*df1[, 3]*df1[, 4]
-        df1_final = cbind(df1_final, df_4way)
-      }
+      funclist[[x]](Wbig[,x])
+    }, FUN.VALUE = rep(1, N))
+    
+    choo2 = x$choo2
+    choo3 = x$choo3
+    way4 = x$way4
+    MT = x$MT
+    funclist = x$funclist
+    
+    # make number of interactions and which ones
+    ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
+    df1_final = df1[,MT]
+    
+    if (sum(choo2) != 0) {
+      df_2way = vapply(which(choo2), FUN = function(combo) {
+        df1[, ways2[combo,1]]*df1[, ways2[combo, 2]]
+      }, FUN.VALUE = rep(1,N))
+      df1_final = cbind(df1_final, df_2way)
     }
+    
+    # make number of 3 ways interactions
+    ways3 = matrix(c(1, 2, 3, 1, 2, 4, 1, 3, 4, 2, 3, 4), byrow = TRUE, nrow = 4)
+    if (sum(choo3) != 0) {
+      df_3way = vapply(which(choo3), FUN = function(combo) {
+        df1[, ways3[combo,1]]*df1[, ways3[combo, 2]]*df1[, ways3[combo, 3]]
+      }, FUN.VALUE = rep(1,N))
+      df1_final = cbind(df1_final, df_3way)
+    }
+    
+    if (way4) {
+      df_4way = df1[, 1]*df1[, 2]*df1[, 3]*df1[, 4]
+      df1_final = cbind(df1_final, df_4way)
+    }
+    
     # 
     # if (all(c(all(!choo2), all(!choo3), !way4))) {
     #   df_final = df
     #   df_final1 = df1_true
     # }
-    if (truth) return(list(df_final, df1_final)) else return(list(df_final, list()))
+    return(list(df_final, df1_final)) 
   })
   
   # generating coeffs for prop score 
@@ -187,7 +195,7 @@ get.info = function(n, d, truth) {
     inters = rbinom(ncol(dfs[[2]][[1]]), 1, .5)
     s = sum(inters)
   }
- 
+  
   dfinter_n = vapply(which(inters == 1), FUN = function(col) dfs[[2]][[1]][,col]*A, FUN.VALUE = rep(1, n))
   dfQn = cbind(dfs[[2]][[1]], dfinter_n)
   df1n = cbind(dfs[[2]][[1]], dfs[[2]][[1]][, inters])
@@ -195,7 +203,7 @@ get.info = function(n, d, truth) {
   # choosing coeffs for the Q generator
   a = .3
   coef_Q = runif(ncol(dfQn), -a, a)
-
+  
   # mean(Y)
   
   if (truth) {
@@ -207,7 +215,7 @@ get.info = function(n, d, truth) {
     # getting huge draw for blip
     dfinter_true = vapply(which(inters == 1), FUN = function(col) {
       dfs[[2]][[2]][,col]*Abig
-      }, FUN.VALUE = rep(1, N))
+    }, FUN.VALUE = rep(1, N))
     df1_true = cbind(dfs[[2]][[2]], dfs[[2]][[2]][, inters])
     dfQ_true = cbind(dfs[[2]][[2]], dfinter_true)
     
@@ -235,16 +243,16 @@ get.info = function(n, d, truth) {
   # BV0
   Y = rbinom(n, 1, PQ_n)
   
-
-    PQ_n1  = gentmle2::truncate(plogis(df1n %*% coef_Q), .05)
-    PQ_n0 = gentmle2::truncate(plogis(dfs[[2]][[1]] %*% coef_Q[1:ncol(dfs[[2]][[1]])]), .05)
-    blip_n = PQ_n1 - PQ_n0
-    ATEn = mean(blip_n)
-    BVn = var(blip_n)
-    DF = cbind(A, W, Y)
-    colnames(DF)[c(1,(d+2))] = c("A", "Y")
-    return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n))
-
+  
+  PQ_n1  = gentmle2::truncate(plogis(df1n %*% coef_Q), .05)
+  PQ_n0 = gentmle2::truncate(plogis(dfs[[2]][[1]] %*% coef_Q[1:ncol(dfs[[2]][[1]])]), .05)
+  blip_n = PQ_n1 - PQ_n0
+  ATEn = mean(blip_n)
+  BVn = var(blip_n)
+  DF = cbind(A, W, Y)
+  colnames(DF)[c(1,(d+2))] = c("A", "Y")
+  return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n))
+  
 }
 
 # A = get.info(1000, 4, FALSE)
