@@ -7,33 +7,16 @@
 # we can now interact these fcns and create new variables
 
 #' @export
-get.info = function(n, d, truth) {
+get.info = function(n, d) {
   
-  n=1000
-  d=4
-  truth=TRUE
   # sample size for getting the truth
   N = 1e6
   # choose binaries--possibly 0 or 1 for now
   binaries = c(as.logical(rbinom(1, 1, .5)), rep(FALSE, 3))
   binaries = (1:d)[binaries]
   
-  # make all variables, n  copies of covariates--this is our draw of confounders
-  W = matrix(rep(NA, d*n), ncol = d)
-  for (a in 1:d) {
-    if (a %in% binaries) {
-      r = runif(1, .3, .7)
-      V = rbinom(n, 1, r)
-    } else {
-      V = rnorm(n, 0, 1)
-    }
-    W[,a] = V
-  }
-  
-  W = as.data.frame(W)
-  colnames(W) = paste0("W", 1:d)
-  
-  # If seeking the truth we need to draw a big W
+  # randomly select a binary prob
+  r = runif(1, .3, .7)
   
   Wbig = matrix(rep(NA, d*N), ncol = d)
   for (a in 1:d) {
@@ -48,13 +31,12 @@ get.info = function(n, d, truth) {
   
   Wbig = as.data.frame(Wbig)
   colnames(Wbig) = paste0("W", 1:d)
-  # We then choose functions for the continuous variables
-  # We choose from trig functions, squares, 1st deg, categorical breaks
   
   # get contins cols
   conts = vapply(1:d, FUN = function(x) !(x %in% binaries), FUN.VALUE = TRUE)
   contins  = (1:d)[conts]
   
+  # vary functional forms
   types = list(function(x) sin(x), function(x) cos(x), function(x) x^2, 
                function(x) x)
   
@@ -97,51 +79,13 @@ get.info = function(n, d, truth) {
   # we use the previous parameters to generate the transformed vars and truth
   #####
   #####
+  
+  # create the transformed covariates--coeffs to be added
   dfs = lapply(pars, FUN = function(x){
-    
-    # make df of main terms and form fcns
-    df = vapply(1:d, FUN = function(i) {
-      bin_coef = x$bin_coef
-      x$funclist[[i]](W[,i])
-    }, FUN.VALUE = rep(1, n))
-    
-    choo2 = x$choo2
-    choo3 = x$choo3
-    way4 = x$way4
-    MT = x$MT
-    funclist = x$funclist
-    
-    # make number of interactions and which ones
-    ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
-    df_final = df[,MT]
-    
-    if (sum(choo2) != 0) {
-      df_2way = vapply(which(choo2), FUN = function(combo) {
-        df[, ways2[combo,1]]*df[, ways2[combo, 2]]
-      }, FUN.VALUE = rep(1,n))
-      df_final = cbind(df_final, df_2way)
-    }
-    
-    # make number of 3 ways interactions
-    ways3 = matrix(c(1, 2, 3, 1, 2, 4, 1, 3, 4, 2, 3, 4), byrow = TRUE, nrow = 4)
-    if (sum(choo3) != 0) {
-      df_3way = vapply(which(choo3), FUN = function(combo) {
-        df[, ways3[combo,1]]*df[, ways3[combo, 2]]*df[, ways3[combo, 3]]
-      }, FUN.VALUE = rep(1,n))
-      df_final = cbind(df_final, df_3way)
-    } 
-    
-    
-    if (way4) {
-      df_4way = df[, 1]*df[, 2]*df[, 3]*df[, 4]
-      df_final = cbind(df_final, df_4way)
-    }
-    
-    
     N = 1e6
-    df1 = vapply(1:d, FUN = function(x) {
+    df1 = vapply(1:d, FUN = function(i) {
       bin_coef = x$bin_coef
-      funclist[[x]](Wbig[,x])
+      funclist[[i]](Wbig[,i])
     }, FUN.VALUE = rep(1, N))
     
     choo2 = x$choo2
@@ -180,96 +124,90 @@ get.info = function(n, d, truth) {
     #   df_final = df
     #   df_final1 = df1_true
     # }
-    return(list(df_final, df1_final)) 
+    return(df1_final) 
   })
   
   # generating coeffs for prop score 
   a = .7 
-  coef_G = runif(ncol(dfs[[1]][[1]]), -a, a)
-  PG_n  = gentmle2::truncate(plogis(dfs[[1]][[1]] %*% coef_G), .05)
-  A = rbinom(n, 1, PG_n)
+  coef_G = runif(ncol(dfs[[1]]), -a, a)
+  
+  # assure no true practical positivity violations without having neverending loop
+  PG0  = plogis(dfs[[1]] %*% coef_G)
+  maxG = max(PG0)
+  minG = min(PG0)
+  g_iter = 0
+  while ((maxG >= .99 | minG <= .01) & g_iter < 10) {
+    coef_G = .8*coef_G
+    PG0  = plogis(dfs[[1]] %*% coef_G)
+    maxG = max(PG0)
+    minG = min(PG0)
+    g_iter = g_iter+1
+  }
+  
+  # now get the A for everyone
+  A = rbinom(N, 1, PG0)
   
   # setting up dataframe for both Q0k found previously and Bk, the interactions terms
   s = 0
   while (s == 0) {
-    inters = rbinom(ncol(dfs[[2]][[1]]), 1, .5)
+    inters = rbinom(ncol(dfs[[2]]), 1, .5)
     s = sum(inters)
   }
   
-  dfinter_n = vapply(which(inters == 1), FUN = function(col) dfs[[2]][[1]][,col]*A, FUN.VALUE = rep(1, n))
-  dfQn = cbind(dfs[[2]][[1]], dfinter_n)
-  df1n = cbind(dfs[[2]][[1]], dfs[[2]][[1]][, inters])
+  dfinter0 = vapply(which(inters == 1), FUN = function(col) dfs[[2]][,col]*A, FUN.VALUE = rep(1, N))
+  dfQ = cbind(dfs[[2]], dfinter0)
+  dfQ1 = cbind(dfs[[2]], dfs[[2]][, inters])
   
   # choosing coeffs for the Q generator
-  a = .3
-  coef_Q = runif(ncol(dfQn), -a, a)
+  a = .7
+  coef_Q = runif(ncol(dfQ), -a, a)
   
-  # mean(Y)
+  # The following helps get the blip var over .025
+  BV0 = 0
+  C = 1
+  mm = 5
+  jj = 1
+  while (BV0 <= .025 & jj < 11) {
+    coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)] = C*coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)]
+    PQ1  = plogis(dfQ1 %*% coef_Q)
+    PQ0 = plogis(dfs[[2]] %*% coef_Q[1:ncol(dfs[[2]])])
+    blip_true = PQ1 - PQ0
+    ATE0 = mean(blip_true)
+    BV0 = var(blip_true)
+    C = 1.1*C
+    jj = jj + 1
+  }
   
-  if (truth) {
-    
-    # getting huge draw for A
-    PG_true  = gentmle2::truncate(plogis(dfs[[1]][[2]] %*% coef_G), .05)
-    Abig = rbinom(N, 1, PG_true)
-    
-    # getting huge draw for blip
-    dfinter_true = vapply(which(inters == 1), FUN = function(col) {
-      dfs[[2]][[2]][,col]*Abig
-    }, FUN.VALUE = rep(1, N))
-    df1_true = cbind(dfs[[2]][[2]], dfs[[2]][[2]][, inters])
-    dfQ_true = cbind(dfs[[2]][[2]], dfinter_true)
-    
-    # The following assures the blip var is over .025
-    BV0 = 0
-    C = 1
-    mm = 5
-    jj = 1
-    while (BV0 <= .025 & jj < 6) {
-      coef_Q[(ncol(dfs[[2]][[1]]) + 1):ncol(dfQn)] = C*coef_Q[(ncol(dfs[[2]][[1]]) + 1):ncol(dfQn)]
-      PQ_true1  = gentmle2::truncate(plogis(df1_true %*% coef_Q), .05)
-      PQ_true0 = gentmle2::truncate(plogis(dfs[[2]][[2]] %*% coef_Q[1:ncol(dfs[[2]][[2]])]), .05)
-      blip_true = PQ_true1 - PQ_true0
-      ATE0 = mean(blip_true)
-      BV0 = var(blip_true)
-      C = C + .5
-      jj = jj + 1
-    }
-  } 
-  
+  BV0
   # now that we have our coeffs, get true probs of sample and draw Y
-  coef_Q[(ncol(dfs[[2]][[1]]) + 1):ncol(dfQn)] = coef_Q[(ncol(dfs[[2]][[1]]) + 1):ncol(dfQn)]
-  PQ_n  = gentmle2::truncate(plogis(dfQn %*% coef_Q), .05)
+  PQ  = plogis(dfQ %*% coef_Q)
   # hist(PQ_true0, breaks = 200)
   # BV0
-  Y = rbinom(n, 1, PQ_n)
+  Y = rbinom(N, 1, PQ)
   
-  
-  PQ_n1  = gentmle2::truncate(plogis(df1n %*% coef_Q), .05)
-  PQ_n0 = gentmle2::truncate(plogis(dfs[[2]][[1]] %*% coef_Q[1:ncol(dfs[[2]][[1]])]), .05)
-  blip_n = PQ_n1 - PQ_n0
-  ATEn = mean(blip_n)
-  BVn = var(blip_n)
-  DF = cbind(A, W, Y)
+  # now we select 1000 out of this population for W, A, Y
+  S = sample(1:N, n)
+  PQ1n  = PQ1[S]
+  PQ0n = PQ0[S]
+  PGn = PG0[S]
+  blip_n = PQ1n - PQ0n
+  An = A[S]
+  Yn = Y[S]
+  Wn = Wbig[S,]
+  DF = cbind(An, Wn, Yn)
   colnames(DF)[c(1,(d+2))] = c("A", "Y")
-  return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n))
+  
+  # return the sample true blips and sample barQ1, barQ0, as well as truths and the DF
+  return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n, PQ1n = PQ1n, PGn = PGn))
   
 }
 
-# A = get.info(1000, 4, FALSE)
-# 
-# A$BVn
-# A$ATEn
-# is.data.frame(A$DF)
-# mean(A$DF$A)
-# mean(A$Y)
-# head(A$DF)
-# 
-# A = get.info(1000, 4, TRUE)
-# A$parsQ
-# A$parsG
-# A$BV0
-# A$ATE0
-# mean(A$DF$A)
-# mean(A$DF$Y)
-# head(A$DF)
-
+# info = get.info(1000, 4)
+# info$BV0
+# info$ATE0
+# mean(info$DF$A)
+# mean(info$DF$Y)
+# min(info$PGn)
+# max(info$PGn)
+# head(info$DF)
+# hist(info$blip_n)
