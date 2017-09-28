@@ -150,7 +150,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
 
 #' @export
 SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG, 
-                     cv = TRUE, V=10, SL = 10L, ...) {
+                     cv = TRUE, V=10, SL = 10L, gn = NULL, ...) {
   # 
   # X = X
   # Y = data$Y
@@ -172,7 +172,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     }
     nt=length(tr)
     nv = length(val)
-    
+    Aval = A[val]
     Y = Y[tr]
     X = X[tr,]
     newtr = c(val, (n+val),(2*n+val))
@@ -188,19 +188,19 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     A = A[tr]
     W1 = W[tr,]
     newW = W[val,]
-    if (method == "method.NNloglik") {
-      control = list(saveFitLibrary = TRUE, trimLogit = .001)
-    } else {control = list(saveFitLibrary = TRUE)}
+    if (is.null(gn)) {
     gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomial(),
                         SL.library=SL.libraryG, method = "method.NNloglik", 
-                        id = NULL, verbose = FALSE, control = control,
+                        id = NULL, verbose = FALSE, control = list(saveFitLibrary = TRUE, trimLogit = .001),
                         cvControl = list(V=SL), obsWeights = NULL)
+    }
     
-    
+    if (is.null(gn)) {
     if (length(gfit$coef[gfit$coef!=0])==1) {
       gk = gfit$library.predict[1:nv,gfit$coef!=0]
     } else {
       gk = gfit$library.predict[1:nv,gfit$coef!=0] %*% gfit$coef[gfit$coef!=0]
+    }
     }
     
     if (length(Qfit$coef[Qfit$coef!=0])==1) {
@@ -222,11 +222,16 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     }
     
     Qcoef = Qfit$coef
-    Gcoef = gfit$coef
-    
     Qrisk = Qfit$cvRisk
-    Grisk = gfit$cvRisk
     
+    if (is.null(gn)) {
+    Gcoef = gfit$coef
+    Grisk = gfit$cvRisk
+    } else {
+      gk = gn[val]
+      Gcoef = 1
+      Grisk = -mean(Aval*log(gk) + (1 - Aval)*log(1 - gk))
+    }
     return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk, Qcoef = Qcoef, Gcoef = Gcoef,
                 Qrisk = Qrisk, Grisk = Grisk, inds = val))
   })

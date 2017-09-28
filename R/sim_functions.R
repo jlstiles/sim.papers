@@ -222,12 +222,13 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
+                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL, gn = NULL) {
   
   if (!is.null(dgp)) {
     data = dgp$DF
     BV0 = dgp$BV0
     ATE0 = dgp$ATE0
+    blip_n = dgp$blip_n
   } else {
     data = gendata(n, g0, Q0)
   }
@@ -273,7 +274,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
   # time = proc.time()
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
-                    SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL)
+                    SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL, gn = gn)
   # proc.time() - time
   
   initdata = stack$initdata
@@ -351,7 +352,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     steps = c(steps, steps1)
   }
   
-  if ("simul line" %in% estimator) {
+  if ("simul full" %in% estimator) {
     simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_sigmaATE), 
                                    submodel = submodel_logit, loss = loss_loglik,
                                    approach = "full", max_iter = 100, g.trunc = 1e-2,
@@ -368,9 +369,9 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   }
   
   if (is.null(g0)) {
-    results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
+    results = list(res = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
                            Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
-                           Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0)
+                           Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0), blip_n = blip_n)
   } else {
     results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
                 Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
