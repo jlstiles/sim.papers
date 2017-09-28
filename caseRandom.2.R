@@ -31,11 +31,11 @@ clusterExport(cl,cl_export)
 
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:10,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = NULL, Q0 = Q0_trig1, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 10, SL = 10L,
-                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = NULL, gn = NULL
+                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = dgps[[i]], gn = NULL
             )}
 
 save(ALL, dgps, file = "caseRandom.2.RData")
