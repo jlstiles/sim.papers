@@ -2,6 +2,7 @@ case = "setup"
 source_file = "source_paper.R"
 source(source_file)
 
+# devtools::install_github("jeremyrcoyle/gentmle2")
 # devtools::install_github("jlstiles/Simulations", force = TRUE)
 library(Simulations)
 source("WrappersVblip1.R")
@@ -12,14 +13,9 @@ SL.libraryG = SL.libraryG
 n = 1000
 B = 100
 
-dgps = lapply(1:B, FUN = function(x) {
-  info = get.info(1000,4,FALSE)
-})
+dgps = lapply(1:B, FUN = function(x) get.dgp(1000,4))
 
-
-info = lapply(dgps, FUN = function(x) {
-  list(DF = x$DF, BV0 = x$BV0, ATE0 = x$ATE0)
-})
+length(dgps)
 
 detectCores()
 cl = makeCluster(detectCores(), type = "SOCK")
@@ -30,30 +26,17 @@ clusterExport(cl,cl_export)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
 # SL.library = list("SL.nnet", "glm.mainint", c("SL.hal", "screen.Main"))
-# SL.libraryG = c("SL.glm", "SL.nnet")
-# SL.library = list("SL.nnet", "glm.mainint")
+# SL.libraryG = c("SL.glm")
+# SL.library = list("SL.nnet", "glm.mainint", "SL.mean")
 
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+ALL=foreach(i=1:10,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = NULL, Q0 = Q0, SL.library = SL.library,
-                    SL.libraryG = SL.libraryG, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
-                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = info[[i]]
+            {sim_cv(n, g0 = NULL, Q0 = Q0_trig1, SL.library = SL.library,
+                    SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 10, SL = 10L,
+                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = NULL, gn = NULL
             )}
 
-# ALL[[1]]
-# 
-# results = data.matrix(data.frame(do.call(rbind, ALL)))
-# results
-# ALL = list()
-# for (it in 1:6) {
-#   ALL[[it]] = foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
-#                      .errorhandling = "remove")%dopar%
-#                      {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.library, 
-#                              SL.libraryG = SL.libraryG[c(1:3,5:7)[1:it]], method = "method.NNLS", cv = TRUE, V = 2, SL = 2L, single = TRUE
-#                      )}}
-# 
-# lapply(ALL, length)
 save(ALL, dgps, file = "caseRandom.2.RData")
 

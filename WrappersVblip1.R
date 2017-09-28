@@ -6,7 +6,7 @@
 
 # Three screeners
 # choose main terms
-screen6 = function (Y, X, family, method = "pearson", rank = 6, ...) 
+screen6 = function (Y, X, family, method = "pearson", rank = 6, ...)
 {
   listp <- vapply(colnames(X), FUN = function(x) {
     value = ifelse(var(X[,x]) <= 0, 1, cor.test(X[,x], y = Y, method = method)$p.value)
@@ -19,7 +19,7 @@ screen6 = function (Y, X, family, method = "pearson", rank = 6, ...)
 
 environment(screen6) <- asNamespace("SuperLearner")
 
-screen10 = function (Y, X, family, method = "pearson", rank = 10, ...) 
+screen10 = function (Y, X, family, method = "pearson", rank = 10, ...)
 {
   listp <- vapply(colnames(X), FUN = function(x) {
     value = ifelse(var(X[,x]) <= 0, 1, cor.test(X[,x], y = Y, method = method)$p.value)
@@ -32,7 +32,7 @@ screen10 = function (Y, X, family, method = "pearson", rank = 10, ...)
 
 environment(screen10) <- asNamespace("SuperLearner")
 
-screen.Main = function (Y, X, family, method = "pearson", rank = 6, ...) 
+screen.Main = function (Y, X, family, method = "pearson", rank = 6, ...)
 {
   whichVariable <- rep(FALSE,ncol(X))
   whichVariable[1:5] <- rep(TRUE,5)
@@ -330,15 +330,15 @@ environment(earthFull) <- asNamespace("SuperLearner")
 # glm
 #######################
 #######################
-glm.mainint = function (Y, X, newX, family, obsWeights, model = TRUE, ...) 
+glm.mainint = function (Y, X, newX, family, obsWeights, model = TRUE, ...)
 {
   if (is.matrix(X)) {
     X = as.data.frame(X)
   }
   mainform = paste0(paste(colnames(X)[2:4],"+",collapse=""),colnames(X)[5])
   form = formula(paste0("Y ~", paste0(colnames(X)[1],"*(",mainform,")")))
-  
-  fit.glm <- glm(form, data = X, family = family, weights = obsWeights, 
+
+  fit.glm <- glm(form, data = X, family = family, weights = obsWeights,
                  model = model)
   if (is.matrix(newX)) {
     newX = as.data.frame(newX)
