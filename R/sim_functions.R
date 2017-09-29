@@ -222,14 +222,14 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL, gn = NULL) {
+                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   
   if (!is.null(dgp)) {
     data = dgp$DF
     BV0 = dgp$BV0
     ATE0 = dgp$ATE0
     blip_n = dgp$blip_n
-  } else {
+  } else if (!is.vector(g0)) {
     data = gendata(n, g0, Q0)
   }
   
@@ -273,6 +273,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   X$Y = NULL
   
   # time = proc.time()
+  gn = ifelse(is.vector(g0), g0, NULL)
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
                     SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL, gn = gn)
   # proc.time() - time
