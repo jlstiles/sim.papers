@@ -26,32 +26,49 @@ clusterExport(cl,cl_export)
 # debug(sim_cv)
 # SL.libraryG = c("SL.glm", "SL.nnet", "SL.hal")
 # SL.library = list("SL.nnet", "glm.mainint", c("SL.hal", "screen.Main"))
-# SL.libraryG = c("SL.glm")
-# SL.library = list("SL.nnet", "glm.mainint", "SL.mean")
-
+# SL.libraryG = c("SL.glm", "SL.nnet", "SL.glm.interaction", "SL.mean","SL.rpartPrune", "SL.earth", "SL.glmnet")
+# SL.library = list("SL.nnet", "glm.mainint", "SL.mean", "SL.glm","SL.rpartPrune", "earthFull","SL.glmnet")
+# SL.library = SL.libraryG = c("SL.glm", "SL.mean")
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = NULL, Q0 = Q0_trig1, SL.library = SL.library,
+            {sim_cv(n, g0 = dgps[[i]]$PGn, Q0 = Q0_trig1, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 10, SL = 10L,
-                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = dgps[[i]], gn = NULL
+                    gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = dgps[[i]]
             )}
 
 save(ALL, dgps, file = "caseRandom.RData")
-
-# results = data.matrix(data.frame(do.call(rbind, ALL)))
-# 
-# res = lapply(ALL, FUN = function(x) x$res)
+# ALLsmall = ALL
+# save(ALLsmall, dgps, SL.libraryG, SL.library, file = "caseSmall.RData")
+# names(ALLsmall[[1]]$res)
+# hist(ALLsmall[[85]]$blip_n)
+# ALLsmall[[85]]$res[c(1:3, 7, 41:43, 47:49, 53, 61)]
+# # results = data.matrix(data.frame(do.call(rbind, ALL)))
+# # 
+# res = lapply(ALLsmall, FUN = function(x) x$res)
 # results = data.matrix(data.frame(do.call(rbind, res)))
-# 
-# vapply(c(4, 24, 30), FUN = function(x) {
+# # 
+# colnames(results)
+# vapply(c(4, 44, 50), FUN = function(x) {
 #   mean(results[,x+1] <= results[,"ATE0"] & results[,x+2] >= results[,"ATE0"])
 # }, FUN.VALUE = 1)
-# 
-# vapply(c(1, 21, 27), FUN = function(x) {
+# # 
+# vapply(c(1, 41, 47), FUN = function(x) {
 #   mean(results[,x+1] <= results[,"BV0"] & results[,x+2] >= results[,"BV0"])
 # }, FUN.VALUE = 1)
+# 
+# vapply(c(1, 41, 47), FUN = function(x) {
+#   results[,x+1] <= results[,"BV0"] & results[,x+2] >= results[,"BV0"]
+# }, FUN.VALUE = rep(1, nrow(results)))
+# grep("coef", colnames(results))
+# 
+# vapply(c(1, 7, 41, 53, 47), FUN = function(x) {
+#   mean(results[,x] - results[,"BV0"])
+# }, FUN.VALUE = 1)
+# 
+# colMeans(results[,grep("coef", colnames(results))])
+
 # 
 # 
 # results[,c(4, 24, 30, 42)]

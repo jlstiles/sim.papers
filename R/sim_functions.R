@@ -224,6 +224,19 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                   cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   
+  g0 = dgps[[3]]$PGn 
+  Q0 = Q0_trig1
+  SL.library = SL.library
+  SL.libraryG = SL.libraryG 
+  method = "method.NNLS"
+  cv = TRUE
+  V = 10
+  SL = 10L
+  gform = gform 
+  Qform = Qform 
+  estimator = c("single 1step")
+  dgp = dgps[[3]]
+  
   if (!is.null(dgp)) {
     data = dgp$DF
     BV0 = dgp$BV0
@@ -273,7 +286,8 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   X$Y = NULL
   
   # time = proc.time()
-  gn = ifelse(is.vector(g0), g0, NULL)
+  if (is.vector(g0)) gn = g0 else gn = NULL
+
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
                     SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL, gn = gn)
   # proc.time() - time
