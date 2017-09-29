@@ -1,7 +1,7 @@
 library(boot)
 
 #' @export
-sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, estimator, method) {
+sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, estimator, method, gn = NULL) {
   # n=100
   # single = TRUE
   # V = 10
@@ -58,6 +58,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     W1 = W[tr,]
     newW = W[val,]
     
+    if (is.null(gn)) {
     if (is.null(gform)){
       halresultsG <- hal(Y = A,newX = newW,
                          X = W1, family = binomial(),
@@ -66,6 +67,9 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
         halresultsG = glm(gform, data = X, family = 'binomial')
         gk = predict(halresultsG, newdata = newW, type = 'response')
       }
+    } else {
+      gk = gn[val]
+    }
     
     return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk,inds = x$validation_set))
   })
@@ -224,28 +228,29 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                   cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   
-  g0 = dgps[[3]]$PGn 
-  Q0 = Q0_trig1
-  SL.library = SL.library
-  SL.libraryG = SL.libraryG 
-  method = "method.NNLS"
-  cv = TRUE
-  V = 10
-  SL = 10L
-  gform = gform 
-  Qform = Qform 
-  estimator = c("single 1step")
-  dgp = dgps[[3]]
+  # g0 = dgps[[3]]$PGn 
+  # Q0 = Q0_trig1
+  # SL.library = SL.library
+  # SL.libraryG = SL.libraryG 
+  # method = "method.NNLS"
+  # cv = TRUE
+  # V = 10
+  # SL = 10L
+  # gform = gform 
+  # Qform = Qform 
+  # estimator = c("single 1step")
+  # dgp = dgps[[3]]
   
   if (!is.null(dgp)) {
     data = dgp$DF
     BV0 = dgp$BV0
     ATE0 = dgp$ATE0
     blip_n = dgp$blip_n
-  } else if (!is.vector(g0)) {
+  } else {
     data = gendata(n, g0, Q0)
   }
   
+  if (is.vector(g0)) gn = g0 else gn = NULL
   
   X = data
   X1 = X0 = X
@@ -264,7 +269,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     lrsingle = TRUE
     }
   single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
-                    method = method)
+                    method = method, gn = gn)
   
   mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
   mainform
@@ -286,7 +291,6 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   X$Y = NULL
   
   # time = proc.time()
-  if (is.vector(g0)) gn = g0 else gn = NULL
 
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
                     SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL, gn = gn)
@@ -383,7 +387,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     steps = c(steps, steps1)
   }
   
-  if (is.null(g0)) {
+  if (!is.null(dgp)) {
     results = list(res = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
                            Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
                            Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0), blip_n = blip_n)

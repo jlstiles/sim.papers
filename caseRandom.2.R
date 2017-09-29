@@ -33,7 +33,7 @@ gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {sim_cv(n, g0 = dgps[[i]]$PGn, Q0 = Q0_trig1, SL.library = SL.library,
+            {sim_cv(n, g0 = g0_linear, Q0 = Q0_trig1, SL.library = SL.library,
                     SL.libraryG = SL.libraryG, method = "method.NNLS", cv = TRUE, V = 10, SL = 10L,
                     gform = gform, Qform = Qform, estimator = c("single 1step"), dgp = dgps[[i]]
             )}
