@@ -5,8 +5,7 @@
 \title{sim_cv}
 \usage{
 sim_cv(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
-  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL,
-  gn = NULL)
+  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL)
 }
 \arguments{
 \item{n, }{sample size}

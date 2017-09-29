@@ -20,15 +20,16 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = .01, minBV = .03) {
-  n=1000; d=4;pos=.01;minBV=.03
+  # n=1000; d=4;pos=.01;minBV=.03
   # sample size for getting the truth
   N = 1e6
   # choose binaries--possibly 0 or 1 for now
   binaries = c(as.logical(rbinom(1, 1, .5)), rep(FALSE, 3))
   binaries = (1:d)[binaries]
-  binaries = 1
+  
   # randomly select a binary prob
   r = runif(1, .3, .7)
+  # randomly select chisq, normals, betas, uniforms--normalized
   
   Wbig = matrix(rep(NA, d*N), ncol = d)
   for (a in 1:d) {
@@ -56,13 +57,12 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   
   # create the transformed covariates--coeffs to be added
   dfs = lapply(1:2, FUN = function(j){
-    
     bin_coef = runif(1, -5, 5)
     # vary functional forms
     types = list(function(x) sin(x), function(x) cos(x), function(x) x^2, 
                  function(x) x)
     
-    # choosing from combos of 2, 2 and whether we have 4 way interaction
+    # choosing from combos of 2, 3 and whether we have 4 way interaction
     # This should be generalized to larger dimensions but for now only 4
     s = 0
     while (s <= 1) {
@@ -114,9 +114,13 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
       df_final = cbind(df_final, df_4way)
     }
     
+    df_final = apply(df_final, 2, FUN = function(x) {
+      (x - mean(x))/sd(x)
+    })
     return(df_final) 
   })
   
+  # for (a in 1:ncol(dfs[[1]])) hist(dfs[[1]][,a], breaks = 200)
   # generating coeffs for prop score 
   a = .7 
   coef_G = runif(ncol(dfs[[1]]), -a, a)
@@ -172,7 +176,7 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   # BV0
   # now that we have our coeffs, get true probs of sample and draw Y
   PQ  = plogis(dfQ %*% coef_Q)
-  # hist(PQ_true0, breaks = 200)
+  # hist(PQ0, breaks = 200)
   # BV0
   Y = rbinom(N, 1, PQ)
   
