@@ -39,7 +39,7 @@ simHal = function(data, gform = gform, Qform = Qform,
 }
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:1,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {simHal(data = dgps[[i]]$DF, gform = gform, Qform = Qform, 
                     V = 10, single = FALSE, estimator = "single 1step", method = "method.NNloglik", 
