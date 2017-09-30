@@ -13,7 +13,7 @@ B = 300
 dgps = lapply(1:B, FUN = function(x) get.dgp(n,4))
 
 detectCores()
-cl = makeCluster(detectCores(), type = "SOCK")
+cl = makeCluster(12, type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 
@@ -39,7 +39,7 @@ simHal = function(data, gform = gform, Qform = Qform,
 }
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+ALL=foreach(i=1:1,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {simHal(data = dgps[[i]]$DF, gform = gform, Qform = Qform, 
                     V = 10, single = FALSE, estimator = "single 1step", method = "method.NNloglik", 
