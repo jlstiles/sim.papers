@@ -13,7 +13,7 @@ B = 100
 dgps = lapply(1:B, FUN = function(x) get.dgp(n,4))
 
 detectCores()
-cl = makeCluster(12, type = "SOCK")
+cl = makeCluster(14, type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 
@@ -39,7 +39,7 @@ simHal = function(data, gform = gform, Qform = Qform,
 }
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
-ALL=foreach(i=1:1,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
+ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {simHal(data = dgps[[i]]$DF, gform = gform, Qform = Qform, 
                     V = 10, single = FALSE, estimator = "single 1step", method = "method.NNloglik", 
@@ -50,72 +50,43 @@ save(ALL, dgps, file = "caseHalvsDelta.RData")
 
 # res = lapply(ALL, FUN = function(x) x$res)
 # results = data.matrix(data.frame(do.call(rbind, res)))
-
-
+# 
 # colnames(results)
-# 
-# ateInds
-# bvInds
-# 
-# vapply(ateInds, FUN = function(x) {
+# vapply(c(4, 10), FUN = function(x) {
 #   mean(results[,x+1] <= results[,"ATE0"] & results[,x+2] >= results[,"ATE0"])
 # }, FUN.VALUE = 1)
 # 
-# vapply(bvInds, FUN = function(x) {
+# vapply(c(1, 7), FUN = function(x) {
 #   mean(results[,x+1] <= results[,"BV0"] & 
 #          results[,x+2] >= results[,"BV0"])
 # }, FUN.VALUE = 1)
 # 
-# bvAll
-# ateAll
 # 
-# vapply(bvAll, FUN = function(x) {
+# # vapply(c(1, 41, 47), FUN = function(x) {
+# #   results[,x+1] <= results[,"BV0"] & results[,x+2] >= results[,"BV0"]
+# # }, FUN.VALUE = rep(1, nrow(results)))
+# # grep("coef", colnames(results))
+# #
+# vapply(c(1, 7, 65, 77, 71), FUN = function(x) {
 #   mean(results[,x] - results[, "BV0"])
 # }, FUN.VALUE = 1)
 # 
-# vapply(ateAll, FUN = function(x) {
+# vapply(c(4, 8, 68, 78, 74), FUN = function(x) {
 #   mean(results[,x] - results[,"ATE0"])
 # }, FUN.VALUE = 1)
 # 
-# BIAS = vapply(ateAll, FUN = function(x) {
+# BIAS = vapply(c(4, 8, 68, 78, 74), FUN = function(x) {
 #   results[,x] - results[,"ATE0"]
 # }, FUN.VALUE = rep(1, nrow(results)))
 # 
 # hist(BIAS[,1])
 # 
-# vapply(ateInds, FUN = function(x) {
+# vapply(c(4, 68, 74), FUN = function(x) {
 #   mean(results[,x+2] - results[,x+1])
 # }, FUN.VALUE = 1)
 # 
-# vapply(bvInds, FUN = function(x) {
+# vapply(c(1, 65, 71), FUN = function(x) {
 #   mean(results[,x+2] - results[,x+1])
 # }, FUN.VALUE = 1)
 # #
 # colMeans(results[,grep("coef", colnames(results))])
-
-#
-#
-# results[,c(4, 24, 30, 42)]
-# for (i in 1:nrow(results)) hist(dgps[[i]]$blip_n, breaks = 200)
-#
-# for (i in 1:nrow(results)) hist(dgps[[i]]$PQ1n, breaks = 200)
-# for (i in 1:nrow(results)) hist(dgps[[i]]$PQ0n, breaks = 200)
-#
-# vapply(1:nrow(results), FUN = function(x) {
-#   c(dgps[[x]]$BV0, dgps[[x]]$ATE0)
-# }, FUN.VALUE = c(1,1))
-#
-# vapply(1:nrow(results), FUN = function(x) {
-#   c(min(dgps[[x]]$PGn), max(dgps[[x]]$PGn))
-# }, FUN.VALUE = c(1,1))
-#
-
-# 
-# i = 4
-# YA1 = mean((dgps[[i]]$DF$Y/dgps[[i]]$PGn)[dgps[[i]]$DF$A==1])
-# YA0 = mean((dgps[[i]]$DF$Y/(1-dgps[[i]]$PGn))[dgps[[i]]$DF$A==0])
-# YA1
-# YA0
-# YA1 - YA0
-# dgps[[i]]$ATE0
-# mean(dgps[[i]]$blip_n)
