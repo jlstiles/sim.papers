@@ -1,7 +1,8 @@
 library(boot)
 
 #' @export
-sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, estimator, method, gn = NULL) {
+sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, estimator, method, gn = NULL,
+                   family = gaussian(), cvhal = TRUE) {
   # n=100
   # single = TRUE
   # V = 10
@@ -39,7 +40,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
     
-    if (is.null(Qform)){
+    if (cvhal){
       halresults <- hal(Y = Y,newX = newdata,
                         X = X, family = binomial(),
                         verbose = FALSE, parallel = FALSE)
@@ -47,7 +48,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
       Qk = halresults$pred[1:nv]
       Q1k = halresults$pred[nv+1:nv]
       Q0k = halresults$pred[2*nv+1:nv]} else {
-        halresults = glm(Qform, data = data, family = 'binomial')
+        halresults = glm(Qform, data = data, family = binomial())
         Qk = predict(halresults, newdata = newdata[1:nv,], type = 'response')
         Q1k = predict(halresults, newdata = newdata[nv + 1:nv,], type = 'response')
         Q0k = predict(halresults, newdata = newdata[2*nv + 1:nv,], type = 'response')
@@ -59,12 +60,12 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     newW = W[val,]
     
     if (is.null(gn)) {
-    if (is.null(gform)){
+    if (cvhal){
       halresultsG <- hal(Y = A,newX = newW,
                          X = W1, family = binomial(),
                          verbose = FALSE, parallel = FALSE)
       gk = halresultsG$pred[1:nv]} else {
-        halresultsG = glm(gform, data = X, family = 'binomial')
+        halresultsG = glm(gform, data = X, family = binomial())
         gk = predict(halresultsG, newdata = newW, type = 'response')
       }
     } else {

@@ -67,6 +67,13 @@ else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
+analysisHalvsDelta: caseHal.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
 analysisRandom: caseRandom.R
 ifeq (${JOB_ENGINE},slurm)
 	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}

@@ -46,45 +46,64 @@ save(ALL, dgps, file = "caseRandom.RData")
 # ALLsmall[[85]]$res[c(1:3, 7, 41:43, 47:49, 53, 61)]
 # # results = data.matrix(data.frame(do.call(rbind, ALL)))
 # # 
-# res = lapply(ALLsmall, FUN = function(x) x$res)
-# results = data.matrix(data.frame(do.call(rbind, res)))
-# # 
-# colnames(results)
-# vapply(c(4, 44, 50), FUN = function(x) {
-#   mean(results[,x+1] <= results[,"ATE0"] & results[,x+2] >= results[,"ATE0"])
-# }, FUN.VALUE = 1)
-# # 
-# vapply(c(1, 41, 47), FUN = function(x) {
-#   mean(results[,x+1] <= results[,"BV0"] & results[,x+2] >= results[,"BV0"])
-# }, FUN.VALUE = 1)
-# 
+res = lapply(ALL, FUN = function(x) x$res)
+results = data.matrix(data.frame(do.call(rbind, res)))
+
+colnames(results)
+vapply(c(4, 68, 74), FUN = function(x) {
+  mean(results[,x+1] <= results[,"ATE0"] & results[,x+2] >= results[,"ATE0"])
+}, FUN.VALUE = 1)
+
+vapply(c(1, 65, 71), FUN = function(x) {
+  mean(results[,x+1] <= results[,"BV0"] & 
+         results[,x+2] >= results[,"BV0"])
+}, FUN.VALUE = 1)
+
 # vapply(c(1, 41, 47), FUN = function(x) {
 #   results[,x+1] <= results[,"BV0"] & results[,x+2] >= results[,"BV0"]
 # }, FUN.VALUE = rep(1, nrow(results)))
 # grep("coef", colnames(results))
-# 
-# vapply(c(1, 7, 41, 53, 47), FUN = function(x) {
-#   mean(results[,x] - results[,"BV0"])
-# }, FUN.VALUE = 1)
-# 
-# colMeans(results[,grep("coef", colnames(results))])
+#
+vapply(c(1, 7, 65, 77, 71), FUN = function(x) {
+  mean(results[,x] - results[, "BV0"])
+}, FUN.VALUE = 1)
 
-# 
-# 
+vapply(c(4, 8, 68, 78, 74), FUN = function(x) {
+  mean(results[,x] - results[,"ATE0"])
+}, FUN.VALUE = 1)
+
+BIAS = vapply(c(4, 8, 68, 78, 74), FUN = function(x) {
+  results[,x] - results[,"ATE0"]
+}, FUN.VALUE = rep(1, nrow(results)))
+
+hist(BIAS[,1])
+
+vapply(c(4, 68, 74), FUN = function(x) {
+  mean(results[,x+2] - results[,x+1])
+}, FUN.VALUE = 1)
+
+vapply(c(1, 65, 71), FUN = function(x) {
+  mean(results[,x+2] - results[,x+1])
+}, FUN.VALUE = 1)
+#
+colMeans(results[,grep("coef", colnames(results))])
+
+#
+#
 # results[,c(4, 24, 30, 42)]
 # for (i in 1:nrow(results)) hist(dgps[[i]]$blip_n, breaks = 200)
-# 
+#
 # for (i in 1:nrow(results)) hist(dgps[[i]]$PQ1n, breaks = 200)
 # for (i in 1:nrow(results)) hist(dgps[[i]]$PQ0n, breaks = 200)
-# 
+#
 # vapply(1:nrow(results), FUN = function(x) {
 #   c(dgps[[x]]$BV0, dgps[[x]]$ATE0)
 # }, FUN.VALUE = c(1,1))
-# 
+#
 # vapply(1:nrow(results), FUN = function(x) {
 #   c(min(dgps[[x]]$PGn), max(dgps[[x]]$PGn))
 # }, FUN.VALUE = c(1,1))
-# 
+#
 
 # 
 # i = 4
