@@ -2,7 +2,7 @@ library(boot)
 
 #' @export
 sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, estimator, method, gn = NULL,
-                   family = gaussian(), cvhal = TRUE) {
+                   cvhal = TRUE) {
   # n=100
   # single = TRUE
   # V = 10
@@ -24,6 +24,9 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
   W = X
   W$A = NULL
   
+  if (all(A==1 | A == 0)) familyG = binomial() else familyG = gaussian()
+  if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = binomial()
+  
   folds = make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
@@ -42,13 +45,13 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     
     if (cvhal){
       halresults <- hal(Y = Y,newX = newdata,
-                        X = X, family = binomial(),
+                        X = X, family = familyQ,
                         verbose = FALSE, parallel = FALSE)
       
       Qk = halresults$pred[1:nv]
       Q1k = halresults$pred[nv+1:nv]
       Q0k = halresults$pred[2*nv+1:nv]} else {
-        halresults = glm(Qform, data = data, family = binomial())
+        halresults = glm(Qform, data = data, family = familyQ)
         Qk = predict(halresults, newdata = newdata[1:nv,], type = 'response')
         Q1k = predict(halresults, newdata = newdata[nv + 1:nv,], type = 'response')
         Q0k = predict(halresults, newdata = newdata[2*nv + 1:nv,], type = 'response')
@@ -62,10 +65,10 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     if (is.null(gn)) {
     if (cvhal){
       halresultsG <- hal(Y = A,newX = newW,
-                         X = W1, family = binomial(),
+                         X = W1, family = familyG,
                          verbose = FALSE, parallel = FALSE)
       gk = halresultsG$pred[1:nv]} else {
-        halresultsG = glm(gform, data = X, family = binomial())
+        halresultsG = glm(gform, data = X, family = familyG)
         gk = predict(halresultsG, newdata = newW, type = 'response')
       }
     } else {
@@ -270,7 +273,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     lrsingle = TRUE
     }
   single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
-                    method = method, gn = gn)
+                    method = method, gn = gn, cvhal = FALSE)
   
   mainform = paste0(paste(colnames(data)[2:4],"+",collapse=""),colnames(data)[5])
   mainform
