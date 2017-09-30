@@ -162,7 +162,7 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   
   jj = 1
   # coef_Q
-  while (BV0 <= minBV & jj < 11) {
+  while (BV0 <= minBV & jj < 20) {
     coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)] = 1.1*coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)]
     PQ1  = plogis(dfQ1 %*% coef_Q)
     PQ0 = plogis(dfs[[2]] %*% coef_Q[1:ncol(dfs[[2]])])
