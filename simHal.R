@@ -45,7 +45,7 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
                     gn = NULL, family = binomial(), dgp = dgps[[i]]) 
               }
 
-save(ALL, dgps, file = "caseRandom.RData")
+save(ALL, dgps, file = "caseHalvsDelta.RData")
 
 # res = lapply(ALL, FUN = function(x) x$res)
 # results = data.matrix(data.frame(do.call(rbind, res)))
