@@ -30,9 +30,9 @@ simHal = function(data, gform = gform, Qform = Qform,
                   V = 10, single = FALSE, estimator, method = "method.NNloglik", 
                   gn = NULL, family = binomial(), dgp) {
   
-  S= sim_hal(data, gform = gform, Qform = Qform, 
+  S = sim_hal(data, gform = gform, Qform = Qform, 
           V = 10, single = FALSE, estimator, method, 
-          gn = NULL, family)
+          gn = NULL, family, cvhal = TRUE)
   res = c(S, BV0 = dgp$BV0, ATE0 = dgp$ATE0)
   
   return(list(res = res, gn = dgp$PGn, blip_n = dgp$blip_n))
