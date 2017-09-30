@@ -8,7 +8,7 @@ library(Simulations)
 source("WrappersVblip1.R")
 
 n = 2000
-B = 300
+B = 100
 
 dgps = lapply(1:B, FUN = function(x) get.dgp(n,4))
 
