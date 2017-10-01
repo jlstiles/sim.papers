@@ -35,6 +35,7 @@ for (a in 1:B) {
               V = 10, single = FALSE, estimator = "single 1step", method = "method.NNLS", 
               gn = NULL, cvhal = TRUE, parallel = TRUE)
   ALL[[B]] = c(S, BV0 = dgp[[a]]$BV0, ATE0 = dgp[[a]]$ATE0)
+  print(a)
 }
 
 save(ALL, dgps, file = "caseHalvsDelta5G.RData")
