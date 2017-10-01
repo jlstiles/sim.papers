@@ -8,7 +8,7 @@ library(Simulations)
 source("WrappersVblip1.R")
 
 n = 5000
-B = 96
+B = 24
 
 dgps = lapply(1:B, FUN = function(x) get.dgp(n,4))
 
@@ -31,10 +31,10 @@ gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
 ALL = list()
 for (a in 1:B) {
-  S = sim_hal(data = dgps[[a]], gform = gform, Qform = Qform, 
+  S = sim_hal(data = dgps[[a]]$DF, gform = gform, Qform = Qform, 
               V = 10, single = FALSE, estimator = "single 1step", method = "method.NNLS", 
               gn = NULL, cvhal = TRUE, parallel = TRUE)
-  ALL[[B]] = c(S, BV0 = dgp[[a]]$BV0, ATE0 = dgp[[a]]$ATE0)
+  ALL[[B]] = c(S, BV0 = dgps[[a]]$BV0, ATE0 = dgps[[a]]$ATE0)
   print(a)
 }
 
