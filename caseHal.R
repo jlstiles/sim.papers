@@ -7,16 +7,15 @@ source(source_file)
 library(Simulations)
 source("WrappersVblip1.R")
 
-n = 2000
-B = 100
+n = 5000
+B = 96
 
 dgps = lapply(1:B, FUN = function(x) get.dgp(n,4))
 
-detectCores()
-cl = makeCluster(14, type = "SOCK")
-registerDoSNOW(cl)
-clusterExport(cl,cl_export)
-
+# detectCores()
+# cl = makeCluster(2, type = "SOCK")
+# registerDoSNOW(cl)
+# clusterExport(cl,cl_export)
 
 # debug(SL.stack1)
 # debug(sim_cv)
@@ -28,25 +27,26 @@ clusterExport(cl,cl_export)
 
 simHal = function(data, gform = gform, Qform = Qform, 
                   V = 10, single = FALSE, estimator, method = "method.NNloglik", 
-                  gn = NULL, family = binomial(), dgp) {
+                  gn = NULL, dgp, parallel) {
   
   S = sim_hal(data, gform = gform, Qform = Qform, 
           V = 10, single = FALSE, estimator, method, 
-          gn = NULL, family, cvhal = TRUE)
+          gn = NULL, cvhal = TRUE, parallel = parallel)
   res = c(S, BV0 = dgp$BV0, ATE0 = dgp$ATE0)
   
   return(list(res = res, gn = dgp$PGn, blip_n = dgp$blip_n))
 }
+
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2+W3+W4)")
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {simHal(data = dgps[[i]]$DF, gform = gform, Qform = Qform, 
                     V = 10, single = FALSE, estimator = "single 1step", method = "method.NNloglik", 
-                    gn = NULL, family = binomial(), dgp = dgps[[i]]) 
+                    gn = NULL, dgp = dgps[[i]], parallel = TRUE) 
               }
-ALL
-save(ALL, dgps, file = "caseHalvsDelta.RData")
+
+save(ALL, dgps, file = "caseHalvsDelta5G.RData")
 
 # res = lapply(ALL, FUN = function(x) x$res)
 # results = data.matrix(data.frame(do.call(rbind, res)))

@@ -2,7 +2,7 @@ library(boot)
 
 #' @export
 sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, estimator, method, gn = NULL,
-                   cvhal = TRUE) {
+                   cvhal = TRUE, parallel = FALSE) {
   # n=100
   # single = TRUE
   # V = 10
@@ -46,7 +46,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     if (cvhal){
       halresults <- hal(Y = Y,newX = newdata,
                         X = X, family = familyQ,
-                        verbose = FALSE, parallel = FALSE)
+                        verbose = FALSE, parallel = parallel)
       
       Qk = halresults$pred[1:nv]
       Q1k = halresults$pred[nv+1:nv]
@@ -66,7 +66,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     if (cvhal){
       halresultsG <- hal(Y = A,newX = newW,
                          X = W1, family = familyG,
-                         verbose = FALSE, parallel = FALSE)
+                         verbose = FALSE, parallel = parallel)
       gk = halresultsG$pred[1:nv]} else {
         halresultsG = glm(gform, data = X, family = familyG)
         gk = predict(halresultsG, newdata = newW, type = 'response')
