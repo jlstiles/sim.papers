@@ -31,5 +31,6 @@ Depends: knitr,
     gentmle2,
     origami,
     stargazer,
-    hal
+    hal,
+    combinat
 
