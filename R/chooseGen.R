@@ -19,15 +19,20 @@
 #' PQ0n
 #' @export
 #' @example /inst/examples/example_get.dgp.R
-get.dgp = function(n, d, pos = .01, minBV = .03) {
-  # n=1000; d=4;pos=.01;minBV=.03
+get.dgp = function(n, d, pos = .01, minBV = .03, depth = 4, maxterms = 10, minterms = d, mininters = 2) {
+  # n=1000; d=8;pos=.01;minBV=.03; depth = 4; maxterms = 10; minterms = d; mininters = 2
   # sample size for getting the truth
   N = 1e6
-  # choose binaries--possibly 0 or 1 for now
-  binaries = c(as.logical(rbinom(1, 1, .5)), rep(FALSE, 3))
-  binaries = (1:d)[binaries]
   
-  # randomly select a binary prob
+  # choose binaries--at most 1 out of 4 covariates is a binary
+  num.binaries = floor(d/4)
+  poss.binaries = sample(1:d, num.binaries)
+  binaries = rep(FALSE, d)
+  binaries[poss.binaries] = c(as.logical(rbinom(num.binaries, 1, .5)))
+  binaries = (1:d)[binaries]
+  binaries
+  
+  # randomly select a binary prob between .3 and .7
   r = runif(1, .3, .7)
   # randomly select chisq, normals, betas, uniforms--normalized
   
@@ -41,7 +46,7 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
     Wbig[,a] = V 
   }
   
-  
+  Wmat = Wbig
   Wbig = as.data.frame(Wbig)
   colnames(Wbig) = paste0("W", 1:d)
   
@@ -54,64 +59,47 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   # we use the previous parameters to generate the transformed vars and truth
   #####
   #####
-  
+  choos = lapply(1:depth, FUN = function(x) {
+    combn(1:d, x)
+  })
   # create the transformed covariates--coeffs to be added
   dfs = lapply(1:2, FUN = function(j){
-    bin_coef = runif(1, -5, 5)
     # vary functional forms
+    # j = 1
     types = list(function(x) sin(x), function(x) cos(x), function(x) x^2, 
                  function(x) x)
     
     # choosing from combos of 2, 3 and whether we have 4 way interaction
     # This should be generalized to larger dimensions but for now only 4
     s = 0
-    while (s <= 1) {
-      choo2 = as.logical(rbinom(6, 1, .5))
-      choo3 = as.logical(rbinom(4, 1, .5))
-      way4 = rbinom(1, 1, .5)
-      # choosing which main terms to include
-      MTnum = sample(1:d, 1)
-      MT = sample(1:d, MTnum)
-      MT = MT[order(MT)]
-      s = sum(choo2) + sum(choo3) + way4 + MTnum
+    while (s <= minterms) {
+      terms = lapply(choos, FUN = function(x) {
+        no.terms = sample(0:min(maxterms, ncol(x)))
+        select.cols = sample(1:ncol(x), no.terms)
+        return(1:ncol(x) %in% select.cols)
+      })
+      s = sum(unlist(lapply(terms, sum)))
     }
-    
-    
-    # x=pars[[1]]
-    
     
     df = vapply(1:d, FUN = function(i) {
       if (i %in% binaries) {
-        return(types[[4]](Wbig[,i]))*bin_coef
+        return(types[[4]](Wmat[,i]))
       } else {
-        return(types[[sample(1:4, 1)]](Wbig[,i]))
+        return(types[[sample(1:4, 1)]](Wmat[,i]))
       }
     }, FUN.VALUE = rep(1, N))
     
-    df_final = df[,MT]
-    # make number of interactions and which ones
-    ways2 = matrix(c(1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4), byrow = TRUE, nrow = 6)
+    df_final = df[,terms[[1]]]
     
-    
-    if (sum(choo2) != 0) {
-      df_2way = vapply(which(choo2), FUN = function(combo) {
-        df[, ways2[combo,1]]*df[, ways2[combo, 2]]
-      }, FUN.VALUE = rep(1,N))
-      df_final = cbind(df_final, df_2way)
-    }
-    
-    # make number of 3 ways interactions
-    ways3 = matrix(c(1, 2, 3, 1, 2, 4, 1, 3, 4, 2, 3, 4), byrow = TRUE, nrow = 4)
-    if (sum(choo3) != 0) {
-      df_3way = vapply(which(choo3), FUN = function(combo) {
-        df[, ways3[combo,1]]*df[, ways3[combo, 2]]*df[, ways3[combo, 3]]
-      }, FUN.VALUE = rep(1,N))
-      df_final = cbind(df_final, df_3way)
-    }
-    
-    if (way4) {
-      df_4way = df[, 1]*df[, 2]*df[, 3]*df[, 4]
-      df_final = cbind(df_final, df_4way)
+    for (a in 2:length(terms)) {
+     if (sum(terms[[a]] != 0)) {
+       col.choos = which(terms[[a]])
+       df = vapply(col.choos, FUN = function(x) {
+         col.inds = choos[[a]][,x]
+         return(rowProds(Wmat, cols = col.inds))
+     }, FUN.VALUE = rep(1, N)) 
+       df_final = cbind(df_final, df)
+     }
     }
     
     df_final = apply(df_final, 2, FUN = function(x) {
@@ -120,41 +108,68 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
     return(df_final) 
   })
   
+  
+  skewer = sample(1:10, 1)
+  if (skewer <= 4) p = -.1 else {if (skewer <= 7) p = 0 else p = .1}
+  # p
+  df_final = dfs[[1]] + p
   # for (a in 1:ncol(dfs[[1]])) hist(dfs[[1]][,a], breaks = 200)
   # generating coeffs for prop score 
-  a = .7 
-  coef_G = runif(ncol(dfs[[1]]), -a, a)
-  coef_G
+  skewfactor = sample(2:5,1)
+  a = 1
+  coef_G = runif(ncol(df_final), -a, skewfactor*a)
+  # coef_G
   # assure no true practical positivity violations without having neverending loop
-  PG0  = gentmle2::truncate(plogis(dfs[[1]] %*% coef_G), .05)
+  # pscores = plogis(dfs[[1]] %*% coef_G)
+  tol = TRUE
+  its = 0
+  while (tol & its < 20) {
+    PG0  = plogis(df_final %*% coef_G)
+    coef_G = .8*coef_G
+    its = its + 1
+    tol = mean(PG0 < pos) > .01 | mean(PG0 > 1-pos) > .01
+  }
   # hist(PG0)
-  # maxG = max(PG0)
-  # minG = min(PG0)
-  # g_iter = 0
-  # while ((maxG >= (1 - pos) | minG <= pos) & g_iter < 10) {
-  #   coef_G = .8*coef_G
-  #   PG0  = plogis(dfs[[1]] %*% coef_G)
-  #   maxG = max(PG0)
-  #   minG = min(PG0)
-  #   g_iter = g_iter+1
-  # }
-
+  # max(PG0)
+  # min(PG0)
+  # its
+  # skewfactor
+  # p
+  PG0 = gentmle2::truncate(PG0, pos)
+  hist(PG0, breaks = 100)
+  
   # now get the A for everyone
   A = rbinom(N, 1, PG0)
   
   # setting up dataframe for both Q0k found previously and Bk, the interactions terms
-  s = 0
-  while (s == 0) {
-    inters = rbinom(ncol(dfs[[2]]), 1, .5)
-    s = sum(inters)
+  
+  no.inters = sample(mininters:(ncol(dfs[[2]])+1), 1)
+  select.cols = sample(1:(ncol(dfs[[2]])+1), no.inters)
+  inters = 1:(ncol(dfs[[2]])) %in% select.cols
+  
+  
+  dfinter0 = vapply(which(inters), FUN = function(col) dfs[[2]][,col]*A, FUN.VALUE = rep(1, N))
+  
+  if ((ncol(dfs[[2]])+1) %in% select.cols) {
+    TX = (A - mean(A))/sd(A)
+    dfTX = cbind(dfs[[2]], TX)
+    TXcol = dfTX[,ncol(dfTX)]
+    TX0 = -mean(A)/sd(A)
+    TX1 = (1 - mean(A))/sd(A)
+    dfQ0 = cbind(dfs[[2]], TX0)
+    dfQ1 = cbind(dfs[[2]], TX1)
+    dfQ = cbind(dfTX, dfinter0)
+    dfQ1 = cbind(dfQ1, dfs[[2]][, which(inters)])
+  } else {
+    dfTX = dfQ0 = dfQ1 = dfs[[2]]
+    dfQ = cbind(dfTX, dfinter0)
+    dfQ1 = cbind(dfQ1, dfs[[2]][, which(inters)])
   }
-  
-  dfinter0 = vapply(which(inters == 1), FUN = function(col) dfs[[2]][,col]*A, FUN.VALUE = rep(1, N))
-  dfQ = cbind(dfs[[2]], dfinter0)
-  dfQ1 = cbind(dfs[[2]], dfs[[2]][, which(inters ==1)])
-  
+
+
+
   # choosing coeffs for the Q generator
-  a = .7
+  a = 1
   coef_Q = runif(ncol(dfQ), -a, a)
   
   # The following helps get the blip var over .025
@@ -163,9 +178,9 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   jj = 1
   # coef_Q
   while (BV0 <= minBV & jj < 20) {
-    coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)] = 1.1*coef_Q[(ncol(dfs[[2]]) + 1):ncol(dfQ)]
+    coef_Q[(ncol(dfTX) + 1):ncol(dfQ)] = 1.2*coef_Q[(ncol(dfTX) + 1):ncol(dfQ)]
     PQ1  = plogis(dfQ1 %*% coef_Q)
-    PQ0 = plogis(dfs[[2]] %*% coef_Q[1:ncol(dfs[[2]])])
+    PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
     blip_true = PQ1 - PQ0
     ATE0 = mean(blip_true)
     BV0 = var(blip_true)
@@ -183,7 +198,6 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   # mean(Y*A/PG0)-mean(Y*(1-A)/(1-PG0))
   # FF = data.frame(Y=Y,A=A,PG0=PG0)
   # mean(with(FF, Y*A/PG0-Y*(1-A)/(1-PG0)))
-  # ATE
 
   # now we select 1000 out of this population for W, A, Y
   S = sample(1:N, n)
@@ -194,13 +208,25 @@ get.dgp = function(n, d, pos = .01, minBV = .03) {
   An = A[S]
   Yn = Y[S]
   Wn = Wbig[S,]
-  DF = cbind(An, Wn, Yn)
-  colnames(DF)[c(1,(d+2))] = c("A", "Y")
+  DF = cbind(Wn, An, Yn)
+  colnames(DF)[c((d+1),(d+2))] = c("A", "Y")
   
   # return the sample true blips and sample barQ1, barQ0, as well as truths and the DF
   return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n, PQ1n = PQ1n, PQ0n = PQ0n, PGn = PGn))
   
 }
+
+# testDF = get.dgp(n = 1000, d = 12, pos = .01, minBV = .03, depth = 4, maxterms = d, minterms = d, mininters = 12)
+# 
+# head(testDF$DF)
+# testDF$BV0
+# testDF$ATE0
+# hist(testDF$blip_n,100)
+# hist(testDF$PQ1n,100)
+# hist(testDF$PQ0n,100)
+# hist(testDF$PGn,100)
+# max(testDF$PGn)
+# min(testDF$PGn)
 
 # big = gendata(1e6, g0_1, Q0_2)
 # gtrue = with(big, g0_1(W1,W2,W3,W4))
