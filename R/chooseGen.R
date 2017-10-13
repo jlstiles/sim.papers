@@ -29,7 +29,7 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, mininters) {
-  # n=1000; d=8;pos=.01;minBV=.03; depth = 4; maxterms = 10; minterms = d; mininters = 2
+  n = 1000; d = 1; pos = .05; minBV = 0; depth = 1; maxterms = 1; minterms = 1; mininters = 0
   # sample size for getting the truth
   
   if (minterms == 0) stop("minterms must be atleast 1")
@@ -79,41 +79,45 @@ get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, minint
   # create the transformed covariates--coeffs to be added
   dfs = lapply(1:2, FUN = function(j){
     # vary functional forms
-    # j = 1
+    j = 1
     types = list(function(x) sin(x), function(x) cos(x), function(x) x^2, 
                  function(x) x)
     
     # choosing from combos of 2, 3 and whether we have 4 way interaction
     # This should be generalized to larger dimensions but for now only 4
     s = 0
-    while (s <= minterms) {
-      terms = lapply(choos, FUN = function(x) {
-        no.terms = sample(0:min(maxterms, ncol(x)))
-        select.cols = sample(1:ncol(x), no.terms)
-        return(1:ncol(x) %in% select.cols)
-      })
-      s = sum(unlist(lapply(terms, sum)))
-    }
-    
-    df = vapply(1:d, FUN = function(i) {
-      if (i %in% binaries) {
-        return(types[[4]](Wmat[,i]))
-      } else {
-        return(types[[sample(1:4, 1)]](Wmat[,i]))
+    if (d == 1) {
+      df_final = apply(Wmat, 2, types[[sample(1:4, 1)]])
+    } else {
+      while (s <= minterms) {
+        terms = lapply(choos, FUN = function(x) {
+          no.terms = sample(0:min(maxterms, ncol(x)))
+          select.cols = sample(1:ncol(x), no.terms)
+          return(1:ncol(x) %in% select.cols)
+        })
+        s = sum(unlist(lapply(terms, sum)))
       }
-    }, FUN.VALUE = rep(1, N))
-    
-    df_final = df[,terms[[1]]]
-    
-    for (a in 2:length(terms)) {
-     if (sum(terms[[a]] != 0)) {
-       col.choos = which(terms[[a]])
-       df = vapply(col.choos, FUN = function(x) {
-         col.inds = choos[[a]][,x]
-         return(rowProds(Wmat, cols = col.inds))
-     }, FUN.VALUE = rep(1, N)) 
-       df_final = cbind(df_final, df)
-     }
+      
+      df = vapply(1:d, FUN = function(i) {
+        if (i %in% binaries) {
+          return(types[[4]](Wmat[,i]))
+        } else {
+          return(types[[sample(1:4, 1)]](Wmat[,i]))
+        }
+      }, FUN.VALUE = rep(1, N))
+      
+      df_final = df[,terms[[1]]]
+      
+      for (a in 2:length(terms)) {
+        if (sum(terms[[a]] != 0)) {
+          col.choos = which(terms[[a]])
+          df = vapply(col.choos, FUN = function(x) {
+            col.inds = choos[[a]][,x]
+            return(rowProds(Wmat, cols = col.inds))
+          }, FUN.VALUE = rep(1, N)) 
+          df_final = cbind(df_final, df)
+        }
+      }
     }
     
     df_final = apply(df_final, 2, FUN = function(x) {
@@ -127,6 +131,7 @@ get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, minint
   if (skewer <= 4) p = -.1 else {if (skewer <= 7) p = 0 else p = .1}
   # p
   df_final = dfs[[1]] + p
+  
   # for (a in 1:ncol(dfs[[1]])) hist(dfs[[1]][,a], breaks = 200)
   # generating coeffs for prop score 
   skewfactor = sample(2:5,1)
