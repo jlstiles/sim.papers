@@ -29,7 +29,7 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, mininters) {
-  n = 1000; d = 1; pos = .05; minBV = 0; depth = 1; maxterms = 1; minterms = 1; mininters = 0
+  # n = 1000; d = 1; pos = .05; minBV = 0; depth = 1; maxterms = 1; minterms = 1; mininters = 0
   # sample size for getting the truth
   
   if (minterms == 0) stop("minterms must be atleast 1")
@@ -44,7 +44,7 @@ get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, minint
   binaries = rep(FALSE, d)
   binaries[poss.binaries] = c(as.logical(rbinom(num.binaries, 1, .5)))
   binaries = (1:d)[binaries]
-  binaries
+  # binaries
   
   # randomly select a binary prob between .3 and .7
   r = runif(1, .3, .7)
