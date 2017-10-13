@@ -85,6 +85,7 @@ get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, minint
     
     # choosing from combos of 2, 3 and whether we have 4 way interaction
     # This should be generalized to larger dimensions but for now only 4
+    s = 0
     while (s <= minterms) {
       terms = lapply(choos, FUN = function(x) {
         no.terms = sample(0:min(maxterms, ncol(x)))
