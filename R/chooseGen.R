@@ -150,7 +150,7 @@ get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, minint
   # skewfactor
   # p
   PG0 = gentmle2::truncate(PG0, pos)
-  hist(PG0, breaks = 100)
+  # hist(PG0, breaks = 100)
   
   # now get the A for everyone
   A = rbinom(N, 1, PG0)
@@ -232,15 +232,15 @@ get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, minint
 
 # testDF = get.dgp(n = 1000, d = 12, pos = .01, minBV = .03, depth = 4, maxterms = d, minterms = d, mininters = 12)
 # 
-# head(testDF$DF)
-# testDF$BV0
-# testDF$ATE0
-# hist(testDF$blip_n,100)
-# hist(testDF$PQ1n,100)
-# hist(testDF$PQ0n,100)
-# hist(testDF$PGn,100)
-# max(testDF$PGn)
-# min(testDF$PGn)
+# head(chubs$DF)
+# chubs$BV0
+# chubs$ATE0
+# hist(chubs$blip_n,100)
+# hist(chubs$PQ1n,100)
+# hist(chubs$PQ0n,100)
+# hist(chubs$PGn,100)
+# max(chubs$PGn)
+# min(chubs$PGn)
 
 # big = gendata(1e6, g0_1, Q0_2)
 # gtrue = with(big, g0_1(W1,W2,W3,W4))
