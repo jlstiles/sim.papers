@@ -13,15 +13,29 @@
 #' @param d, set to 4 only
 #' @param pos, a small value to make sure prop scores are between in (pos, 1 - pos)
 #' @param minBV, minimum blip variance
+#' @param depth, specify depth of interaction--must be less than d
+#' @param maxterms, maximum terms per interaction.  For example, this would limit 
+#' two way interactions to maximally 10 terms as well as three way or main terms.
+#' With high dimension it is wise to set this low because it might take a while
+#' otherwise.  Still in development, be cautious.
+#' @param minterms sets a minimum number of total covariate terms, including 
+#' interactions with eachother--do not set lower than 1.
+#' @param mininters sets the minimum number of interactions with treatment to include
+#' This must be bigger or equal to minterms
 #' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
 #' BV0, the sample pscores, PGn, the sample true blips, blip_n, the sample 
 #' true prob of death under treatment, PQ1n, and prob of death under control
 #' PQ0n
 #' @export
 #' @example /inst/examples/example_get.dgp.R
-get.dgp = function(n, d, pos = .01, minBV = .03, depth = 4, maxterms = 10, minterms = d, mininters = 2) {
+get.dgp = function(n, d, pos = .01, minBV = 0, depth, maxterms, minterms, mininters) {
   # n=1000; d=8;pos=.01;minBV=.03; depth = 4; maxterms = 10; minterms = d; mininters = 2
   # sample size for getting the truth
+  
+  if (minterms == 0) stop("minterms must be atleast 1")
+  
+  if (mininters > minterms) stop("minimum number of interactions cannot exceed number of covariate terms, obviously, hello!!!")
+  
   N = 1e6
   
   # choose binaries--at most 1 out of 4 covariates is a binary
@@ -71,7 +85,6 @@ get.dgp = function(n, d, pos = .01, minBV = .03, depth = 4, maxterms = 10, minte
     
     # choosing from combos of 2, 3 and whether we have 4 way interaction
     # This should be generalized to larger dimensions but for now only 4
-    s = 0
     while (s <= minterms) {
       terms = lapply(choos, FUN = function(x) {
         no.terms = sample(0:min(maxterms, ncol(x)))

@@ -4,7 +4,7 @@
 \alias{get.dgp}
 \title{get.dgp}
 \usage{
-get.dgp(n, d, pos = 0.01, minBV = 0.03)
+get.dgp(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms, mininters)
 }
 \arguments{
 \item{n, }{sample size}
@@ -14,6 +14,19 @@ get.dgp(n, d, pos = 0.01, minBV = 0.03)
 \item{pos, }{a small value to make sure prop scores are between in (pos, 1 - pos)}
 
 \item{minBV, }{minimum blip variance}
+
+\item{depth, }{specify depth of interaction--must be less than d}
+
+\item{maxterms, }{maximum terms per interaction.  For example, this would limit 
+two way interactions to maximally 10 terms as well as three way or main terms.
+With high dimension it is wise to set this low because it might take a while
+otherwise.  Still in development, be cautious.}
+
+\item{minterms}{sets a minimum number of total covariate terms, including 
+interactions with eachother--do not set lower than 1.}
+
+\item{mininters}{sets the minimum number of interactions with treatment to include
+This must be bigger or equal to minterms}
 }
 \value{
 a sample DF, the true average treatment effect, ATE0 and blip variance
