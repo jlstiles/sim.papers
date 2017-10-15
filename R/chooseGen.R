@@ -28,7 +28,7 @@
 #' PQ0n
 #' @export
 #' @example /inst/examples/example_get.dgp.R
-get.dgp = function(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms, 
+get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
                     mininters, num.binaries = floor(d/4)) 
 {
   # n = 1000; d = 4; pos = .05; minBV = .05; depth = 4; maxterms = 2; minterms = 2; mininters = 2
@@ -136,13 +136,22 @@ get.dgp = function(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms,
   coef_Q = runif(ncol(dfQ), -a, a)
   BV0 = 0
   jj = 1
+  while (ATE0 <= minBV & jj < 20) {
+    coef_Q[ncol(dfQ)] = 1.2*coef_Q[ncol(dfQ)]
+    coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)]
+    PQ1 = plogis(dfQ1 %*% coef_Q)
+    PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
+    blip_true = PQ1 - PQ0
+    jj = jj + 1
+  } 
+  
+  jj = 0 
   if (no.inters != 0) {
     while (BV0 <= minBV & jj < 20) {
       coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)]
       PQ1 = plogis(dfQ1 %*% coef_Q)
       PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
       blip_true = PQ1 - PQ0
-      ATE0 = mean(blip_true)
       BV0 = var(blip_true)
       jj = jj + 1
     } 
@@ -150,7 +159,6 @@ get.dgp = function(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms,
     PQ1 = plogis(dfQ1 %*% coef_Q)
     PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
     blip_true = PQ1 - PQ0
-    ATE0 = mean(blip_true)
     BV0 = var(blip_true)
   }
   
