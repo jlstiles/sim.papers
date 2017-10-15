@@ -32,5 +32,6 @@ Depends: knitr,
     origami,
     stargazer,
     hal,
-    combinat
+    combinat,
+    matrixStats
 
