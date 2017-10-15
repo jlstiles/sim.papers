@@ -134,20 +134,25 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   
   a = runif(1, 0, 1)
   coef_Q = runif(ncol(dfQ), -a, a)
-  BV0 = 0
+  PQ1 = plogis(dfQ1 %*% coef_Q)
+  PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
+  blip_true = PQ1 - PQ0
+  ATE0 = mean(blip_true)
+  BV0 = var(blip_true)
+  
   jj = 1
-  while (ATE0 <= minBV & jj < 20) {
+  while (abs(ATE0) <= minATE & jj <= 20) {
     coef_Q[ncol(dfQ)] = 1.2*coef_Q[ncol(dfQ)]
-    coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)]
     PQ1 = plogis(dfQ1 %*% coef_Q)
     PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
     blip_true = PQ1 - PQ0
+    ATE0 = mean(blip_true)
     jj = jj + 1
   } 
   
-  jj = 0 
+  jj = 1 
   if (no.inters != 0) {
-    while (BV0 <= minBV & jj < 20) {
+    while (BV0 <= minBV & jj <= 20) {
       coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)]
       PQ1 = plogis(dfQ1 %*% coef_Q)
       PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
