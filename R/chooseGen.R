@@ -29,37 +29,30 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms, 
-                    mininters) 
+                    mininters, num.binaries = floor(d/4)) 
 {
   # n = 1000; d = 4; pos = .05; minBV = .05; depth = 4; maxterms = 2; minterms = 2; mininters = 2
+  # num.binaries = floor(d/4)
   if (minterms == 0) 
     stop("minterms must be atleast 1")
   if (mininters > minterms) 
     stop("minimum number of interactions cannot exceed number of covariate terms, obviously, hello!!!")
+  
+  # sample size of population
   N = 1e+06
-  num.binaries = floor(d/4)
+  
+  # make at most 1/4 of vars binaries for now. 
   poss.binaries = sample(1:d, num.binaries)
-  binaries = rep(FALSE, d)
-  binaries[poss.binaries] = c(as.logical(rbinom(num.binaries, 
-                                                1, 0.5)))
-  binaries = (1:d)[binaries]
-  r = runif(1, 0.3, 0.7)
-  Wbig = matrix(rep(NA, d * N), ncol = d)
-  for (a in 1:d) {
-    if (a %in% binaries) {
-      V = rbinom(N, 1, r)
+  r = runif(num.binaries, 0.3, 0.7)
+
+  Wmat = vapply(1:d, FUN = function(col) {
+    if (col <= num.binaries) {
+      return(rbinom(N, 1, r[col]))
+    } else {
+      return(rnorm(N, 0, 1))
     }
-    else {
-      V = rnorm(N, 0, 1)
-    }
-    Wbig[, a] = V
-  }
-  Wmat = Wbig
-  Wbig = as.data.frame(Wbig)
-  colnames(Wbig) = paste0("W", 1:d)
-  conts = vapply(1:d, FUN = function(x) !(x %in% binaries), 
-                 FUN.VALUE = TRUE)
-  contins = (1:d)[conts]
+  }, FUN.VALUE = rep(1,N))
+  
   choos = lapply(1:depth, FUN = function(x) {
     c = combn(1:d, x)
     if (!is.matrix(c)) c = as.matrix(c)
@@ -81,29 +74,29 @@ get.dgp = function(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms,
           return(1:ncol(x) %in% select.cols)
         })
         s = sum(unlist(lapply(terms, sum)))
-      }
-      df = vapply(1:d, FUN = function(i) {
-        if (i %in% binaries) {
-          return(types[[4]](Wmat[, i]))
-        } else {
-          return(types[[sample(1:4, 1)]](Wmat[, i]))
-        }
+      }}
+      
+    col.comb = lapply(1:length(terms), FUN = function(a) {
+      col.choos = which(terms[[a]])
+      df = vapply(col.choos, FUN = function(x) {
+        col.inds = choos[[a]][, x]
+        return(rowProds(Wmat, cols = col.inds))
       }, FUN.VALUE = rep(1, N))
-      df_final = df[, terms[[1]]]
-      for (a in 2:length(terms)) {
-        if (sum(terms[[a]] != 0)) {
-          col.choos = which(terms[[a]])
-          df = vapply(col.choos, FUN = function(x) {
-            col.inds = choos[[a]][, x]
-            return(rowProds(Wmat, cols = col.inds))
-          }, FUN.VALUE = rep(1, N))
-          df_final = cbind(df_final, df)
-        }
-      }
-    }
-    df_final = apply(df_final, 2, FUN = function(x) {
-      (x - mean(x))/sd(x)
     })
+    
+    df_final = do.call(cbind, col.comb)
+    
+    df_final = apply(df_final, 2, FUN = function(col) {
+      if (all(col == 1 | col ==0)) {
+        v = (col - mean(col))/sd(col)
+        return(v)
+      } else {
+        v = types[[sample(1:4, 1)]](col)
+        v = (v - mean(v))/sd(v)
+        return(v)
+        }
+      })
+    
     return(df_final)
   })
   skewer = sample(1:10, 1)
@@ -129,54 +122,56 @@ get.dgp = function(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms,
   }
   PG0 = gentmle2::truncate(PG0, pos)
   A = rbinom(N, 1, PG0)
-  no.inters = sample(mininters:(ncol(dfs[[2]]) + 1), 1)
-  select.cols = sample(1:(ncol(dfs[[2]]) + 1), no.inters)
-  inters = 1:(ncol(dfs[[2]])) %in% select.cols
-  dfinter0 = vapply(which(inters), FUN = function(col) dfs[[2]][, 
-                                                                col] * A, FUN.VALUE = rep(1, N))
-  if ((ncol(dfs[[2]]) + 1) %in% select.cols) {
-    TX = (A - mean(A))/sd(A)
-    dfTX = cbind(dfs[[2]], TX)
-    TXcol = dfTX[, ncol(dfTX)]
-    TX0 = -mean(A)/sd(A)
-    TX1 = (1 - mean(A))/sd(A)
-    dfQ0 = cbind(dfs[[2]], TX0)
-    dfQ1 = cbind(dfs[[2]], TX1)
-    dfQ = cbind(dfTX, dfinter0)
-    dfQ1 = cbind(dfQ1, dfs[[2]][, which(inters)])
-  } else {
-    dfTX = dfQ0 = dfQ1 = dfs[[2]]
-    dfQ = cbind(dfTX, dfinter0)
-    dfQ1 = cbind(dfQ1, dfs[[2]][, which(inters)])
-  }
-  a = 1
+  TX = (A - mean(A))/sd(A) 
+  
+  no.inters = sample(mininters:ncol(dfs[[2]]), 1)
+  select.cols = sample(1:ncol(dfs[[2]]), no.inters)
+  dfinter0 = vapply(select.cols, FUN = function(col) dfs[[2]][,col] * A, FUN.VALUE = rep(1, N))
+  
+  dfQ0 = cbind(dfs[[2]], rep(-mean(A)/sd(A), N))
+  dfQ = cbind(dfs[[2]], TX, dfinter0)
+  dfQ1 = cbind(dfs[[2]], rep(1-mean(A)/sd(A), N), dfs[[2]][, select.cols])
+  
+  a = runif(1, 0, 1)
   coef_Q = runif(ncol(dfQ), -a, a)
   BV0 = 0
   jj = 1
-  while (BV0 <= minBV & jj < 20) {
-    coef_Q[(ncol(dfTX) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfTX) + 
-                                                         1):ncol(dfQ)]
+  if (no.inters != 0) {
+    while (BV0 <= minBV & jj < 20) {
+      coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)]
+      PQ1 = plogis(dfQ1 %*% coef_Q)
+      PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
+      blip_true = PQ1 - PQ0
+      ATE0 = mean(blip_true)
+      BV0 = var(blip_true)
+      jj = jj + 1
+    } 
+  } else {
     PQ1 = plogis(dfQ1 %*% coef_Q)
     PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
     blip_true = PQ1 - PQ0
     ATE0 = mean(blip_true)
     BV0 = var(blip_true)
-    jj = jj + 1
   }
+  
   PQ = plogis(dfQ %*% coef_Q)
   Y = rbinom(N, 1, PQ)
+  Y[PQ <= .00001] = 0
+  Y[PQ >= .99999] = 1
   S = sample(1:N, n)
   PQ1n = PQ1[S]
   PQ0n = PQ0[S]
+  PQn = PQ[S]
   PGn = PG0[S]
   blip_n = PQ1n - PQ0n
   An = A[S]
   Yn = Y[S]
-  Wn = Wbig[S, ]
+  Wn = Wmat[S, ]
   DF = cbind(Wn, An, Yn)
   colnames(DF)[c((d + 1), (d + 2))] = c("A", "Y")
+  colnames(DF)[1:d] = paste0("W",1:d)
   return(list(BV0 = BV0, ATE0 = ATE0, DF = DF, blip_n = blip_n, 
-              PQ1n = PQ1n, PQ0n = PQ0n, PGn = PGn))
+              PQ1n = PQ1n, PQ0n = PQ0n, PQn = PQn, PGn = PGn))
 }
 
 # testDF = get.dgp(n = 1000, d = 12, pos = .01, minBV = .03, depth = 4, maxterms = d, minterms = d, mininters = 12)

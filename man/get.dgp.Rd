@@ -4,7 +4,8 @@
 \alias{get.dgp}
 \title{get.dgp}
 \usage{
-get.dgp(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms, mininters)
+get.dgp(n, d, pos = 0.01, minBV = 0, depth, maxterms, minterms, mininters,
+  num.binaries = floor(d/4))
 }
 \arguments{
 \item{n, }{sample size}
