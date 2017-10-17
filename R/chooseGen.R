@@ -245,7 +245,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   blip_true = PQ1 - PQ0
   ATE0 = mean(blip_true)
   BV0 = var(blip_true)
-  
+
   jj = 1
   while (abs(ATE0) <= minATE & jj <= 20) {
     coef_Q[TXpos] = 1.2*coef_Q[TXpos]
@@ -285,7 +285,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   blip_n = PQ1n - PQ0n
   An = A[S]
   Yn = Y[S]
-  Wn = Wmat[S, ]
+  Wn = as.data.frame(Wmat[S, ])
   DF = cbind(Wn, An, Yn)
   colnames(DF)[c((d + 1), (d + 2))] = c("A", "Y")
   colnames(DF)[1:d] = paste0("W",1:d)
