@@ -132,20 +132,20 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     dfQW = matrix((onlyW - mean(onlyW))/sd(onlyW), ncol = 1)
     dfQWA = cbind(dfQW, (A - mean(A)/sd(A)))
     if (mininters == 1) {
-      df_inter = dfQW
+      dfQ_inter = dfQW
       fcn = types[[sample(1:4, 1)]]
-      df_interA = fcn(dfQW*A)
-      means = mean(df_interA)
-      sds = sd(df_interA)
-      dfQ_interA = (df_interA - means)/sds
+      dfQ_interA = fcn(dfQW*A)
+      means = mean(dfQ_interA)
+      sds = sd(dfQ_interA)
+      dfQ_interA = (dfQ_interA - means)/sds
       dfQ_inter = (fcn(dfQW) - means)/sds
       dfQ_inter0 = (fcn(rep(0,N)) - means)/sds
-      dfQ = cbind(dfQWA, df_interA)
+      dfQ = cbind(dfQWA, dfQ_interA)
       dfQ1 = dfQ0 = dfQWA
       dfQ1[,2] = (1 - mean(A))/sd(A)
       dfQ0[,2] = -mean(A)/sd(A)
-      dfQ1 = cbind(dfQ1, df_inter)
-      dfQ0 = cbind(dfQ0, df_inter0)
+      dfQ1 = cbind(dfQ1, dfQ_inter)
+      dfQ0 = cbind(dfQ0, dfQ_inter0)
     }
   } else {
     while (s <= minterms) {
