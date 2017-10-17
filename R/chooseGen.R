@@ -33,6 +33,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
 {
   # n = 1000; d = 1; pos = .05; minATE = .05; minBV = .05; depth = 1; maxterms = 1; minterms = 1; mininters = 1
   # num.binaries = floor(d/4)
+  
   if (minterms == 0) 
     stop("minterms must be atleast 1")
   if (mininters > minterms) 
@@ -141,7 +142,6 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       df_inter0 = (fcn(rep(0,N)) - means)/sds
       dfQ = cbind(dfQWA, df_interA)
       dfQ1 = dfQWA
-      
       dfQ0 = dfQWA
       dfQ1[,2] = (1 - mean(A))/sd(A)
       dfQ0[,2] = -mean(A)/sd(A)
