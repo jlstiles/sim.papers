@@ -10,13 +10,15 @@ get.dgp(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms,
 \arguments{
 \item{n, }{sample size}
 
-\item{d, }{set to 4 only}
+\item{d, }{suggest less than 20}
 
 \item{pos, }{a small value to make sure prop scores are between in (pos, 1 - pos)}
 
-\item{minBV, }{minimum blip variance}
+\item{minATE, }{minimum causal risk difference for the population.}
 
-\item{depth, }{specify depth of interaction--must be less than d}
+\item{minBV, }{minimum blip variance for population}
+
+\item{depth, }{specify depth of interaction--must be less than d.}
 
 \item{maxterms, }{maximum terms per interaction.  For example, this would limit 
 two way interactions to maximally 10 terms as well as three way or main terms.
@@ -28,6 +30,9 @@ interactions with eachother--do not set lower than 1.}
 
 \item{mininters}{sets the minimum number of interactions with treatment to include
 This must be bigger or equal to minterms}
+
+\item{num.binaries}{specifies number of main terms you want as binaries, must be 
+less than d.}
 }
 \value{
 a sample DF, the true average treatment effect, ATE0 and blip variance
@@ -36,12 +41,17 @@ true prob of death under treatment, PQ1n, and prob of death under control
 PQ0n
 }
 \description{
-randomly creates a dgp, for now only 4 dimensional of confounders, binary 
-treatment.
+randomly creates a dgp and attempts to satisfy user specs. Number of covariates
+is not limited but may take a while beyond d = 20 with too many terms. Limit time with depth
+and maxterms parameters.
 }
 \examples{
-# getting a random sample from a randomly drawn dgp 
-dgp = get.dgp(n = 1000, d = 4)
+# getting a random sample from a randomly drawn dgp.  We specify 3 covariates, a minimum population ATE of .1
+# a minimum variance of blip of .03, up to 2 way interactions, limit positivity violations to less than 1\% of the
+# population having propensity scores below .05 or above .95, 1 binary, up to 1 interaction terms and at least 1
+# term included as a covariate in outcome regression and in treatment mechanism
+dgp = get.dgp(n = 1000, d = 3, pos = 0.05, minATE = .1, minBV = .03, depth = 2, maxterms = 3, minterms = 1, 
+              mininters = 1, num.binaries = 1) 
 
 # population blip variance
 dgp$BV0
@@ -59,5 +69,6 @@ max(dgp$PGn)
 head(dgp$DF)
 # histogram of blips
 hist(dgp$blip_n)
-
+# histogram of propensity scores
+hist(dgp$PGn)
 }
