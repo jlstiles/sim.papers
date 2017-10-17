@@ -5,10 +5,10 @@
 #' and maxterms parameters.
 #' @param n, sample size
 #' @param d, dimension of potential confounders
-#' @param pos, a small value to make sure prop scores are between in (pos, 1 - pos)
+#' @param pos, a small value to make sure prop scores are in (pos, 1 - pos)
 #' @param minATE, minimum causal risk difference for the population.  
 #' @param minBV, minimum blip variance for population
-#' @param depth, specify depth of interaction--must be less than d.  
+#' @param depth, specify depth of interaction--must be less than or equal d.  
 #' @param maxterms, maximum terms per interaction.  For example, this would limit 
 #' two way interactions to maximally 10 terms as well as three way or main terms.
 #' With high dimension it is wise to set this low because it might take a while

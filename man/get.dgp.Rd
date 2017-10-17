@@ -12,13 +12,13 @@ get.dgp(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms,
 
 \item{d, }{dimension of potential confounders}
 
-\item{pos, }{a small value to make sure prop scores are between in (pos, 1 - pos)}
+\item{pos, }{a small value to make sure prop scores are in (pos, 1 - pos)}
 
 \item{minATE, }{minimum causal risk difference for the population.}
 
 \item{minBV, }{minimum blip variance for population}
 
-\item{depth, }{specify depth of interaction--must be less than d.}
+\item{depth, }{specify depth of interaction--must be less than or equal d.}
 
 \item{maxterms, }{maximum terms per interaction.  For example, this would limit 
 two way interactions to maximally 10 terms as well as three way or main terms.
