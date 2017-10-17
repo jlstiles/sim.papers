@@ -5,7 +5,7 @@
 \title{get.dgp}
 \usage{
 get.dgp(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms,
-  minterms, mininters, num.binaries = floor(d/4))
+  minterms, mininters, num.binaries = floor(d/4), force.confounding = TRUE)
 }
 \arguments{
 \item{n, }{sample size}
@@ -33,6 +33,9 @@ This must be bigger or equal to minterms}
 
 \item{num.binaries}{specifies number of main terms you want as binaries, must be 
 less than d.}
+
+\item{force.confounding}{forces variables used for p-score to overlap with those
+used for outcome regression.}
 }
 \value{
 a sample DF, the true average treatment effect, ATE0 and blip variance

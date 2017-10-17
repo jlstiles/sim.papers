@@ -19,6 +19,8 @@
 #' This must be bigger or equal to minterms
 #' @param num.binaries specifies number of main terms you want as binaries, must be 
 #' less than d.
+#' @param force.confounding forces variables used for p-score to overlap with those
+#' used for outcome regression. 
 #' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
 #' BV0, the sample pscores, PGn, the sample true blips, blip_n, the sample 
 #' true prob of death under treatment, PQ1n, and prob of death under control
@@ -26,11 +28,10 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
-                   mininters, num.binaries = floor(d/4)) 
+                   mininters, num.binaries = floor(d/4), force.confounding = TRUE) 
 {
   # n = 1000; d = 4; pos = .05; minATE = .05; minBV = .05; depth = 4; maxterms = 4; minterms = 4; mininters = 4
-  # num.binaries = floor(d/4)
-
+  # num.binaries = floor(d/4); force.confounding = TRUE
   if (minterms == 0) 
     stop("minterms must be atleast 1")
   if (mininters > minterms) 
@@ -140,27 +141,43 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   # NOW WE TAKE CARE OF TRUE OC Probs
   ###
   
-  # for barQ first select interaction terms for just the W's
-  s = -1
-  while (s < minterms) {
-    termsQW = lapply(choos, FUN = function(x) {
-      no.terms = sample(0:min(maxterms, ncol(x)),1)
-      select.cols = sample(1:ncol(x), no.terms)
-      return(select.cols)
-    })
-    s = sum(unlist(lapply(termsQW, sum)))
+  if (force.confounding) {
+    termsQW = terms
+    s = -1 
+    while (s < mininters) {
+      terms_inter = lapply(terms, FUN = function(x) {
+        no.terms = sample(0:length(x),1)
+        select.cols = sample(x, no.terms)
+        return(select.cols)
+      })
+      if (mininters == 0) s = Inf else s = sum(unlist(lapply(terms_inter, sum)))
+    }
+  } else {
+    # for barQ first select interaction terms for just the W's
+    s = -1
+    while (s < minterms) {
+      termsQW = lapply(choos, FUN = function(x) {
+        no.terms = sample(0:min(maxterms, ncol(x)),1)
+        select.cols = sample(1:ncol(x), no.terms)
+        return(select.cols)
+      })
+      s = sum(unlist(lapply(termsQW, sum)))
+    }
+    s = -1 
+    while (s < mininters) {
+      terms_inter = lapply(choos, FUN = function(x) {
+        no.terms = sample(0:min(maxterms, ncol(x)),1)
+        select.cols = sample(1:ncol(x), no.terms)
+        return(select.cols)
+      })
+      if (mininters == 0) s = Inf else s = sum(unlist(lapply(terms_inter, sum)))
+    }
   }
   
+  # if (force.confounding) use same terms in OC interactions
+  # as for p-scores or a high percentage there of
   # for barQ select interaction terms of W's that will interact with A
-  s = -1 
-  while (s < mininters) {
-    terms_inter = lapply(choos, FUN = function(x) {
-      no.terms = sample(0:min(maxterms, ncol(x)),1)
-      select.cols = sample(1:ncol(x), no.terms)
-      return(select.cols)
-    })
-    if (mininters == 0) s = Inf else s = sum(unlist(lapply(terms_inter, sum)))
-  }
+
   
   # combine W interactions and mains for OC
   col.combQ = lapply(1:length(termsQW), FUN = function(a) {
@@ -177,9 +194,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       return(df)
     }
   })
-  # put the cols in one matrix
-  dfQWA = do.call(cbind, col.combQ)
-  dfQWA = cbind(dfQWA, A)
+
   
   # combine cols used for interaction with A
   col.comb_inter = lapply(1:length(terms_inter), FUN = function(a) {
@@ -196,6 +211,10 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       return(df)
     }
   })
+  
+  # put the cols in one matrix for W interactions and mains
+  dfQWA = do.call(cbind, col.combQ)
+  dfQWA = cbind(dfQWA, A)
   
   # put the cols in one matrix for interactions with A = 1 
   dfQ_inter = do.call(cbind, col.comb_inter)
