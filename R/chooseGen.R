@@ -31,8 +31,8 @@
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
                    mininters, num.binaries = floor(d/4)) 
 {
-  # n = 1000; d = 8; pos = .05; minATE = .05; minBV = .05; depth = 4; maxterms = 8; minterms = 8; mininters = 2
-  # num.binaries = floor(d/4)
+  n = 1000; d = 1; pos = .05; minATE = .05; minBV = .05; depth = 1; maxterms = 1; minterms = 1; mininters = 1
+  num.binaries = floor(d/4)
   if (minterms == 0) 
     stop("minterms must be atleast 1")
   if (mininters > minterms) 
@@ -141,6 +141,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       df_inter0 = (fcn(rep(0,N)) - means)/sds
       dfQ = cbind(dfQWA, df_interA)
       dfQ1 = dfQWA
+      dfQ0 = dfQWA
       dfQ1[,2] = (1 - mean(A))/sd(A)
       dfQ0[,2] = -mean(A)/sd(A)
       dfQ1 = cbind(dfQ1, df_inter)
@@ -259,9 +260,9 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   jj = 1 
   if (ncol(dfQ_inter) != 0) {
     while (BV0 <= minBV & jj <= 20) {
-      coef_Q[(ncol(dfQW0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQW0) + 1):ncol(dfQ)]
+      coef_Q[(ncol(dfQWA) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQWA) + 1):ncol(dfQ)]
       PQ1 = plogis(dfQ1 %*% coef_Q)
-      PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
+      PQ0 = plogis(dfQ0 %*% coef_Q)
       blip_true = PQ1 - PQ0
       BV0 = var(blip_true)
       jj = jj + 1
