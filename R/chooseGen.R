@@ -62,6 +62,10 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     return(c)
   })
   
+  # types of transformations to apply, can add many more
+  types = list(function(x) sin(x), function(x) cos(x), 
+               function(x) x^2, function(x) x)
+  
   # select the interaction terms to be included according to maxterms and minterms
   s = 0
   if (d == 1) {
@@ -87,10 +91,6 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     
     # put the cols in one matrix
     dfG = do.call(cbind, col.comb)
-    
-    # types of transformations to apply, can add many more
-    types = list(function(x) sin(x), function(x) cos(x), 
-                 function(x) x^2, function(x) x)
     
     # transform the columns by plugging into randomly drawn functions and standardize
     # so no variable dominates unnecessarily
@@ -141,8 +141,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       df_inter = (fcn(dfQW) - means)/sds
       df_inter0 = (fcn(rep(0,N)) - means)/sds
       dfQ = cbind(dfQWA, df_interA)
-      dfQ1 = dfQWA
-      dfQ0 = dfQWA
+      dfQ1 = dfQ0 = dfQWA
       dfQ1[,2] = (1 - mean(A))/sd(A)
       dfQ0[,2] = -mean(A)/sd(A)
       dfQ1 = cbind(dfQ1, df_inter)
