@@ -4,7 +4,7 @@
 #' is not limited but may take a while beyond d = 20 with too many terms. Limit time with depth
 #' and maxterms parameters.
 #' @param n, sample size
-#' @param d, suggest less than 20
+#' @param d, dimension of potential confounders
 #' @param pos, a small value to make sure prop scores are between in (pos, 1 - pos)
 #' @param minATE, minimum causal risk difference for the population.  
 #' @param minBV, minimum blip variance for population
@@ -12,7 +12,7 @@
 #' @param maxterms, maximum terms per interaction.  For example, this would limit 
 #' two way interactions to maximally 10 terms as well as three way or main terms.
 #' With high dimension it is wise to set this low because it might take a while
-#' otherwise.  Still in development, be cautious.
+#' otherwise.  Still in development--perhaps future will set this for each depth
 #' @param minterms sets a minimum number of total covariate terms, including 
 #' interactions with eachother--do not set lower than 1.
 #' @param mininters sets the minimum number of interactions with treatment to include
@@ -63,6 +63,10 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   # types of transformations to apply, can add many more
   types = list(function(x) sin(x), function(x) cos(x), 
                function(x) x^2, function(x) x)
+ 
+  ##
+  # begin p-score construction for population
+  ##
   
   # select the interaction terms to be included according to maxterms and minterms
   # maxterms is for any depth and minterms makes sure we have a model of certain complexity
@@ -76,7 +80,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     })
     s = sum(unlist(lapply(terms, FUN = function(x) length(x))))
   }
-  
+  # combine specified columns as to randomly chosen interactions
   col.comb = lapply(1:length(terms), FUN = function(a) {
     col.choos = terms[[a]]
     if (length(col.choos) == 0) {
@@ -157,6 +161,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     if (mininters == 0) s = Inf else s = sum(unlist(lapply(terms_inter, sum)))
   }
   
+  # combine W interactions and mains for OC
   col.combQ = lapply(1:length(termsQW), FUN = function(a) {
     col.choos = termsQW[[a]]
     if (length(col.choos) == 0) {
@@ -175,6 +180,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   dfQWA = do.call(cbind, col.combQ)
   dfQWA = cbind(dfQWA, A)
   
+  # combine cols used for interaction with A
   col.comb_inter = lapply(1:length(terms_inter), FUN = function(a) {
     col.choos = terms_inter[[a]]
     if (length(col.choos) == 0) {
@@ -302,7 +308,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   PQ = plogis(dfQ %*% coef_Q)
   # take the draw for the population
   Y = rbinom(N, 1, PQ)
-  # make sure our loglikelihood loss is bounded reasonably, no one gets super lucky!
+  # make sure our loglikelihood loss is bounded reasonably, no one gets super lucky or unlucky!
   Y[PQ <= .00001] = 0
   Y[PQ >= .99999] = 1
   
@@ -325,20 +331,3 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
               PQ1n = PQ1n, PQ0n = PQ0n, PQn = PQn, PGn = PGn))
 }
 
-# testDF = get.dgp(n = 1000, d = 12, pos = .01, minBV = .03, depth = 4, maxterms = d, minterms = d, mininters = 12)
-# 
-# head(chubs$DF)
-# chubs$BV0
-# chubs$ATE0
-# hist(chubs$blip_n,100)
-# hist(chubs$PQ1n,100)
-# hist(chubs$PQ0n,100)
-# hist(chubs$PGn,100)
-# max(chubs$PGn)
-# min(chubs$PGn)
-
-# big = gendata(1e6, g0_1, Q0_2)
-# gtrue = with(big, g0_1(W1,W2,W3,W4))
-# gtrue[1:10]
-# mean(big$A*big$Y/gtrue - (1 - big$A)*big$Y/(1 - gtrue))
-# get.truth(g0_1, Q0_2)

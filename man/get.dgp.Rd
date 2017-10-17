@@ -10,7 +10,7 @@ get.dgp(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms,
 \arguments{
 \item{n, }{sample size}
 
-\item{d, }{suggest less than 20}
+\item{d, }{dimension of potential confounders}
 
 \item{pos, }{a small value to make sure prop scores are between in (pos, 1 - pos)}
 
@@ -23,7 +23,7 @@ get.dgp(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms,
 \item{maxterms, }{maximum terms per interaction.  For example, this would limit 
 two way interactions to maximally 10 terms as well as three way or main terms.
 With high dimension it is wise to set this low because it might take a while
-otherwise.  Still in development, be cautious.}
+otherwise.  Still in development--perhaps future will set this for each depth}
 
 \item{minterms}{sets a minimum number of total covariate terms, including 
 interactions with eachother--do not set lower than 1.}
