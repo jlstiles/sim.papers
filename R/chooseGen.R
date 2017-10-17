@@ -141,6 +141,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       df_inter0 = (fcn(rep(0,N)) - means)/sds
       dfQ = cbind(dfQWA, df_interA)
       dfQ1 = dfQWA
+      
       dfQ0 = dfQWA
       dfQ1[,2] = (1 - mean(A))/sd(A)
       dfQ0[,2] = -mean(A)/sd(A)
