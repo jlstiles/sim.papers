@@ -62,8 +62,9 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   
   # types of transformations to apply, can add many more
   types = list(function(x) sin(x), function(x) cos(x), 
-               function(x) x^2, function(x) x)
- 
+               function(x) x^2, function(x) x, function(x) x^3, function(x) exp(x))
+  
+  no.types = length(types)
   ##
   # begin p-score construction for population
   ##
@@ -106,7 +107,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       v = (col - mean(col))/sd(col)
       return(v)
     } else {
-      v = types[[sample(1:4, 1)]](col)
+      v = types[[sample(1:no.types, 1)]](col)
       v = (v - mean(v))/sd(v)
       return(v)
     }
@@ -207,7 +208,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       v = (col - mean(col))/sd(col)
       return(v)
     } else {
-      v = types[[sample(1:4, 1)]](col)
+      v = types[[sample(1:no.types, 1)]](col)
       v = (v - mean(v))/sd(v)
       return(v)
     }
@@ -222,7 +223,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
       if (all(dfQ_interA[,col] == 1 | dfQ_interA[,col] ==0)) {
         return(types[[4]])
       } else {
-        v = types[[sample(1:4, 1)]]
+        v = types[[sample(1:no.types, 1)]]
         return(v)
       }
     })
