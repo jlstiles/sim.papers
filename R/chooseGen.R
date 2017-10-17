@@ -28,7 +28,7 @@
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
                    mininters, num.binaries = floor(d/4)) 
 {
-  # n = 1000; d = 1; pos = .05; minATE = .05; minBV = .05; depth = 1; maxterms = 1; minterms = 1; mininters = 0
+  # n = 1000; d = 4; pos = .05; minATE = .05; minBV = .05; depth = 4; maxterms = 4; minterms = 4; mininters = 4
   # num.binaries = floor(d/4)
 
   if (minterms == 0) 
@@ -77,13 +77,19 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     s = sum(unlist(lapply(terms, FUN = function(x) length(x))))
   }
   
-  # interact the columns and store in list for propensity score 
   col.comb = lapply(1:length(terms), FUN = function(a) {
     col.choos = terms[[a]]
-    df = vapply(col.choos, FUN = function(x) {
-      col.inds = choos[[a]][, x]
-      return(rowProds(Wmat, cols = col.inds))
-    }, FUN.VALUE = rep(1, N))
+    if (length(col.choos) == 0) {
+      return(integer(0))
+    } else {
+      df = vapply(col.choos, FUN = function(x) {
+        col.inds = choos[[a]][,x]
+        v = rep(1, N)
+        for (c in col.inds) v = v*Wmat[,c]
+        return(v)
+      }, FUN.VALUE = rep(1, N))
+      return(df)
+    }
   })
   
   # put the cols in one matrix used for p-score
@@ -151,27 +157,37 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     if (mininters == 0) s = Inf else s = sum(unlist(lapply(terms_inter, sum)))
   }
   
-  # interact the columns and store in list, these are only W's interacting with eachother
-  # not A
   col.combQ = lapply(1:length(termsQW), FUN = function(a) {
     col.choos = termsQW[[a]]
-    dfQW = vapply(col.choos, FUN = function(x) {
-      col.inds = choos[[a]][, x]
-      return(rowProds(Wmat, cols = col.inds))
-    }, FUN.VALUE = rep(1, N))
+    if (length(col.choos) == 0) {
+      return(integer(0))
+    } else {
+      df = vapply(col.choos, FUN = function(x) {
+        col.inds = choos[[a]][,x]
+        v = rep(1, N)
+        for (c in col.inds) v = v*Wmat[,c]
+        return(v)
+      }, FUN.VALUE = rep(1, N))
+      return(df)
+    }
   })
-  
   # put the cols in one matrix
   dfQWA = do.call(cbind, col.combQ)
   dfQWA = cbind(dfQWA, A)
   
-  # These are interactions of W interactions with A
   col.comb_inter = lapply(1:length(terms_inter), FUN = function(a) {
     col.choos = terms_inter[[a]]
-    dfQ_inter = vapply(col.choos, FUN = function(x) {
-      col.inds = choos[[a]][, x]
-      return(rowProds(Wmat, cols = col.inds))
-    }, FUN.VALUE = rep(1, N))
+    if (length(col.choos) == 0) {
+      return(integer(0))
+    } else {
+      df = vapply(col.choos, FUN = function(x) {
+        col.inds = choos[[a]][,x]
+        v = rep(1, N)
+        for (c in col.inds) v = v*Wmat[,c]
+        return(v)
+      }, FUN.VALUE = rep(1, N))
+      return(df)
+    }
   })
   
   # put the cols in one matrix for interactions with A = 1 
