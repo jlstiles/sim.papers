@@ -1,19 +1,14 @@
-# We have 4 covariates and 1 treatment, which can be binary or continuous, 
-# we first choose which are binary and which are continuous (rnorms)
-
-# declare the dimension of W and n
-
-# now we have W1, W2, W3, W4 which are random variables as plain binomials and fcns of normals
-# we can now interact these fcns and create new variables
 
 #' @title get.dgp
-#' @description randomly creates a dgp, for now only 4 dimensional of confounders, binary 
-#' treatment.
+#' @description randomly creates a dgp and attempts to satisfy user specs. Number of covariates
+#' is not limited but may take a while beyond d = 20 with too many terms. Limit time with depth
+#' and maxterms parameters.
 #' @param n, sample size
-#' @param d, set to 4 only
+#' @param d, suggest less than 20
 #' @param pos, a small value to make sure prop scores are between in (pos, 1 - pos)
-#' @param minBV, minimum blip variance
-#' @param depth, specify depth of interaction--must be less than d
+#' @param minATE, minimum causal risk difference for the population.  
+#' @param minBV, minimum blip variance for population
+#' @param depth, specify depth of interaction--must be less than d.  
 #' @param maxterms, maximum terms per interaction.  For example, this would limit 
 #' two way interactions to maximally 10 terms as well as three way or main terms.
 #' With high dimension it is wise to set this low because it might take a while
@@ -22,6 +17,8 @@
 #' interactions with eachother--do not set lower than 1.
 #' @param mininters sets the minimum number of interactions with treatment to include
 #' This must be bigger or equal to minterms
+#' @param num.binaries specifies number of main terms you want as binaries, must be 
+#' less than d.
 #' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
 #' BV0, the sample pscores, PGn, the sample true blips, blip_n, the sample 
 #' true prob of death under treatment, PQ1n, and prob of death under control
@@ -42,8 +39,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   # sample size of population
   N = 1e+06
   
-  # randomly drawn binary distributions on random columns but cols don't need to be random here
-  # but it doesn't matter
+  # randomly drawn binary distributions on random columns, cols don't need to be random here
   poss.binaries = sample(1:d, num.binaries)
   r = runif(num.binaries, 0.3, 0.7)
   
