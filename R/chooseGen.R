@@ -29,9 +29,9 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
-                    mininters, num.binaries = floor(d/4)) 
+                   mininters, num.binaries = floor(d/4)) 
 {
-  # n = 1000; d = 4; pos = .05; minBV = .05; depth = 4; maxterms = 2; minterms = 2; mininters = 2
+  # n = 1000; d = 8; pos = .05; minATE = .05; minBV = .05; depth = 4; maxterms = 8; minterms = 8; mininters = 2
   # num.binaries = floor(d/4)
   if (minterms == 0) 
     stop("minterms must be atleast 1")
@@ -41,10 +41,11 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   # sample size of population
   N = 1e+06
   
-  # make at most 1/4 of vars binaries for now. 
+  # randomly drawn binary distributions 
   poss.binaries = sample(1:d, num.binaries)
   r = runif(num.binaries, 0.3, 0.7)
-
+  
+  # the basic matrix of confounders
   Wmat = vapply(1:d, FUN = function(col) {
     if (col <= num.binaries) {
       return(rbinom(N, 1, r[col]))
@@ -53,40 +54,46 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     }
   }, FUN.VALUE = rep(1,N))
   
+  # All of the interaction combos
   choos = lapply(1:depth, FUN = function(x) {
     c = combn(1:d, x)
     if (!is.matrix(c)) c = as.matrix(c)
     return(c)
   })
   
-  
-  dfs = lapply(1:2, FUN = function(j) {
-    types = list(function(x) sin(x), function(x) cos(x), 
-                 function(x) x^2, function(x) x)
-    s = 0
-    if (d == 1) {
-      df_final = apply(Wmat, 2, types[[sample(1:4, 1)]])
-    } else {
-      while (s <= minterms) {
-        terms = lapply(choos, FUN = function(x) {
-          no.terms = sample(0:min(maxterms, ncol(x)),1)
-          select.cols = sample(1:ncol(x), no.terms)
-          return(1:ncol(x) %in% select.cols)
-        })
-        s = sum(unlist(lapply(terms, sum)))
-      }}
-      
+  # select the interaction terms to be included according to maxterms and minterms
+  s = 0
+  if (d == 1) {
+    dfG = as.matrix(types[[sample(1:4, 1)]](Wmat))
+  } else {
+    while (s <= minterms) {
+      terms = lapply(choos, FUN = function(x) {
+        no.terms = sample(0:min(maxterms, ncol(x)),1)
+        select.cols = sample(1:ncol(x), no.terms)
+        return(select.cols)
+      })
+      s = sum(unlist(lapply(terms, FUN = function(x) length(x))))
+    }
+    
+    # interact the columns and store in list 
     col.comb = lapply(1:length(terms), FUN = function(a) {
-      col.choos = which(terms[[a]])
+      col.choos = terms[[a]]
       df = vapply(col.choos, FUN = function(x) {
         col.inds = choos[[a]][, x]
         return(rowProds(Wmat, cols = col.inds))
       }, FUN.VALUE = rep(1, N))
     })
     
-    df_final = do.call(cbind, col.comb)
+    # put the cols in one matrix
+    dfG = do.call(cbind, col.comb)
     
-    df_final = apply(df_final, 2, FUN = function(col) {
+    # types of transformations to apply, can add many more
+    types = list(function(x) sin(x), function(x) cos(x), 
+                 function(x) x^2, function(x) x)
+    
+    # transform the columns by plugging into randomly drawn functions and standardize
+    # so no variable dominates unnecessarily
+    dfG = apply(dfG, 2, FUN = function(col) {
       if (all(col == 1 | col ==0)) {
         v = (col - mean(col))/sd(col)
         return(v)
@@ -94,66 +101,165 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
         v = types[[sample(1:4, 1)]](col)
         v = (v - mean(v))/sd(v)
         return(v)
-        }
-      })
-    
-    return(df_final)
-  })
-  skewer = sample(1:10, 1)
-  if (skewer <= 4){ 
-    p = -0.1
-  } else {
-    if (skewer <= 7) 
-      p = 0
-    else p = 0.1
+      }
+    })
   }
-  df_final = dfs[[1]] + p
-  skewfactor = sample(2:5, 1)
-  a = 1
-  coef_G = runif(ncol(df_final), -a, skewfactor * a)
+  
+  skewage = runif(1, -1, 1)  
+  dfG = cbind(dfG, rep(skewage, N))
+  coef_G = runif(ncol(dfG), -1, 1)
+  # satisfying positivity constraints
   tol = TRUE
   its = 0
   while (tol & its < 20) {
-    PG0 = plogis(df_final %*% coef_G)
+    PG0 = plogis(dfG %*% coef_G)
     coef_G = 0.8 * coef_G
     its = its + 1
     tol = mean(PG0 < pos) > 0.01 | mean(PG0 > 1 - pos) > 
       0.01
   }
+  
+  # Creating A and standardizing
   PG0 = gentmle2::truncate(PG0, pos)
+  # hist(PG0, breaks = 100)
   A = rbinom(N, 1, PG0)
-  TX = (A - mean(A))/sd(A) 
   
-  no.inters = sample(mininters:ncol(dfs[[2]]), 1)
-  select.cols = sample(1:ncol(dfs[[2]]), no.inters)
-  dfinter0 = vapply(select.cols, FUN = function(col) dfs[[2]][,col] * A, FUN.VALUE = rep(1, N))
+  # for barQ first select interaction terms for just the W's
+  s = 0
+  if (d == 1) {
+    onlyW = types[[sample(1:4, 1)]](Wmat)
+    dfQW = matrix((onlyW - mean(onlyW))/sd(onlyW), ncol = 1)
+    dfQWA = cbind(dfQW, (A - mean(A)/sd(A)))
+    if (mininters == 1) {
+      df_inter = dfQW
+      fcn = types[[sample(1:4, 1)]]
+      df_interA = fcn(dfQW*A)
+      means = mean(df_interA)
+      sds = sd(df_interA)
+      df_interA = (df_interA - means)/sds
+      df_inter = (fcn(dfQW) - means)/sds
+      df_inter0 = (fcn(rep(0,N)) - means)/sds
+      dfQ = cbind(dfQWA, df_interA)
+      dfQ1 = dfQWA
+      dfQ1[,2] = (1 - mean(A))/sd(A)
+      dfQ0[,2] = -mean(A)/sd(A)
+      dfQ1 = cbind(dfQ1, df_inter)
+      dfQ0 = cbind(dfQ0, df_inter0)
+    }
+  } else {
+    while (s <= minterms) {
+      termsQW = lapply(choos, FUN = function(x) {
+        no.terms = sample(0:min(maxterms, ncol(x)),1)
+        select.cols = sample(1:ncol(x), no.terms)
+        return(select.cols)
+      })
+      s = sum(unlist(lapply(terms, sum)))
+    }
+    
+    # for barQ select interaction terms of W's that will interact with A
+    s = 0
+    while (s <= mininters) {
+      terms_inter = lapply(choos, FUN = function(x) {
+        no.terms = sample(0:min(maxterms, ncol(x)),1)
+        select.cols = sample(1:ncol(x), no.terms)
+        return(select.cols)
+      })
+      s = sum(unlist(lapply(terms, sum)))
+    }
+    
+    # interact the columns and store in list 
+    col.combQ = lapply(1:length(termsQW), FUN = function(a) {
+      col.choos = termsQW[[a]]
+      dfQW = vapply(col.choos, FUN = function(x) {
+        col.inds = choos[[a]][, x]
+        return(rowProds(Wmat, cols = col.inds))
+      }, FUN.VALUE = rep(1, N))
+    })
+    
+    # put the cols in one matrix
+    dfQWA = do.call(cbind, col.combQ)
+    dfQWA = cbind(dfQWA, A)
+    
+    col.comb_inter = lapply(1:length(terms_inter), FUN = function(a) {
+      col.choos = terms_inter[[a]]
+      dfQ_inter = vapply(col.choos, FUN = function(x) {
+        col.inds = choos[[a]][, x]
+        return(rowProds(Wmat, cols = col.inds))
+      }, FUN.VALUE = rep(1, N))
+    })
+    
+    # put the cols in one matrix
+    dfQ_inter = do.call(cbind, col.comb_inter)
+    dfQ_interA = apply(dfQ_inter, 2, FUN = function(col) A*col)
+    
+    dfQWA = apply(dfQWA, 2, FUN = function(col) {
+      if (all(col == 1 | col ==0)) {
+        v = (col - mean(col))/sd(col)
+        return(v)
+      } else {
+        v = types[[sample(1:4, 1)]](col)
+        v = (v - mean(v))/sd(v)
+        return(v)
+      }
+    })
+    
+    ftypes = lapply(1:ncol(dfQ_interA), FUN = function(col) {
+      if (all(dfQ_interA[,col] == 1 | dfQ_interA[,col] ==0)) {
+        return(types[[4]])
+      } else {
+        v = types[[sample(1:4, 1)]]
+        return(v)
+      }
+    })
+    
+    dfQ_interA = vapply(1:length(ftypes), FUN = function(col) ftypes[[col]](dfQ_interA[,col]), FUN.VALUE = rep(1,N))
+    dfQ_inter = vapply(1:length(ftypes), FUN = function(col) ftypes[[col]](dfQ_inter[,col]), FUN.VALUE = rep(1,N))
+    dfQ_inter0 = vapply(1:length(ftypes), FUN = function(col) ftypes[[col]](rep(0,N)), FUN.VALUE = rep(1,N))
+    
+    means = apply(dfQ_interA, 2, FUN = function(col) mean(col))
+    sds = apply(dfQ_interA, 2, FUN = function(col) sd(col))
+    
+    dfQ_interA = apply(dfQ_interA, 2, FUN = function(col) (col - mean(col))/sd(col))
+    dfQ_inter = vapply(1:ncol(dfQ_inter), FUN = function(col) {
+      (dfQ_inter[,col] - means[col])/sds[col]
+    }, FUN.VALUE = rep(1,N))
+    dfQ_inter0 = vapply(1:ncol(dfQ_inter0), FUN = function(col) {
+      (dfQ_inter0[,col] - means[col])/sds[col]
+    }, FUN.VALUE = rep(1,N))
+    
+    dfQ = cbind(dfQWA, dfQ_interA)
+    dfQW1 = dfQWA
+    dfQW1[, ncol(dfQW1)] = (1 - mean(A))/sd(A)
+    dfQ1 = cbind(dfQW1, dfQ_inter)
+    
+    dfQW0 = dfQWA
+    dfQW0[, ncol(dfQW0)] = - mean(A)/sd(A)
+    dfQ0 = cbind(dfQW0, dfQ_inter0)
+  }
   
-  dfQ0 = cbind(dfs[[2]], rep(-mean(A)/sd(A), N))
-  dfQ = cbind(dfs[[2]], TX, dfinter0)
-  dfQ1 = cbind(dfs[[2]], rep(1-mean(A)/sd(A), N), dfs[[2]][, select.cols])
-  
+  TXpos = ncol(dfQWA)  
   a = runif(1, 0, 1)
   coef_Q = runif(ncol(dfQ), -a, a)
   PQ1 = plogis(dfQ1 %*% coef_Q)
-  PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
+  PQ0 = plogis(dfQ0 %*% coef_Q)
   blip_true = PQ1 - PQ0
   ATE0 = mean(blip_true)
   BV0 = var(blip_true)
   
   jj = 1
   while (abs(ATE0) <= minATE & jj <= 20) {
-    coef_Q[ncol(dfQ)] = 1.2*coef_Q[ncol(dfQ)]
+    coef_Q[TXpos] = 1.2*coef_Q[TXpos]
     PQ1 = plogis(dfQ1 %*% coef_Q)
-    PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
+    PQ0 = plogis(dfQ0 %*% coef_Q)
     blip_true = PQ1 - PQ0
     ATE0 = mean(blip_true)
     jj = jj + 1
   } 
   
   jj = 1 
-  if (no.inters != 0) {
+  if (ncol(dfQ_inter) != 0) {
     while (BV0 <= minBV & jj <= 20) {
-      coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQ0) + 1):ncol(dfQ)]
+      coef_Q[(ncol(dfQW0) + 1):ncol(dfQ)] = 1.2 * coef_Q[(ncol(dfQW0) + 1):ncol(dfQ)]
       PQ1 = plogis(dfQ1 %*% coef_Q)
       PQ0 = plogis(dfQ0 %*% coef_Q[1:ncol(dfQ0)])
       blip_true = PQ1 - PQ0
