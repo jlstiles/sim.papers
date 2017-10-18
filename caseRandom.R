@@ -13,7 +13,10 @@ SL.libraryG = SL.libraryG
 n = 1000
 B = 100
 
-dgps = lapply(1:B, FUN = function(x) get.dgp(1000,4))
+dgps = lapply(1:B, FUN = function(x) {
+  get.dgp(n = 1000, d = 4, pos = 0.01, minATE = -2, minBV = 0, depth = 4, maxterms = 6, minterms = 1, 
+   mininters = 0, num.binaries = 1, force.confounding = TRUE)
+})
 
 detectCores()
 cl = makeCluster(detectCores(), type = "SOCK")
