@@ -426,12 +426,12 @@ LR.inference = function(W, A, Y, Qform, simultaneous.inference = FALSE) {
   deriv1 = rowMeans(vapply(1:n, FUN = function(x) {
     return((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
                               as.numeric(X[(2*n+x),]))
-  }, FUN.VALUE=rep(1,10)))
+  }, FUN.VALUE=rep(1,ncol(X))))
   
   deriv = rowMeans(vapply(1:n, FUN = function(x) {
     return(2*(blip[x]-ate)*((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
              as.numeric(X[(2*n+x),])))
-  }, FUN.VALUE=rep(1,10)))
+  }, FUN.VALUE=rep(1,ncol(X))))
   
   psi = var(blip)
   # connect both parts of IC to form the full one
