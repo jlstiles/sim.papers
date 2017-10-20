@@ -30,8 +30,8 @@
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
                    mininters, num.binaries = floor(d/4), force.confounding = TRUE) 
 {
-  # n = 1000; d = 4; pos = .05; minATE = .05; minBV = .05; depth = 4; maxterms = 4; minterms = 4; mininters = 4
-  # num.binaries = floor(d/4); force.confounding = TRUE
+  # n = 1000; d = 2; pos = .01; minATE = -2; minBV = .03; depth = 2; maxterms = 2; minterms = 1; mininters = 1
+  # num.binaries = 0; force.confounding = TRUE
   if (minterms == 0) 
     stop("minterms must be atleast 1")
   if (mininters > minterms) 
@@ -326,11 +326,15 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   
   # finally we create the population probs of death
   PQ = plogis(dfQ %*% coef_Q)
+  max(PQ)
+  min(PQ)
+  
+  PQ = gentmle2::truncate(PQ, .00001)
+  
+  hist(PQ)
   # take the draw for the population
   Y = rbinom(N, 1, PQ)
   # make sure our loglikelihood loss is bounded reasonably, no one gets super lucky or unlucky!
-  Y[PQ <= .00001] = 0
-  Y[PQ >= .99999] = 1
   
   # take a sample of size n and return sample probs blips, the dataframe 
   # with covariates but the user never sees the formula. Now they can use DF
