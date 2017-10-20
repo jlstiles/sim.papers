@@ -5,7 +5,7 @@ if (case == "setup") {
                 "nnetMain","screen.Main","earthFull","All","screen10","screen6",
                 "earthMain","screen.Main","rangerFull","All","screen.Main",
                 "ranger10","screen10","screen6","SL.glm","screen6","screen10",
-                "SL.stepAIC","SL.hal","glm.mainint")
+                "SL.stepAIC","SL.hal","glm.mainint","xgb2")
   
   SL.library1 = list(c("SL.gam3","screen.Main","screen6","screen10","All"),"SL.glmnet_1",
                      "SL.glmnet_2","SL.glmnet_3", 
@@ -35,6 +35,13 @@ if (case == "setup") {
   SL.libraryG = list("nnetMain","SL.mean","SL.hal", "rpartPruneSL", 
                      "SL.earth","SL.glm","SL.step.interaction",
                      "SL.glm.interaction")
+  
+  SL.libraryD2 = list("SL.nnet","SL.mean","SL.hal", "SL.rpartPrune", "glm.mainint", 
+                     "SL.earth","SL.glm","SL.step.interaction",
+                     "SL.glm.interaction","xgb2","xgb6","SL.ranger")
+  SL.libraryGD2 = list("SL.nnet","SL.mean","SL.hal", "SL.rpartPrune",
+                      "SL.earth","SL.glm","SL.step.interaction",
+                      "SL.glm.interaction","xgb2","xgb6","SL.ranger")
 } else {
   if (case == "LRcase2a") {
     g0 = g0_linear

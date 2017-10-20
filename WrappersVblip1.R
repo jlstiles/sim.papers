@@ -89,6 +89,9 @@ xgb6 = SL.xgboost_1
 create.Learner("SL.xgboost",tune=list(max_depth=1,minobspernode=6,shrinkage=.01,ntrees=2500))
 xgb10 = SL.xgboost_1
 
+create.Learner("SL.xgboost",tune=list(max_depth=1,minobspernode=6,shrinkage=.01,ntrees=1000))
+xgb2 = SL.xgboost_1
+
 #######################
 #######################
 # nnet
@@ -335,7 +338,7 @@ glm.mainint = function (Y, X, newX, family, obsWeights, model = TRUE, ...)
   if (is.matrix(X)) {
     X = as.data.frame(X)
   }
-  mainform = paste0(paste(colnames(X)[2:4],"+",collapse=""),colnames(X)[5])
+  mainform = paste0(paste(colnames(X)[2:ncol(X)],"",collapse="+"))
   form = formula(paste0("Y ~", paste0(colnames(X)[1],"*(",mainform,")")))
 
   fit.glm <- glm(form, data = X, family = family, weights = obsWeights,

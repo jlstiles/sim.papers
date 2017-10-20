@@ -7,15 +7,15 @@ source(source_file)
 library(Simulations)
 source("WrappersVblip1.R")
 
-SL.library = SL.library1
-SL.libraryG = SL.libraryG
+SL.library = SL.libraryD2
+SL.libraryG = SL.libraryGD2
 
 n = 1000
 B = 100
 
 dgps = lapply(1:B, FUN = function(x) {
-  get.dgp(n = 1000, d = 4, pos = 0.01, minATE = -2, minBV = 0, depth = 4, maxterms = 6, minterms = 1, 
-          mininters = 0, num.binaries = 1, force.confounding = TRUE)
+  get.dgp(n = n, d = 2, pos = 0.01, minATE = -2, minBV = 0.03, depth = 2, maxterms = 2, minterms = 1, 
+          mininters = 1, num.binaries = 0, force.confounding = TRUE)
 })
 
 detectCores()
@@ -33,7 +33,7 @@ clusterExport(cl,cl_export)
 # SL.libraryG = c("SL.glm", "SL.nnet")
 
 gform = formula("A~.")
-Qform = formula("Y~A*(W1+W2+W3+W4)")
+Qform = formula("Y~A*(W1+W2)")
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
             {sim_cv(n, g0 = g0_linear, Q0 = Q0_trig1, SL.library = SL.library,
@@ -42,5 +42,5 @@ ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLea
             )}
 
 
-save(ALL, dgps, file = "caseRandom.2.RData")
+save(ALL, dgps, file = "caseRandomD2.2.RData")
 
