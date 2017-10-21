@@ -324,18 +324,20 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     } 
   } 
   
+  ATE0 = mean(blip_true)
   # finally we create the population probs of death
   PQ = plogis(dfQ %*% coef_Q)
-  max(PQ)
-  min(PQ)
-  
+  # max(PQ)
+  # min(PQ)
+  # 
   PQ = gentmle2::truncate(PQ, .00001)
   
-  hist(PQ)
+  # hist(PQ)
   # take the draw for the population
   Y = rbinom(N, 1, PQ)
   # make sure our loglikelihood loss is bounded reasonably, no one gets super lucky or unlucky!
-  
+  # mean(Y*A/PG0-Y*(1-A)/(1-PG0))
+  # ATE0
   # take a sample of size n and return sample probs blips, the dataframe 
   # with covariates but the user never sees the formula. Now they can use DF
   # to try and recover the truth

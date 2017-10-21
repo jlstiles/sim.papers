@@ -459,7 +459,7 @@ LR.inference = function(W, A, Y, Qform, simultaneous.inference = FALSE) {
   }
 }
 
-#' @export
+
 sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                   cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   

@@ -184,23 +184,50 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     X = X[tr,]
     newtr = c(val, (n+val),(2*n+val))
     newdata = newdata[newtr,]
+    
     if (method == "method.NNloglik") {
       control = list(saveFitLibrary = TRUE, trimLogit = .001)
-    } else {control = list(saveFitLibrary = TRUE)}
-    Qfit=SuperLearner(Y,X,newX=newdata, family = familyQ,
-                      SL.library=SL.library, method = method,
-                      id = NULL, verbose = FALSE, control = control,
-                      cvControl = list(V=SL), obsWeights = NULL)
-    
+    } else {
+      control = list(saveFitLibrary = TRUE)
+      }
+    errorG = errorQ = FALSE
+    if (method == "method.NNloglik") {
+      Qfit = try(SuperLearner(Y,X,newX=newdata, family = familyQ,
+                              SL.library=SL.library, method = method,
+                              id = NULL, verbose = FALSE, control = control,
+                              cvControl = list(V=SL), obsWeights = NULL), silent=TRUE)
+  
+      if (class(Qfit)=="try-error") {
+        Qfit = SuperLearner(Y,X,newX=newdata, family = familyQ,
+                            SL.library=SL.library, method = "method.NNLS",
+                            id = NULL, verbose = FALSE, control = control,
+                            cvControl = list(V=SL), obsWeights = NULL)
+        errorQ = TRUE
+      }
+    } else {
+      Qfit = SuperLearner(Y,X,newX=newdata, family = familyQ,
+                          SL.library=SL.library, method = method,
+                          id = NULL, verbose = FALSE, control = control,
+                          cvControl = list(V=SL), obsWeights = NULL)
+    }
+  
+ 
     A = A[tr]
     W1 = W[tr,]
     newW = W[val,]
     if (is.null(gn)) {
-    gfit = SuperLearner(Y=A,X=W1,newX = newW,  family = familyG,
-                        SL.library=SL.libraryG, method = "method.NNloglik",
-                        id = NULL, verbose = FALSE, control = list(saveFitLibrary = TRUE, trimLogit = .001),
-                        cvControl = list(V=SL), obsWeights = NULL)
-    }
+      gfit = try(SuperLearner(Y,X,newX=newdata, family = familyQ,
+                              SL.library=SL.library, method = "method.NNloglik",
+                              id = NULL, verbose = FALSE, control = list(saveFitLibrary = TRUE, trimLogit = .001),
+                              cvControl = list(V=SL), obsWeights = NULL), silent=TRUE)
+      if (class(gfit)=="try-error") {
+        gfit = SuperLearner(Y,X,newX=newdata, family = familyQ,
+                            SL.library=SL.library, method = "method.NNLS",
+                            id = NULL, verbose = FALSE, control = list(saveFitLibrary = TRUE, trimLogit = .001),
+                            cvControl = list(V=SL), obsWeights = NULL)
+        errorG = TRUE
+      }
+    }    
     
     if (is.null(gn)) {
     if (length(gfit$coef[gfit$coef!=0])==1) {
@@ -240,7 +267,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
       Grisk = -mean(Aval*log(gk) + (1 - Aval)*log(1 - gk))
     }
     return(list(Qk = Qk, Q0k = Q0k, Q1k = Q1k, gk = gk, Qcoef = Qcoef, Gcoef = Gcoef,
-                Qrisk = Qrisk, Grisk = Grisk, inds = val))
+                Qrisk = Qrisk, Grisk = Grisk, inds = val, errorG = errorG, errorQ = errorQ))
   })
   
   Qk = unlist(lapply(stack, FUN = function(x) x$Qk))
@@ -250,28 +277,48 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
   
   Qcoef_mat = vapply(stack, FUN = function(x) x$Qcoef, 
                      FUN.VALUE = rep(1,length(stack[[1]]$Qcoef)))
-  Qrisk_mat = vapply(stack, FUN = function(x) x$Qrisk,
-                     FUN.VALUE = rep(1,length(stack[[1]]$Qrisk)))
+  Qrisk_mat = vapply(stack, FUN = function(x) {
+    if (!x$errorQ) return(x$Qrisk) else return(rep(0,length(stack[[1]]$Qrisk)))
+    },
+  FUN.VALUE = rep(1,length(stack[[1]]$Qrisk)))
   
   Gcoef_mat = vapply(stack, FUN = function(x) x$Gcoef, 
                      FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
-  Grisk_mat = vapply(stack, FUN = function(x) x$Grisk,
-                     FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
+  
+  Grisk_mat = vapply(stack, FUN = function(x) {
+    if (!x$errorG) return(x$Grisk) else return(rep(0,length(stack[[1]]$Grisk)))
+  },
+  FUN.VALUE = rep(1,length(stack[[1]]$Gcoef)))
   
   if (is.vector(Qcoef_mat)) {
     Qcoef = mean(Qcoef_mat)
-    Qrisk = mean(Qrisk_mat)
+    if (all(Qrisk_mat == 0)) {
+      Qrisk = 0
+    } else {
+      Qrisk = mean(Qrisk_mat[Qrisk_mat!=0])
+    }
+    
   } else {
     Qcoef = rowMeans(Qcoef_mat)
-    Qrisk = rowMeans(Qrisk_mat)
+    col.check = apply(Qrisk_mat, 2, FUN = function(col) {
+      any(is.na(col)) | any(col != 0)
+    })
+    if (all(!col.check)) Qrisk = rep(0, nrow(Qrisk_mat)) else Qrisk = rowMeans(Qrisk_mat[,col.check])
   }
   
   if (is.vector(Gcoef_mat)) {
     Gcoef = mean(Gcoef_mat)
-    Grisk = mean(Grisk_mat)
+    if (all(Grisk_mat == 0)) {
+      Grisk = 0
+    } else {
+      Grisk = mean(Grisk_mat[Grisk_mat!=0])
+    }
   } else {
     Gcoef = rowMeans(Gcoef_mat)
-    Grisk = rowMeans(Grisk_mat)
+    col.check = apply(Grisk_mat, 2, FUN = function(col) {
+      any(is.na(col)) | any(col != 0)
+    })
+    if (all(!col.check)) Grisk = rep(0, nrow(Grisk_mat)) else Grisk = rowMeans(Grisk_mat[,col.check])
   }
   
   inds = unlist(lapply(stack, FUN = function(x) x$inds))
