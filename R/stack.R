@@ -40,15 +40,15 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
   # W = X
   # W$A = NULL
   # newdata = newdata
-  method = "method.NNloglik"
-  V=10
+  # method = "method.NNloglik"
+  # V=10
   if (all(A==1 | A == 0)) familyG = binomial() else familyG = gaussian()
   if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = gaussian()
   
   n = length(Y)
   folds = make_folds(n, V=V)
   stack = mclapply(folds, FUN = function(x) {
-    x=folds[[5]]
+    # x=folds[[5]]
     tr = x$training_set
     val = x$validation_set
     nt=length(tr)
