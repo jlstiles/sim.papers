@@ -43,7 +43,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
   method = "method.NNloglik"
   V=10
   if (all(A==1 | A == 0)) familyG = binomial() else familyG = gaussian()
-  if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = binomial()
+  if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = gaussian()
   
   n = length(Y)
   folds = make_folds(n, V=V)
@@ -165,7 +165,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
   # method = "method.NNloglik"
   
   if (all(A==1 | A == 0)) familyG = binomial() else familyG = gaussian()
-  if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = binomial()
+  if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = gaussian()
   
   n = length(Y)
   if  (!cv) V = 1
