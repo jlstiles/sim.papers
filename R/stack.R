@@ -40,14 +40,15 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
   # W = X
   # W$A = NULL
   # newdata = newdata
-  # method = "method.NNloglik"
+  method = "method.NNloglik"
+  V=10
   if (all(A==1 | A == 0)) familyG = binomial() else familyG = gaussian()
   if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = binomial()
   
   n = length(Y)
   folds = make_folds(n, V=V)
   stack = mclapply(folds, FUN = function(x) {
-    # x=folds[[5]]
+    x=folds[[5]]
     tr = x$training_set
     val = x$validation_set
     nt=length(tr)
@@ -60,7 +61,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
     if (method == "method.NNloglik") {
       control = list(saveFitLibrary = TRUE, trimLogit = .001)
     } else {control = list(saveFitLibrary = TRUE)}
-    Qfit=SuperLearner(Y,X,newX=newdata, family = binomialQ,
+    Qfit=SuperLearner(Y,X,newX=newdata, family = familyQ,
                       SL.library=SL.library, method=method,
                       id = NULL, verbose = FALSE, control = control,
                       cvControl = list(V=10), obsWeights = NULL)
@@ -71,7 +72,7 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
     if (method == "method.NNloglik") {
       control = list(saveFitLibrary = TRUE, trimLogit = .001)
       } else {control = list(saveFitLibrary = TRUE)}
-    gfit = SuperLearner(Y=A,X=W1,newX = newW, family = binomialG,
+    gfit = SuperLearner(Y=A,X=W1,newX = newW, family = familyG,
                         SL.library=SL.libraryG,method = method, 
                         id = NULL, verbose = FALSE, control = control,
                         cvControl = list(V=10), obsWeights = NULL)
