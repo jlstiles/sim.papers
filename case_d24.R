@@ -47,7 +47,7 @@ cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 n = 1000
-B = 1
+B = 100
 
 
 # debug(SL.stack1)
