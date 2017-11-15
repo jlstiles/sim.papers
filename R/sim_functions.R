@@ -230,7 +230,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 #' @export
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
+                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL, gendata.fcn) {
 
   if (!is.null(dgp)) {
     data = dgp$DF
@@ -238,7 +238,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     ATE0 = dgp$ATE0
     blip_n = dgp$blip_n
   } else {
-    data = gendata(n, g0, Q0)
+    data = gendata.fcn(n, g0, Q0)
   }
   
   if (is.vector(g0)) gn = g0 else gn = NULL
