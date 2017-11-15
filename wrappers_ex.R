@@ -12,8 +12,16 @@ create.Learner("SL.xgboost", tune = list(shrinkage = .005, max_depth = 1,
                                          minobspernode = 9, ntrees = 2500))
 xgboostG = SL.xgboost_1
 
+xg = create.Learner("SL.xgboost", tune = list(shrinkage = .01, max_depth = c(2,3), 
+                                         minobspernode = 6, ntrees = 1000))
+xgboost_2dG = SL.xgboost_1
+xgboost_2d = SL.xgboost_2
 # trainearth$results
 # trainearthG$results
+earth = create.Learner("SL.earth",tune=list(degree = c(1,2)))
+earthFull = SL.earth_1
+earth_2d = SL.earth_2
+
 earth = create.Learner("SL.earth",tune=list(degree = 1))
 earthFull = SL.earth_1
 # use same for G
@@ -73,7 +81,7 @@ nnetMain = function (Y, X, newX, family, obsWeights, size = 4, ...)
                            trace = FALSE, maxit = 500, weights = obsWeights)
   }
   if (family$family == "binomial") {
-    fit.nnet <- nnet::nnet(x = X, y = Y, size = size, trace = FALSE,
+    fit.nnet <- nnet::nnet(x = X, y = Y, size = size, trace = FALSE, skip = TRUE,
                            maxit = 500, linout = FALSE, weights = obsWeights,decay = .30)
   }
   pred <- predict(fit.nnet, newdata = newX, type = "raw")
@@ -92,7 +100,7 @@ nnetMain1 = function (Y, X, newX, family, obsWeights, size = 2, ...)
                            trace = FALSE, maxit = 500, weights = obsWeights)
   }
   if (family$family == "binomial") {
-    fit.nnet <- nnet::nnet(x = X, y = Y, size = size, trace = FALSE,
+    fit.nnet <- nnet::nnet(x = X, y = Y, size = size, trace = FALSE, skip = TRUE,
                            maxit = 500, linout = FALSE, weights = obsWeights,decay = .05)
   }
   pred <- predict(fit.nnet, newdata = newX, type = "raw")
@@ -102,6 +110,26 @@ nnetMain1 = function (Y, X, newX, family, obsWeights, size = 2, ...)
   return(out)
 }
 environment(nnetMain1) <- asNamespace("SuperLearner")
+
+nnet_d2 = function (Y, X, newX, family, obsWeights, size = 4, ...)
+{
+  SuperLearner:::.SL.require("nnet")
+  if (family$family == "gaussian") {
+    fit.nnet <- nnet::nnet(x = X, y = Y, size = size, linout = TRUE,
+                           trace = FALSE, maxit = 500, weights = obsWeights)
+  }
+  if (family$family == "binomial") {
+    fit.nnet <- nnet::nnet(x = X, y = Y, size = size, trace = FALSE, skip = TRUE,
+                           maxit = 500, linout = FALSE, weights = obsWeights,decay = .01)
+  }
+  pred <- predict(fit.nnet, newdata = newX, type = "raw")
+  fit <- list(object = fit.nnet)
+  out <- list(pred = pred, fit = fit)
+  class(out$fit) <- c("SL.nnet")
+  return(out)
+}
+environment(nnetMain) <- asNamespace("SuperLearner")
+
 
 # tunerf$performances[order(tunerf$performances[,"error"]),]
 create.Learner("SL.ranger", tune = list(num.trees = 2500, mtry = 3, 
