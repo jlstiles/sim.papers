@@ -1,7 +1,7 @@
 
 # devtools::install_github("jlstiles/Simulations")
 library(Simulations)
-source("Wrappers_ex.R")
+source("wrappers_ex.R")
 
 g0 = function (W1, W2) {
   plogis(.4*(-0.4 * W1*W2 + 0.63 * W2^2 -.66*cos(W1) - 0.25))

@@ -1,7 +1,7 @@
 
 # devtools::install_github("jlstiles/Simulations")
 library(Simulations)
-source("Wrappers_ex.R")
+source("wrappers_ex.R")
 
 g0 = function (W1, W2) {
   plogis(.4*(-0.4 * W1*W2 + 0.63 * W2^2 -.66*cos(W1) - 0.25))
@@ -47,7 +47,7 @@ cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
 clusterExport(cl,cl_export)
 n = 1000
-B = 100
+B = 1
 
 
 # debug(SL.stack1)
@@ -55,7 +55,7 @@ B = 100
 gform = formula("A~.")
 Qform = formula("Y~A*(W1+W2)")
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"), 
-            .errorhandling = "remove")%dopar%
+            .errorhandling = "remove") %dopar%
             {sim_cv(n, g0 = g0, Q0 = Q0, SL.library = SL.libraryD2,
                     SL.libraryG = SL.libraryD2G, method = "method.NNloglik", cv = TRUE, V = 10, SL = 10L, 
                     gform = gform, Qform = Qform, estimator = c("single 1step"), gendata.fcn = gendata.fcn)
