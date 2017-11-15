@@ -176,4 +176,23 @@ screen.Main = function (Y, X, family, method = "pearson", rank = 8, ...)
 
 environment(screen.Main) <- asNamespace("SuperLearner")
 
-
+glm.mainint = function (Y, X, newX, family, obsWeights, model = TRUE, ...)
+{
+  if (is.matrix(X)) {
+    X = as.data.frame(X)
+  }
+  mainform = paste0(paste(colnames(X)[2:ncol(X)],"",collapse="+"))
+  form = formula(paste0("Y ~", paste0(colnames(X)[1],"*(",mainform,")")))
+  
+  fit.glm <- glm(form, data = X, family = family, weights = obsWeights,
+                 model = model)
+  if (is.matrix(newX)) {
+    newX = as.data.frame(newX)
+  }
+  pred <- predict(fit.glm, newdata = newX, type = "response")
+  fit <- list(object = fit.glm)
+  class(fit) <- "SL.glm"
+  out <- list(pred = pred, fit = fit)
+  return(out)
+}
+environment(glm.mainint) <- asNamespace("SuperLearner")

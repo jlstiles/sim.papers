@@ -172,6 +172,41 @@ else
 	${R} $< ${OUTPUT_DIR}/$<.out &
 endif
 
+analysisd2: case_d2.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
+analysisd21: case_d2.1.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
+analysisd22: case_d2.2.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
+analysisd23: case_d2.3.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
+analysisd24: case_d2.4.R
+ifeq (${JOB_ENGINE},slurm)
+	${SBATCH} --nodes 1 --job-name=$< ${SCRIPT_DIR}/sbatch-r.sh --file=$< --dir=${OUTPUT_DIR}
+else
+	${R} $< ${OUTPUT_DIR}/$<.out &
+endif
+
 # Run an Rmd file via "make h2o"
 h2o: h2o.Rmd
 ifeq (${JOB_ENGINE},slurm)
