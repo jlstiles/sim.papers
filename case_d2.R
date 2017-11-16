@@ -11,6 +11,11 @@ Q0 = function (A, W1, W2) {
   plogis(0.2 * W1*W2 + 0.1 * W2^2 - .8*A*(cos(W1) + .5*A*W1*W2^2) - 0.35)
 }
 
+Q0 = function (A, W1, W2) {
+  plogis(0.1 * W1*W2 + 1.5*A*cos(W1) + 0.15*W1 - .4*W2*(abs(W2) > 1) -1*W2*(abs(W2 <=1)))
+}
+
+
 gendata.fcn = function (n, g0, Q0) 
 {
   W1 = runif(n, -3, 3)

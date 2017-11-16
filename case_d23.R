@@ -11,6 +11,12 @@ Q0 = function (A, W1, W2) {
   plogis(0.2 * W1*W2 + 0.1 * W2^2 - .8*A*(cos(W1) + .5*A*W1*W2^2) - 0.35)
 }
 
+Q0 = function (A, W1, W2) {
+  plogis(0.1 * W1*W2 + 1.5*A*cos(W1) + 0.15*W1 - .4*W2*(abs(W2) > 1) -1*W2*(abs(W2 <=1)))
+}
+
+
+
 gendata.fcn = function (n, g0, Q0) 
 {
   W1 = runif(n, -3, 3)
@@ -26,7 +32,9 @@ gendata.fcn = function (n, g0, Q0)
 # 
 # blips = with(pop, Q0(1, W1, W2) - Q0(0, W1, W2))
 # hist(blips, 200)
-# var(blips)
+# var0 = var(blips)
+# var0
+# ATE0 = mean(blips)
 # Q1s = with(pop, Q0(1, W1, W2))
 # Q0s = with(pop, Q0(0, W1, W2))
 # Qs = with(pop, Q0(A, W1, W2))
@@ -40,6 +48,9 @@ SL.libraryD2 = list("nnetMain","nnetMain1","glm.mainint",
                     "earth_2d","SL.glm.interaction", "xgboost_2d","SL.mean","SL.hal")
 SL.libraryGD2 = list("nnetMain","nnetMain1", "earth_2d","SL.glm.interaction", "xgboost_2dG","SL.mean","SL.hal")
 
+# SL.libraryD2 = list("nnetMain","nnetMain1","glm.mainint", 
+#                     "earth_2d","SL.glm.interaction","SL.mean")
+# SL.libraryGD2 = list("nnetMain","nnetMain1", "earth_2d","SL.glm.interaction","SL.mean")
 cl_export = c("nnetMain","nnetMain1","glm.mainint", "earth_2d","xgboost_2d","xgboost_2dG", "SL.hal")
 
 detectCores()
