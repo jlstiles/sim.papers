@@ -23,7 +23,7 @@
 #' used for outcome regression. 
 #' @param skewing randomly skews an otherwise centered dgp for generating binary treatment
 #' default is c(-1, 1).  Set to c(-6,-1) to deliberately skew more regularly or widen to 
-#' c(-3, 3) to skew more randomly
+#' c(-3, 3) to skew more randomly.
 #' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
 #' BV0, the sample pscores, PGn, the sample true blips, blip_n, the sample 
 #' true prob of death under treatment, PQ1n, and prob of death under control
