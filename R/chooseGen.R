@@ -21,7 +21,7 @@
 #' less than d.
 #' @param force.confounding forces variables used for p-score to overlap with those
 #' used for outcome regression. 
-#' @param skewage randomly skews an otherwise centered dgp for generating binary treatment
+#' @param skewing randomly skews an otherwise centered dgp for generating binary treatment
 #' default is (-1, 1).  Set to (-6,-1) to deliberately skew more regularly or widen to 
 #' (-3, 3) to skew more randomly
 #' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
@@ -31,7 +31,7 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
-                   mininters, num.binaries = floor(d/4), force.confounding = TRUE, skewage = c(-1,1)) 
+                   mininters, num.binaries = floor(d/4), force.confounding = TRUE, skewing = c(-1,1)) 
 {
   # n = 1000; d = 2; pos = .01; minATE = -2; minBV = .03; depth = 2; maxterms = 2; minterms = 1; mininters = 1
   # num.binaries = 0; force.confounding = TRUE
@@ -118,7 +118,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   })
   
   # create an intercept for skewing deliberately
-  skewage = runif(1, -6, -3)  
+  skewage = runif(1, skewing[1], skewing[2])  
   dfG = cbind(dfG, rep(1, N))
   coef_G = c(runif(ncol(dfG)-1, -1, 1), skewage)
   
