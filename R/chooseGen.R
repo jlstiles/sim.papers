@@ -115,9 +115,9 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   })
   
   # create an intercept for skewing deliberately
-  skewage = runif(1, -1, 1)  
-  dfG = cbind(dfG, rep(skewage, N))
-  coef_G = runif(ncol(dfG), -1, 1)
+  skewage = runif(1, -6, -3)  
+  dfG = cbind(dfG, rep(1, N))
+  coef_G = c(runif(ncol(dfG)-1, -1, 1), skewage)
   
   # satisfying positivity constraints, we don't want too high a percentage beyond
   # the user specified positivity probs of pos and 1-pos. Since .8^20 is small we
@@ -128,7 +128,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     PG0 = plogis(dfG %*% coef_G)
     coef_G = 0.8 * coef_G
     its = its + 1
-    tol = mean(PG0 < pos) > 0.01 | mean(PG0 > 1 - pos) > 
+    tol = mean(PG0 < pos) > 0.01 | mean(PG0 > (1 - pos)) > 
       0.01
   }
   
