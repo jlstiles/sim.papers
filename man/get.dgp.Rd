@@ -5,7 +5,8 @@
 \title{get.dgp}
 \usage{
 get.dgp(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms,
-  minterms, mininters, num.binaries = floor(d/4), force.confounding = TRUE)
+  minterms, mininters, num.binaries = floor(d/4), force.confounding = TRUE,
+  skewing = c(-1, 1))
 }
 \arguments{
 \item{n, }{sample size}
@@ -36,6 +37,10 @@ less than d.}
 
 \item{force.confounding}{forces variables used for p-score to overlap with those
 used for outcome regression.}
+
+\item{skewing}{randomly skews an otherwise centered dgp for generating binary treatment
+default is (-1, 1).  Set to (-6,-1) to deliberately skew more regularly or widen to 
+(-3, 3) to skew more randomly}
 }
 \value{
 a sample DF, the true average treatment effect, ATE0 and blip variance
