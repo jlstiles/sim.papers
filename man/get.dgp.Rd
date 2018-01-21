@@ -39,8 +39,8 @@ less than d.}
 used for outcome regression.}
 
 \item{skewing}{randomly skews an otherwise centered dgp for generating binary treatment
-default is (-1, 1).  Set to (-6,-1) to deliberately skew more regularly or widen to 
-(-3, 3) to skew more randomly}
+default is c(-1, 1).  Set to c(-6,-1) to deliberately skew more regularly or widen to 
+c(-3, 3) to skew more randomly}
 }
 \value{
 a sample DF, the true average treatment effect, ATE0 and blip variance
