@@ -21,6 +21,9 @@
 #' less than d.
 #' @param force.confounding forces variables used for p-score to overlap with those
 #' used for outcome regression. 
+#' @param skewing randomly skews an otherwise centered dgp for generating binary treatment
+#' default is c(-1, 1).  Set to c(-5,-1) to deliberately skew more regularly or widen to 
+#' c(-3, 3) to skew more randomly.
 #' @return  a sample DF, the true average treatment effect, ATE0 and blip variance
 #' BV0, the sample pscores, PGn, the sample true blips, blip_n, the sample 
 #' true prob of death under treatment, PQ1n, and prob of death under control
@@ -28,7 +31,7 @@
 #' @export
 #' @example /inst/examples/example_get.dgp.R
 get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, minterms, 
-                   mininters, num.binaries = floor(d/4), force.confounding = TRUE) 
+                   mininters, num.binaries = floor(d/4), force.confounding = TRUE, skewing = c(-1,1)) 
 {
   # n = 1000; d = 2; pos = .01; minATE = -2; minBV = .03; depth = 2; maxterms = 2; minterms = 1; mininters = 1
   # num.binaries = 0; force.confounding = TRUE
@@ -115,9 +118,9 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   })
   
   # create an intercept for skewing deliberately
-  skewage = runif(1, -1, 1)  
-  dfG = cbind(dfG, rep(skewage, N))
-  coef_G = runif(ncol(dfG), -1, 1)
+  skewage = runif(1, skewing[1], skewing[2])  
+  dfG = cbind(dfG, rep(1, N))
+  coef_G = c(runif(ncol(dfG)-1, -1, 1), skewage)
   
   # satisfying positivity constraints, we don't want too high a percentage beyond
   # the user specified positivity probs of pos and 1-pos. Since .8^20 is small we
@@ -128,7 +131,7 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
     PG0 = plogis(dfG %*% coef_G)
     coef_G = 0.8 * coef_G
     its = its + 1
-    tol = mean(PG0 < pos) > 0.01 | mean(PG0 > 1 - pos) > 
+    tol = mean(PG0 < pos) > 0.01 | mean(PG0 > (1 - pos)) > 
       0.01
   }
   

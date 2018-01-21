@@ -256,11 +256,6 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   W = X
   W$A = NULL
   
-  if (any(c("simul 1step", "simul line", "simul full") %in% estimator)) {
-    lrsingle = FALSE
-  } else {
-    lrsingle = TRUE
-    }
   single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
                     method = method, gn = gn, cvhal = FALSE)
 
@@ -503,6 +498,8 @@ sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   } else {
     lrsingle = TRUE
   }
+  
+  gggggg = 5
   single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
                         method = method, gn = gn, cvhal = FALSE)
   
