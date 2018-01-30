@@ -382,7 +382,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
 #' 
 #' @return  if simultaneous.inference is specified as TRUE then will return a vector giving
 #' pt estimate, left and right bound for ATE, simultaneous ATE CI, blip variance, 
-#' and blip variance.  Otherwise gives pt estimate, left and right bound for ATE
+#' and simultaneous blip variance.  Otherwise gives pt estimate, left and right bound for ATE
 #' and blip variance.  
 #' @export
 #' @example /inst/examples/example_LR_inference.R
