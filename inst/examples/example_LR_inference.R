@@ -1,3 +1,4 @@
+
 # using built-in package functions, g0_linear and define Q0_linear to specify
 # pscore and outcome model probabilities
 

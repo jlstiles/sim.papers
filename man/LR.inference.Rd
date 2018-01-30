@@ -15,7 +15,7 @@ LR.inference(W, A, Y, Qform, alpha = 0.05, simultaneous.inference = FALSE)
 
 \item{Qform, }{a formula for Y in terms of the covariates as input in glm}
 
-\item{alpha, }{significance level for the (1-alpha)100/% CI's. 0.05 is default}
+\item{alpha, }{significance level for the (1-alpha)100% CI's. 0.05 is default}
 
 \item{simultaneous.inference, }{TRUE if user wants simultaneous confidence
 bounds for both ATE and blip variance at level alpha. default is FALSE}
@@ -31,6 +31,7 @@ Function that gives inference for logistic regression plug-in
 estimators of ATE and Blip Variance.
 }
 \examples{
+
 # using built-in package functions, g0_linear and define Q0_linear to specify
 # pscore and outcome model probabilities
 
