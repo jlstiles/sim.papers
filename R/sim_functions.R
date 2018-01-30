@@ -376,14 +376,14 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
 #' @param A, a binary vector of treatment assignments
 #' @param Y, a binary vector of outcomes
 #' @param Qform, a formula for Y in terms of the covariates as input in glm
-#' @param alpha, significance level for the CI. 0.05 is default
+#' @param alpha, significance level for the (1-alpha)100/% CI's. 0.05 is default
 #' @param simultaneous.inference, TRUE if user wants simultaneous confidence
-#' bounds for both ATE and blip variance.  default is FALSE
+#' bounds for both ATE and blip variance at level alpha. default is FALSE
 #' 
 #' @return  if simultaneous.inference is specified as TRUE then will return a vector giving
-#' pt estimate, left and right bound for blip variance, blip variance simultaneous CI, ATE, 
-#' and ATE simultaneous CI.  Otherwise gives pt estimate, left and right bound for blip variance
-#' and ATE.  
+#' pt estimate, left and right bound for ATE, simultaneous ATE CI, blip variance, 
+#' and blip variance.  Otherwise gives pt estimate, left and right bound for ATE
+#' and blip variance.  
 #' @export
 #' @example /inst/examples/example_LR_inference.R
 LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FALSE) {

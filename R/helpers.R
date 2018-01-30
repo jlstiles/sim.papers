@@ -5,7 +5,7 @@ get.truth = function(g0, Q0, N=1e6) {
   propensity = with(testdata, g0(W1,W2,W3,W4))
   ATE0 = mean(blip_true)
   var0 = var(blip_true)
-  return(c(ATE0, var0))
+  return(c(ATE0=ATE0, var0=var0))
 }
 
 #' @export
