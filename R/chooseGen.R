@@ -74,8 +74,9 @@ get.dgp = function(n, d, pos = 0.01, minATE = -2, minBV = 0, depth, maxterms, mi
   ##
   
   # select the interaction terms to be included according to maxterms and minterms
-  # maxterms is for any depth and minterms makes sure we have a model of certain complexity
-  # minterms must be greater than equal 1
+  # maxterms is maxterms for any depth, so for if maxterms is 5, you cannot have more 
+  # than 5 2 way interactions or more than 5 8 way interactions, etc. and minterms makes 
+  # sure we have a model of certain complexity minterms must be greater than equal 1
   s = -1
   while (s < minterms) {
     terms = lapply(choos, FUN = function(x) {
