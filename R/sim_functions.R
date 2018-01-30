@@ -466,9 +466,9 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   CI_simul_ate = c(ate_deltasimul = ate, left = ate - zscore*SE1, right = ate + zscore*SE1)  
   CI_simul_bv = c(bv_deltasimul = psi, left = psi - zscore*SE, right = psi + zscore*SE) 
   
-  return(c(CI, CI_simul_bv, CI_ate, CI_simul_ate))
+  return(c(CI_ate, CI_simul_ate, CI, CI_simul_bv))
   } else {
-    return(c(CI, CI_ate))
+    return(c(CI_ate, CI))
   }
 }
 
