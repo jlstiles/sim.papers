@@ -369,8 +369,24 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
 # remember the order of vars is A, mainterms, then interactions
+#' @title LR.inference
+#' @description Function that gives inference for logistic regression plug-in
+#' estimators of ATE and Blip Variance.  
+#' @param W, matrix or data.frame of covariates
+#' @param A, a binary vector of treatment assignments
+#' @param Y, a binary vector of outcomes
+#' @param Qform, a formula for Y in terms of the covariates as input in glm
+#' @param alpha, significance level for the CI. 0.05 is default
+#' @param simultaneous.inference, TRUE if user wants simultaneous confidence
+#' bounds for both ATE and blip variance.  default is FALSE
+#' 
+#' @return  if simultaneous.inference is specified as TRUE then will return a vector giving
+#' pt estimate, left and right bound for blip variance, blip variance simultaneous CI, ATE, 
+#' and ATE simultaneous CI.  Otherwise gives pt estimate, left and right bound for blip variance
+#' and ATE.  
 #' @export
-LR.inference = function(W, A, Y, Qform, simultaneous.inference = FALSE) {
+#' @example /inst/examples/example_LR_inference.R
+LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FALSE) {
   n = length(Y)
   
   X = as.data.frame(cbind(A,W,Y))
@@ -436,15 +452,17 @@ LR.inference = function(W, A, Y, Qform, simultaneous.inference = FALSE) {
   # standard error
   SE = sd(IC)*sqrt((n-1))/n
   SE1 = sd(IC1)*sqrt((n-1))/n
-  CI = c(bv_delta = psi, left = psi - 1.96*SE, right = psi + 1.96*SE)
   
-  CI_ate = c(ate_delta = ate, left = ate - 1.96*SE1, right = ate + 1.96*SE1)
+  qq = qnorm(1-alpha/2)
+  CI = c(bv_delta = psi, left = psi - qq*SE, right = psi + qq*SE)
+  
+  CI_ate = c(ate_delta = ate, left = ate - qq*SE1, right = ate + qq*SE1)
   
   if (simultaneous.inference) {
   corM = cor(data.frame(IC=IC, IC1=IC1))
   Z = rmvnorm(1000000,c(0,0),corM)
   zabs = apply(Z,1,FUN = function(x) max(abs(x)))
-  zscore = quantile(zabs,.95)
+  zscore = quantile(zabs, 1-alpha)
   CI_simul_ate = c(ate_deltasimul = ate, left = ate - zscore*SE1, right = ate + zscore*SE1)  
   CI_simul_bv = c(bv_deltasimul = psi, left = psi - zscore*SE, right = psi + zscore*SE) 
   
