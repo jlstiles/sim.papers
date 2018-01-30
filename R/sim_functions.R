@@ -376,7 +376,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
 #' @param A, a binary vector of treatment assignments
 #' @param Y, a binary vector of outcomes
 #' @param Qform, a formula for Y in terms of the covariates as input in glm
-#' @param alpha, significance level for the (1-alpha)100% CI's. 0.05 is default
+#' @param alpha, significance level for the (1-alpha)100 percent CI's. 0.05 is default
 #' @param simultaneous.inference, TRUE if user wants simultaneous confidence
 #' bounds for both ATE and blip variance at level alpha. default is FALSE
 #' 
