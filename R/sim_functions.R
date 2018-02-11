@@ -27,7 +27,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
   if (all(A==1 | A == 0)) familyG = binomial() else familyG = gaussian()
   if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = binomial()
   
-  folds = make_folds(n, V=V)
+  folds = origami::make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
     if (V==1) {tr = val = 1:n} else {
@@ -44,14 +44,14 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     newdata = newdata[newtr,]
     
     if (cvhal){
-      halresults <- hal(Y = Y,newX = newdata,
+      halresults <- hal::hal(Y = Y,newX = newdata,
                         X = X, family = familyQ,
                         verbose = FALSE, parallel = parallel)
       
       Qk = halresults$pred[1:nv]
       Q1k = halresults$pred[nv+1:nv]
       Q0k = halresults$pred[2*nv+1:nv]} else {
-        halresults = glm(Qform, data = data, family = familyQ)
+        halresults = stats::glm(Qform, data = data, family = familyQ)
         Qk = predict(halresults, newdata = newdata[1:nv,], type = 'response')
         Q1k = predict(halresults, newdata = newdata[nv + 1:nv,], type = 'response')
         Q0k = predict(halresults, newdata = newdata[2*nv + 1:nv,], type = 'response')
@@ -64,11 +64,11 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     
     if (is.null(gn)) {
     if (cvhal){
-      halresultsG <- hal(Y = A,newX = newW,
+      halresultsG <- hal::hal(Y = A,newX = newW,
                          X = W1, family = familyG,
                          verbose = FALSE, parallel = parallel)
       gk = halresultsG$pred[1:nv]} else {
-        halresultsG = glm(gform, data = X, family = familyG)
+        halresultsG = stats::glm(gform, data = X, family = familyG)
         gk = predict(halresultsG, newdata = newW, type = 'response')
       }
     } else {
@@ -400,7 +400,7 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
   
   # fit the regression
-  Qfit = glm(Y~.,data=newdata[1:n,],
+  Qfit = stats::glm(Y~.,data=newdata[1:n,],
              family='binomial')
   # predictions over data, A=1 and A=0
   Qk = predict(Qfit,type='response')
@@ -459,7 +459,7 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   CI_ate = c(ate_delta = ate, left = ate - qq*SE1, right = ate + qq*SE1)
   
   if (simultaneous.inference) {
-  corM = cor(data.frame(IC=IC, IC1=IC1))
+  corM = stats::cor(data.frame(IC=IC, IC1=IC1))
   Z = rmvnorm(1000000,c(0,0),corM)
   zabs = apply(Z,1,FUN = function(x) max(abs(x)))
   zscore = quantile(zabs, 1-alpha)

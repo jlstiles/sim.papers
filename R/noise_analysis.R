@@ -86,7 +86,7 @@ getRes = function(allresults,B, ATE0, var0, varind = c(4,10),
   type = c(rep("TMLE",B),rep("init",B))
   
   ateests = data.frame(ests=ests,type=type)
-  ggover1 = ggplot(ateests,aes(ests, fill=type)) + 
+  ggover1 = ggplot2::ggplot(ateests,aes(ests, fill=type)) + 
     geom_density(alpha=.3)+
     scale_fill_manual(values=c("red", "blue"))+
     theme(axis.title.x = element_blank())+ggtitle("ATE sampling distributions")+
@@ -103,7 +103,7 @@ getRes = function(allresults,B, ATE0, var0, varind = c(4,10),
   # ggover1 + scale_x_continuous(labels = c(round(seq(min(ests),max(ests),length.out=4),3),"ATE0",
   #                                         "mean init", "mean of TMLE")[order(breaks)],
   #                              breaks=breaks[order(breaks)])
-  ggover1=ggdraw(add_sub(ggover1,"Truth at green line", 
+  ggover1=cowplot::ggdraw(add_sub(ggover1,"Truth at green line", 
                          x= 0, y = 0.5, hjust = 0, vjust = 0.5,
                          vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
                          colour = "black", size = 8, angle = 0, lineheight = 0.9))
@@ -114,7 +114,7 @@ getRes = function(allresults,B, ATE0, var0, varind = c(4,10),
   # type= c(rep("LR",B),rep("one-step multi",B),rep("init",B))
   varests = data.frame(ests=ests,type=type)[1:B,]
   
-  ggover2 = ggplot(varests,aes(ests)) + 
+  ggover2 = ggplot2:: ggplot(varests,aes(ests)) + 
     geom_density(alpha=.3)+
     theme(axis.title.x = element_blank())+
     theme(plot.title = element_text(size = 12, face = "bold"),
@@ -127,7 +127,7 @@ getRes = function(allresults,B, ATE0, var0, varind = c(4,10),
   # ggover2 = ggover2 + scale_x_continuous(labels = c(round(seq(min(varests[,1]),max(varests[,1]),length.out=4),3),
   #                                         "mean init")[order(breaks)],
   #                              breaks=breaks[order(breaks)])
-  ggover2=ggdraw(add_sub(ggover2,"truth at green line. mean of initial est at red line",x= 0, y = 0.5, hjust = 0, vjust = 0.5,
+  ggover2=cowplot::ggdraw(add_sub(ggover2,"truth at green line. mean of initial est at red line",x= 0, y = 0.5, hjust = 0, vjust = 0.5,
                          vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
                          colour = "black", size = 8, angle = 0, lineheight = 0.9))
   
@@ -189,11 +189,11 @@ noise_analysis = function(n, rate, truth, coverage, Q0, biasQ, sdQ) {
   
   title = paste("sample size ",n, "variance bias = ",round(var_bias,5))
   df = data.frame(blip = c(blip_test,blip_true), type = c(rep("test",1e6),rep("true",1e6)))
-  gg_testvstrue = ggplot(df,aes(x=blip,color=type))+geom_density()+ggtitle(title)+
+  gg_testvstrue = ggplot2::ggplot(df,aes(x=blip,color=type))+geom_density()+ggtitle(title)+
     theme(plot.title = element_text(size = 10, face = "bold"),
           axis.text.x = element_text(size=8,angle=315)) 
   caption = paste0("coverage = ",coverage)
-  gg_testvstrue = ggdraw(add_sub(gg_testvstrue,caption, x= .05, y = 0.5, hjust = 0, vjust = 0.5, vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
+  gg_testvstrue = cowplot::ggdraw(add_sub(gg_testvstrue,caption, x= .05, y = 0.5, hjust = 0, vjust = 0.5, vpadding = grid::unit(1, "lines"), fontfamily = "", fontface = "plain",
                                  colour = "black", size = 9, angle = 0, lineheight = 0.9))
   # var_bias
   # ate_bias

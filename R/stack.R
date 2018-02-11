@@ -46,8 +46,8 @@ SL.stack = function(Y, X, A, W, newdata, method, SL.library,
   if (all(Y==1 | Y == 0)) familyQ = binomial() else familyQ = gaussian()
   
   n = length(Y)
-  folds = make_folds(n, V=V)
-  stack = mclapply(folds, FUN = function(x) {
+  folds = origami::make_folds(n, V=V)
+  stack = parallel::mclapply(folds, FUN = function(x) {
     # x=folds[[5]]
     tr = x$training_set
     val = x$validation_set
@@ -169,7 +169,7 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
   
   n = length(Y)
   if  (!cv) V = 1
-  folds = make_folds(n, V=V)
+  folds = origami::make_folds(n, V=V)
   stack = lapply(folds, FUN = function(x) {
     # x=folds[[5]]
     if (!cv) {

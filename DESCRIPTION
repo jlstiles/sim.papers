@@ -33,5 +33,7 @@ Imports: knitr,
     stargazer,
     hal,
     combinat,
-    matrixStats
+    matrixStats,
+    stats,
+    cowplot
 
