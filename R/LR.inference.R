@@ -72,7 +72,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   X$Y = NULL
   X=cbind(int = rep(1,2*n),X)
   
-  IC.beta = IC.beta(X, Y, Qk)
+  IC_beta = IC.beta(X, Y, Qk)
   
   TSM = mean(QAk)
   
@@ -137,7 +137,7 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   X=cbind(int = rep(1,3*n),X)
   head(X)
 
-  IC.beta = IC.beta(X, Y, Qk)
+  IC_beta = IC.beta(X, Y, Qk)
   
   # SE_test = apply(IC_beta,1,sd)*sqrt(n-1)/n
   # SE_test
