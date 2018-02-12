@@ -14,7 +14,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   if (!is.null(OC)) data[,Ynode] = OC
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
-  colnames(X)[!(colnames(X) %in% Anodes)] = paste0("X",1:(ncol(X)-1))
+  colnames(X)[!(colnames(X) %in% Anodes)] = paste0("X",1:(ncol(X)-length(Anodes)))
   # fit the regression
   Y = data[,Ynode]
   Qfit = stats::glm(Y~.,data=X,
