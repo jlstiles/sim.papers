@@ -17,7 +17,7 @@ IC.beta = function(W, A, Y, Qform) {
 
   X = model.matrix(Qform,X)
   X = as.data.frame(X[,-1])
-  colnames(X)[2:ncol(X)] = paste0("X",2:ncol(X)))
+  colnames(X)[2:ncol(X)] = paste0("X",2:ncol(X))
   
   # fit the regression
   Qfit = glm(Y~.,data=X,
