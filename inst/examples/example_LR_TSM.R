@@ -19,8 +19,8 @@ W = data[,2:5]
 A = data$A
 Y = data$Y
 
-undebug(LR.TSM)
-undebug(IC.beta)
+debug(LR.TSM)
+debug(IC.beta)
 # should cover each truth 95 percent of the time.
 info = LR.TSM(W=W,A=A,Y=Y,Qform=Qform, setA = 1, alpha = .05)
 

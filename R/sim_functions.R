@@ -45,8 +45,8 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     
     if (cvhal){
       halresults <- hal::hal(Y = Y,newX = newdata,
-                        X = X, family = familyQ,
-                        verbose = FALSE, parallel = parallel)
+                             X = X, family = familyQ,
+                             verbose = FALSE, parallel = parallel)
       
       Qk = halresults$pred[1:nv]
       Q1k = halresults$pred[nv+1:nv]
@@ -63,14 +63,14 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     newW = W[val,]
     
     if (is.null(gn)) {
-    if (cvhal){
-      halresultsG <- hal::hal(Y = A,newX = newW,
-                         X = W1, family = familyG,
-                         verbose = FALSE, parallel = parallel)
-      gk = halresultsG$pred[1:nv]} else {
-        halresultsG = stats::glm(gform, data = X, family = familyG)
-        gk = predict(halresultsG, newdata = newW, type = 'response')
-      }
+      if (cvhal){
+        halresultsG <- hal::hal(Y = A,newX = newW,
+                                X = W1, family = familyG,
+                                verbose = FALSE, parallel = parallel)
+        gk = halresultsG$pred[1:nv]} else {
+          halresultsG = stats::glm(gform, data = X, family = familyG)
+          gk = predict(halresultsG, newdata = newW, type = 'response')
+        }
     } else {
       gk = gn[val]
     }
@@ -188,11 +188,11 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
     Grisk = with(initdata, -mean(A*log(gk) + (1 - A)*log(1 - gk)))
   }
   if (!is.null(Qform)) {
-  cis = c(cis, ci_lr)
+    cis = c(cis, ci_lr)
   }
   
   results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
-            Qrisk = Qrisk, Grisk = Grisk)
+              Qrisk = Qrisk, Grisk = Grisk)
 }
 
 #' @title sim_cv
@@ -231,7 +231,7 @@ sim_hal = function(data, gform = NULL, Qform = NULL, V = 10, single = FALSE, est
 #' @example /inst/examples/example_sim_cv.R
 sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                   cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL, gendata.fcn) {
-
+  
   if (!is.null(dgp)) {
     data = dgp$DF
     BV0 = dgp$BV0
@@ -252,13 +252,13 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   X0$A = 0
   X1$A = 1
   newdata = rbind(X,X1,X0)
-
+  
   W = X
   W$A = NULL
   
   single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
-                    method = method, gn = gn, cvhal = FALSE)
-
+                        method = method, gn = gn, cvhal = FALSE)
+  
   stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
                     SL.library=SL.library, SL.libraryG=SL.libraryG,cv = cv, V = V, SL = SL, gn = gn)
   # proc.time() - time
@@ -270,23 +270,23 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   initest_ATE = with(initdata, mean(Q1k - Q0k))
   
   if ("single 1step" %in% estimator) {
-  sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+    sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+    
+    ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
                                  submodel = submodel_logit, loss = loss_loglik,
-                                 approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
-  
-  ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
-                               submodel = submodel_logit, loss = loss_loglik,
-                               approach = "recursive", max_iter = 10000,g.trunc = 1e-2)
-  steps = c(steps_bv1step = sigma_info$steps, steps_ate1step = ATE_info$steps)
-  converge = c(sigma_info$converge, ATE_info$converge)
-  cis = c(ci_gentmle(sigma_info)[c(2,4,5)], ci_gentmle(ATE_info)[c(2,4,5)])  
-
-  names(cis)[c(1,4)] = names(steps) = names(converge) = c("bv1step", "ate1step")
+                                 approach = "recursive", max_iter = 10000,g.trunc = 1e-2)
+    steps = c(steps_bv1step = sigma_info$steps, steps_ate1step = ATE_info$steps)
+    converge = c(sigma_info$converge, ATE_info$converge)
+    cis = c(ci_gentmle(sigma_info)[c(2,4,5)], ci_gentmle(ATE_info)[c(2,4,5)])  
+    
+    names(cis)[c(1,4)] = names(steps) = names(converge) = c("bv1step", "ate1step")
   } else {
     cis = c()
     converge = c()
     steps = c()
-    }
+  }
   
   if ("single iterative" %in% estimator) {
     sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_sigmaATE), 
@@ -316,7 +316,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     converge1 = c(simul = simul_info$converge)
     cis1 = c(ci_gentmle(simul_info)[2,c(2,4,5)], ci_gentmle(simul_info)[1,c(2,4,5)])
     names(cis1)[c(1,4)] = c("bv_simul", "ate_simul")
-  
+    
     cis = c(cis, cis1)
     converge = c(converge, converge1)
     steps = c(steps, steps1)
@@ -364,11 +364,117 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
                 Grisk = stack$Grisk, single = single_info)
   }
   return(results)
-
+  
 }
 
+# input data.frame with A, Y and covariates spit out lr CI based on delta method
+# remember the order of vars is A, mainterms, then interactions
+#' @title LR.inference
+#' @description Function that gives inference for logistic regression plug-in
+#' estimators of ATE and Blip Variance.  
+#' @param W, matrix or data.frame of covariates
+#' @param A, a binary vector of treatment assignments
+#' @param Y, a binary vector of outcomes
+#' @param Qform, a formula for Y in terms of the covariates as input in glm
+#' @param alpha, significance level for the (1-alpha)100 percent CI's. 0.05 is default
+#' @param simultaneous.inference, TRUE if user wants simultaneous confidence
+#' bounds for both ATE and blip variance at level alpha. default is FALSE
+#' 
+#' @return  if simultaneous.inference is specified as TRUE then will return a vector giving
+#' pt estimate, left and right bound for ATE, simultaneous ATE CI, blip variance, 
+#' and simultaneous blip variance.  Otherwise gives pt estimate, left and right bound for ATE
+#' and blip variance.  
+#' @export
+#' @example /inst/examples/example_LR_inference.R
+LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FALSE) {
+  n = length(Y)
+  
+  X = as.data.frame(cbind(A,W,Y))
+  X0 = X1 = X
+  X0$A = 0
+  X1$A = 1
+  
+  newdata = rbind(X, X1, X0)
+  newdata = model.matrix(Qform,newdata)
+  newdata = as.data.frame(newdata[,-1])
+  colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
+  
+  # fit the regression
+  Qfit = stats::glm(Y~.,data=newdata[1:n,],
+                    family='binomial')
+  # predictions over data, A=1 and A=0
+  Qk = predict(Qfit,type='response')
+  Q1k = predict(Qfit,newdata=newdata[(n+1):(2*n),],type='response')
+  Q0k = predict(Qfit,newdata=newdata[(2*n+1):(3*n),],type='response')
+  
+  # covariates and treatment for convenient use
+  X = newdata
+  X$Y = NULL
+  X=cbind(int = rep(1,n),X)
+  head(X)
+  # calculate the score
+  score_beta = sapply(1:n,FUN = function(x) {
+    X[x,]*(Y[x]-Qk[x])
+  })
+  
+  # averaging hessians to approx the deriv of hessian and mean then inverse
+  hessian = lapply(1:n,FUN = function(x) {
+    mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
+    return(mat)
+  })
+  fisher = -Reduce('+', hessian)/n
+  M = solve(fisher)
+  
+  # calculate the IC for beta
+  IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+  
+  # SE_test = apply(IC_beta,1,sd)*sqrt(n-1)/n
+  # SE_test
+  
+  blip = Q1k-Q0k
+  ate = mean(Q1k-Q0k)
+  # calculate the deriv to mult by IC_beta
+  deriv1 = rowMeans(vapply(1:n, FUN = function(x) {
+    return((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
+             as.numeric(X[(2*n+x),]))
+  }, FUN.VALUE=rep(1,ncol(X))))
+  
+  deriv = rowMeans(vapply(1:n, FUN = function(x) {
+    return(2*(blip[x]-ate)*((1-Q1k[x])*Q1k[x]*as.numeric(X[(n+x),])-(1-Q0k[x])*Q0k[x]*
+                              as.numeric(X[(2*n+x),])))
+  }, FUN.VALUE=rep(1,ncol(X))))
+  
+  psi = var(blip)
+  # connect both parts of IC to form the full one
+  
+  IC = apply(IC_beta,2,FUN = function(x) t(deriv)%*%x) + (blip - ate)^2 - psi
+  IC1 = apply(IC_beta, 2, FUN = function(x) t(deriv1)%*%x) + blip -ate
+  # standard error
+  SE = sd(IC)*sqrt((n-1))/n
+  SE1 = sd(IC1)*sqrt((n-1))/n
+  
+  qq = qnorm(1-alpha/2)
+  CI = c(bv_delta = psi, left = psi - qq*SE, right = psi + qq*SE)
+  
+  CI_ate = c(ate_delta = ate, left = ate - qq*SE1, right = ate + qq*SE1)
+  
+  if (simultaneous.inference) {
+    corM = stats::cor(data.frame(IC=IC, IC1=IC1))
+    Z = rmvnorm(1000000,c(0,0),corM)
+    zabs = apply(Z,1,FUN = function(x) max(abs(x)))
+    zscore = quantile(zabs, 1-alpha)
+    CI_simul_ate = c(ate_deltasimul = ate, left = ate - zscore*SE1, right = ate + zscore*SE1)  
+    CI_simul_bv = c(bv_deltasimul = psi, left = psi - zscore*SE, right = psi + zscore*SE) 
+    
+    return(c(CI_ate, CI_simul_ate, CI, CI_simul_bv))
+  } else {
+    return(c(CI_ate, CI))
+  }
+}
+
+
 sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
-                  cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
+                   cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   
   # g0 = dgps[[3]]$PGn 
   # Q0 = Q0_trig1
@@ -543,4 +649,5 @@ sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   return(results)
   
 }
+
 
