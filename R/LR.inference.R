@@ -11,12 +11,11 @@
 IC.beta = function(data, Ynode, Qform) {
   data = data[!is.na(data[Ynode]),]
   n = nrow(data)
-  X = as.data.frame(cbind(A,W,Y))
- 
-  X = model.matrix(Qform,X)
+  X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
   colnames(X)[colnames(X)!="A"] = paste0("X",1:(ncol(X)-1))
   # fit the regression
+  Y = data[,Ynode]
   Qfit = stats::glm(Y~.,data=X,
                     family='binomial')
   # predictions over data, A=1 and A=0
@@ -56,19 +55,16 @@ IC.beta = function(data, Ynode, Qform) {
 #' @return  a list with elements IC for the influence curve and CI for 
 #' the confidence interval 
 #' @export
-LR.TSM = function(W, A, Y, Qform, setA, alpha = .05) {
-  
-  W = W[!is.na(Y),]
-  A = A[!is.na(Y)]
-  Y = Y[!is.na(Y)]
-  
-  IC_beta_info = IC.beta(W = W, A = A, Y = Y, Qform = Qform)
+LR.TSM = function(data, Ynode, Anode, Qform, setA, alpha = .05) {
+
+  IC_beta_info = IC.beta(data, Ynode = Ynode, Qform = Qform)
 
   Qfit = IC_beta_info$Qfit
   
-  n = length(Y)
-  XA = as.data.frame(cbind(A, W, Y))
-  XA$A = setA
+  data = data[!is.na(data[Ynode]),]
+  n = nrow(data)
+  XA = data
+  XA[,Anode] = setA
   XA = model.matrix(Qform,XA)
   XA = as.data.frame(XA[,-1])
   colnames(XA)[colnames(XA)!="A"] = paste0("X",1:(ncol(XA)-1))
