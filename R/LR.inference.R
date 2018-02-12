@@ -15,6 +15,10 @@ IC.beta = function(W, A, Y, Qform) {
   n = length(Y)
   X = as.data.frame(cbind(A,W,Y))
 
+  X = model.matrix(Qform,X)
+  X = as.data.frame(X[,-1])
+  colnames(X)[2:ncol(X)] = paste0("X",2:ncol(X)))
+  
   # fit the regression
   Qfit = glm(Y~.,data=X,
              family='binomial')
@@ -38,7 +42,7 @@ IC.beta = function(W, A, Y, Qform) {
   # calculate the IC for beta
   IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
 
-  return(list(IC_beta = IC_beta, X=X, Qfit = Qfit, n1 = n))
+  return(list(IC_beta = IC_beta, X=X, Qfit = Qfit, n1 = n, Y=Y))
 }
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
@@ -67,9 +71,6 @@ LR.TSM = function(W, A, Y, Qform, setA,
   XA$A = setA
   
   newdata = rbind(X, XA)
-  newdata = model.matrix(Qform,newdata)
-  newdata = as.data.frame(newdata[,-1])
-  colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
   
   # fit the regression
   Qfit = IC_beta$Qfit
