@@ -7,8 +7,20 @@
 #' @param Qk, predictions
 #' @return a matrix that is the IC for the beta coefficients of the logistic model 
 #' @export
-IC.beta = function(X, Y, Qk) {
+IC.beta = function(W, A, Y, Qform) {
+  Y = Y[!is.na(Y)]
+  W = W[!is.na(Y),]
+  A = A[!is.na(Y)]
+  
   n = length(Y)
+  X = as.data.frame(cbind(A,W,Y))
+
+  # fit the regression
+  Qfit = glm(Y~.,data=newdata[1:n,],
+             family='binomial')
+  # predictions over data, A=1 and A=0
+  Qk = predict(Qfit,type='response')
+
   # calculate the score
   score_beta = sapply(1:n,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
@@ -25,7 +37,7 @@ IC.beta = function(X, Y, Qk) {
   # calculate the IC for beta
   IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
 
-  return(IC_beta)
+  return(list(IC_beta = IC_beta, X=X, Qfit = Qfit, n1 = n))
 }
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
@@ -46,12 +58,10 @@ IC.beta = function(X, Y, Qk) {
 LR.TSM = function(W, A, Y, Qform, setA, 
                            alpha = .05) {
   
-  Y = Y[!is.na(Y)]
-  W = W[!is.na(Y),]
-  A = A[!is.na(Y)]
-  
-  n = length(Y)
-  X = as.data.frame(cbind(A,W,Y))
+  IC_beta = IC.beta(W=W, A=A, Y=Y, Qform=Qform)
+
+  n = IC_beta$n1
+  X = IC_beta$X
   XA =  X
   XA$A = setA
   
@@ -61,8 +71,8 @@ LR.TSM = function(W, A, Y, Qform, setA,
   colnames(newdata)[2:ncol(newdata)] = paste0("X",2:ncol(newdata))
   
   # fit the regression
-  Qfit = glm(Y~.,data=newdata[1:n,],
-             family='binomial')
+  Qfit = IC_beta$Qfit
+  
   # predictions over data, A=1 and A=0
   Qk = predict(Qfit,type='response')
   QAk = predict(Qfit,newdata=newdata[(n+1):(2*n),],type='response')
@@ -72,7 +82,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   X$Y = NULL
   X=cbind(int = rep(1,2*n),X)
   
-  IC_beta = IC.beta(X, Y, Qk)
+  IC_beta = IC_beta$IC_beta
   
   TSM = mean(QAk)
   
