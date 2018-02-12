@@ -59,7 +59,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
     return((1-QAk[x])*QAk[x]*as.numeric(X[(n+x),]))
   }, FUN.VALUE=rep(1,ncol(X))))
   
-  IC = apply(IC_beta, 2, FUN = function(x) t(deriv1)%*%x) + QAk - TSM
+  IC = apply(IC_beta, 2, FUN = function(x) t(deriv)%*%x) + QAk - TSM
   
   SE = sd(IC)*sqrt((n-1))/n
   qq = qnorm(1-alpha/2)
