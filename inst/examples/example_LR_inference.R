@@ -2,7 +2,7 @@
 # using built-in package functions, g0_linear and define Q0_linear to specify
 # pscore and outcome model probabilities
 g0_linear
-Q0_linear = function(A,W1,W2,W3,W4) plogis(A + W1 + W2 + A*(W3 + W4))
+Q0_linear = function(A,W1,W2,W3,W4) plogis(A + W1 + W2 + A*(W3 + W4) + W3 + W4)
 
 # get a randomly drawn dataframe under the specified model
 data = gendata(1000, g0_linear, Q0_linear)
@@ -18,7 +18,7 @@ Qform = formula("Y ~ W1 + W2 + A*(W3 + W4)")
 W = data[,2:5]
 A = data$A
 Y = data$Y
-
+debug(LR.inference)
 # should cover each truth 95 percent of the time.
 info = LR.inference(W=W,A=A,Y=Y,Qform=Qform, alpha = .05)
 info
@@ -28,3 +28,4 @@ info
 info1 = LR.inference(W=W,A=A,Y=Y,Qform=Qform, alpha = .05, 
                     simultaneous.inference = TRUE)
 info1
+
