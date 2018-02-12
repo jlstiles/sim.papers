@@ -34,7 +34,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   # covariates and treatment for convenient use
   X = newdata
   X$Y = NULL
-  X=cbind(int = rep(1,n),X)
+  X=cbind(int = rep(1,2*n),X)
   
   # calculate the score
   score_beta = sapply(1:n,FUN = function(x) {
@@ -112,7 +112,7 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   # covariates and treatment for convenient use
   X = newdata
   X$Y = NULL
-  X=cbind(int = rep(1,n),X)
+  X=cbind(int = rep(1,3*n),X)
   head(X)
   # calculate the score
   score_beta = sapply(1:n,FUN = function(x) {
