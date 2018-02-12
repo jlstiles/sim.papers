@@ -21,6 +21,7 @@ IC.beta = function(W, A, Y, Qform) {
   # predictions over data, A=1 and A=0
   Qk = predict(Qfit,type='response')
 
+  X$Y = NULL
   # calculate the score
   score_beta = sapply(1:n,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
@@ -76,11 +77,6 @@ LR.TSM = function(W, A, Y, Qform, setA,
   # predictions over data, A=1 and A=0
   Qk = predict(Qfit,type='response')
   QAk = predict(Qfit,newdata=newdata[(n+1):(2*n),],type='response')
-  
-  # covariates and treatment for convenient use
-  X = newdata
-  X$Y = NULL
-  X=cbind(int = rep(1,2*n),X)
   
   IC_beta = IC_beta$IC_beta
   
