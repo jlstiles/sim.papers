@@ -15,6 +15,11 @@
 #' @example /inst/examples/example_LR_TSM.R
 LR.TSM = function(W, A, Y, Qform, setA, 
                            alpha = .05) {
+  
+  Y = Y[!is.na(Y)]
+  W = W[!is.na(W)]
+  A = A[!is.na(A)]
+  
   n = length(Y)
   X = as.data.frame(cbind(A,W,Y))
   XA =  X
