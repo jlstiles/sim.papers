@@ -55,8 +55,9 @@ LR.TSM = function(W, A, Y, Qform, setA,
   TSM = mean(QAk)
   
   # calculate the deriv to mult by IC_beta
+  XA = X[(n+1:n),]
   deriv = rowMeans(vapply(1:n, FUN = function(x) {
-    return((1-QAk[x])*QAk[x]*as.numeric(X[(n+x),]))
+    return((1-QAk[x])*QAk[x]*as.numeric(XA[x,]))
   }, FUN.VALUE=rep(1,ncol(X))))
   
   IC = apply(IC_beta, 2, FUN = function(x) t(deriv)%*%x) + QAk - TSM
@@ -65,7 +66,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   qq = qnorm(1-alpha/2)
   CI = c(TSM = TSM, left = TSM - qq*SE, right = TSM + qq*SE)
   
-  return(list(CI=CI, IC=IC))
+  return(list(CI=CI, IC=IC[n+1:n]))
 }
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
