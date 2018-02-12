@@ -16,7 +16,7 @@ simmie = function(n) {
   Y = data$Y
   
   # should cover each truth 95 percent of the time.
-  info = LR.inference(W=W,A=A,Y=Y,Qform=Qform, alpha = .05)
+  info = LR.TSM(W=W,A=A,Y=Y,Qform=Qform, setA = 1, alpha = .05)
   truth = get.truth(g0_linear, Q0_linear)
   cover = (info[5] < truth[2]) & (info[6] > truth[2])
   return(cover)

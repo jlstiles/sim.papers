@@ -17,7 +17,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   n = length(Y)
   X = as.data.frame(cbind(A,W,Y))
   XA =  X
-  X0$A = setA
+  XA$A = setA
   
   newdata = rbind(X, XA)
   newdata = model.matrix(Qform,newdata)
