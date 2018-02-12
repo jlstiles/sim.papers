@@ -12,6 +12,7 @@
 #' @return  a list with components CI and IC, giving the influence curve approximation
 #' for the logistic regression plug-in estimator for the TSM with A set to setA  
 #' @export
+#' @example /inst/examples/example_LR_TSM.R
 LR.TSM = function(W, A, Y, Qform, setA, 
                            alpha = .05) {
   n = length(Y)
