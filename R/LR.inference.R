@@ -66,7 +66,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   qq = qnorm(1-alpha/2)
   CI = c(TSM = TSM, left = TSM - qq*SE, right = TSM + qq*SE)
   
-  return(list(CI=CI, IC=IC[n+1:n]))
+  return(list(CI=CI, IC=IC))
 }
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
