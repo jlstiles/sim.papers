@@ -8,12 +8,12 @@
 #' 
 #' @return  a list with elements IC_beta and Qfit, the glm fit object.  
 #' @export
-IC.beta = function(data, Ynode, Qform) {
+IC.beta = function(data, Ynode, Anode, Qform) {
   data = data[!is.na(data[,Ynode]),]
   n = nrow(data)
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
-  colnames(X)[colnames(X)!="A"] = paste0("X",1:(ncol(X)-1))
+  colnames(X)[colnames(X)!=Anode] = paste0("X",1:(ncol(X)-1))
   # fit the regression
   Y = data[,Ynode]
   Qfit = stats::glm(Y~.,data=X,
