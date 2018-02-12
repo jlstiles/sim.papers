@@ -84,7 +84,6 @@ LR.TSM = function(W, A, Y, Qform, setA,
   TSM = mean(QAk)
   
   # calculate the deriv to mult by IC_beta
-  XA = X[(n+1:n),]
   deriv = rowMeans(vapply(1:n, FUN = function(x) {
     return((1-QAk[x])*QAk[x]*as.numeric(XA[x,]))
   }, FUN.VALUE=rep(1,ncol(X))))
