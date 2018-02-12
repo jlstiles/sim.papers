@@ -47,8 +47,8 @@ LR.TSM = function(W, A, Y, Qform, setA,
                            alpha = .05) {
   
   Y = Y[!is.na(Y)]
-  W = W[!is.na(W)]
-  A = A[!is.na(A)]
+  W = W[!is.na(Y),]
+  A = A[!is.na(Y)]
   
   n = length(Y)
   X = as.data.frame(cbind(A,W,Y))
