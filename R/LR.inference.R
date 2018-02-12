@@ -1,5 +1,35 @@
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
 # remember the order of vars is A, mainterms, then interactions
+#' @title IC.beta
+#' @description mainly a helper function to get IC for the betas of logistic regression
+#' @param X, design matrix
+#' @param Y, a binary vector of outcomes
+#' @param Qk, predictions
+#' @return a matrix that is the IC for the beta coefficients of the logistic model 
+#' @export
+IC.beta = function(X, Y, Qk) {
+  n = length(Y)
+  # calculate the score
+  score_beta = sapply(1:n,FUN = function(x) {
+    X[x,]*(Y[x]-Qk[x])
+  })
+  
+  # averaging hessians to approx the deriv of hessian and mean then inverse
+  hessian = lapply(1:n,FUN = function(x) {
+    mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
+    return(mat)
+  })
+  fisher = -Reduce('+', hessian)/n
+  M = solve(fisher)
+  
+  # calculate the IC for beta
+  IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+
+  return(IC_beta)
+}
+
+# input data.frame with A, Y and covariates spit out lr CI based on delta method
+# remember the order of vars is A, mainterms, then interactions
 #' @title LR.TSM
 #' @description Function that gives inference for logistic regression plug-in
 #' estimators of ATE and Blip Variance.  
@@ -42,21 +72,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   X$Y = NULL
   X=cbind(int = rep(1,2*n),X)
   
-  # calculate the score
-  score_beta = sapply(1:n,FUN = function(x) {
-    X[x,]*(Y[x]-Qk[x])
-  })
-  
-  # averaging hessians to approx the deriv of hessian and mean then inverse
-  hessian = lapply(1:n,FUN = function(x) {
-    mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
-    return(mat)
-  })
-  fisher = -Reduce('+', hessian)/n
-  M = solve(fisher)
-  
-  # calculate the IC for beta
-  IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+  IC.beta = IC.beta(X, Y, Qk)
   
   TSM = mean(QAk)
   
@@ -120,21 +136,8 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   X$Y = NULL
   X=cbind(int = rep(1,3*n),X)
   head(X)
-  # calculate the score
-  score_beta = sapply(1:n,FUN = function(x) {
-    X[x,]*(Y[x]-Qk[x])
-  })
-  
-  # averaging hessians to approx the deriv of hessian and mean then inverse
-  hessian = lapply(1:n,FUN = function(x) {
-    mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
-    return(mat)
-  })
-  fisher = -Reduce('+', hessian)/n
-  M = solve(fisher)
-  
-  # calculate the IC for beta
-  IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+
+  IC.beta = IC.beta(X, Y, Qk)
   
   # SE_test = apply(IC_beta,1,sd)*sqrt(n-1)/n
   # SE_test
