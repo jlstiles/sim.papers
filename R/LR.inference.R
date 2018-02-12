@@ -16,7 +16,7 @@ IC.beta = function(W, A, Y, Qform) {
   X = as.data.frame(cbind(A,W,Y))
 
   # fit the regression
-  Qfit = glm(Y~.,data=newdata[1:n,],
+  Qfit = glm(Y~.,data=X,
              family='binomial')
   # predictions over data, A=1 and A=0
   Qk = predict(Qfit,type='response')
