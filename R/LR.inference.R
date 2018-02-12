@@ -63,7 +63,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   
   SE = sd(IC)*sqrt((n-1))/n
   qq = qnorm(1-alpha/2)
-  CI = c(TSM = TSM, left = psi - qq*SE, right = psi + qq*SE)
+  CI = c(TSM = TSM, left = TSM - qq*SE, right = TSM + qq*SE)
   
   return(list(CI=CI, IC=IC))
 }
