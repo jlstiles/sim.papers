@@ -8,12 +8,9 @@
 #' 
 #' @return  a list with elements IC_beta and Qfit, the glm fit object.  
 #' @export
-IC.beta = function(W, A, Y, Qform) {
-  W = W[!is.na(Y),]
-  A = A[!is.na(Y)]
-  Y = Y[!is.na(Y)]
-  
-  n = length(Y)
+IC.beta = function(data, Ynode, Qform) {
+  data = data[!is.na(data[Ynode]),]
+  n = nrow(data)
   X = as.data.frame(cbind(A,W,Y))
  
   X = model.matrix(Qform,X)
