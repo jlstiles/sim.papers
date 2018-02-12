@@ -71,7 +71,7 @@ LR.TSM = function(W, A, Y, Qform, setA,
   XA =  X
   XA$A = setA
   
-  newdata = rbind(X, XA)
+  newdata = rbind(X, XA)[,-1]
   
   # fit the regression
   Qfit = IC_beta$Qfit
