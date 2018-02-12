@@ -2,10 +2,14 @@
 # using built-in package functions, g0_linear and define Q0_linear to specify
 # pscore and outcome model probabilities
 g0_linear
-Q0_linear = function(A,W1,W2,W3,W4) plogis(A + W1 + W2 + A*(W3 + W4))
-
+Q0_linear = function(A,W1,W2,W3,W4) plogis(A + W1 + W2 + A*(W3 + W4)+A*W3+A*W4)
+big = gendata(1e6,g0_linear, Q0_linear)
+setA = 1
+truth = mean(with(big, Q0_linear(setA, W1,W2,W3,W4)))
+truth
 # get a randomly drawn dataframe under the specified model
-simmie = function(n) {
+simmie = function(n, truth) {
+  n = 
   data = gendata(n, g0_linear, Q0_linear)
   # well-specified model
   Qform = formula("Y ~ W1 + W2 + A*(W3 + W4)")
@@ -17,20 +21,19 @@ simmie = function(n) {
   
   # should cover each truth 95 percent of the time.
   info = LR.TSM(W=W,A=A,Y=Y,Qform=Qform, setA = 1, alpha = .05)
-  truth = get.truth(g0_linear, Q0_linear)
-  cover = (info[5] < truth[2]) & (info[6] > truth[2])
+  
+  cover = (info$CI[2] < truth) & (info$CI[3] > truth)
   return(cover)
 }
 
 detectCores()
 cl = makeCluster(detectCores(), type = "SOCK")
 registerDoSNOW(cl)
-clusterExport(cl,cl_export)
 
 B = 100
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {simmie(1000)}
+            {simmie(1000, truth)}
 mean(unlist(ALL))
 
 # should cover each truth 95 percent of the time and both truths

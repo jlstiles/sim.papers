@@ -26,6 +26,7 @@ IC.beta = function(W, A, Y, Qform) {
   Qk = predict(Qfit,type='response')
 
   X$Y = NULL
+  X = rbind(rep(1,n),X)
   # calculate the score
   score_beta = sapply(1:n,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
