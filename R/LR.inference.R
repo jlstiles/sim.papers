@@ -8,7 +8,7 @@
 #' 
 #' @return  a list with elements IC_beta and Qfit, the glm fit object.  
 #' @export
-IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = TRUE) {
+IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   n = nrow(data)
   if (!is.null(OC)) data[,Ynode] = OC
   cens = is.na(data[,Ynode])
