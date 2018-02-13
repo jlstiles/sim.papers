@@ -48,17 +48,17 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   
 }
 
-#' @title LR.TSM
-#' @description computes IC for logistic regression plug-in estimator of treatment
-#' specific mean and the corresponding wald confidence interval  
-#' @param W, matrix or data.frame of covariates
-#' @param A, a binary vector of treatment assignments
-#' @param Y, a binary vector of outcomes
-#' @param Qform, a formula for Y in terms of the covariates as input in glm
-#' @param setA the value to which you intervene on A, the treatment
-#' @param alpha significance level for two-sided CI
-#' @return  a list with elements IC for the influence curve and CI for 
-#' the confidence interval 
+# @title LR.TSM
+# @description computes IC for logistic regression plug-in estimator of treatment
+# specific mean and the corresponding wald confidence interval
+# @param W, matrix or data.frame of covariates
+# @param A, a binary vector of treatment assignments
+# @param Y, a binary vector of outcomes
+# @param Qform, a formula for Y in terms of the covariates as input in glm
+# @param setA the value to which you intervene on A, the treatment
+# @param alpha significance level for two-sided CI
+# @return  a list with elements IC for the influence curve and CI for
+# the confidence interval
 
 LR.TSM = function(data, Ynode, Anode, Qform, setA, alpha = .05) {
 
