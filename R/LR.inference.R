@@ -60,7 +60,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
 #' @return  a list with elements, CI for the confidence interval and  IC for the 
 #' influence curve.
 #' @export
-long.TSM = function(data, Ynodes, Anodes, formulas, setA)
+long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
 {
   times = 1:length(formulas)
   times = times[order(times,decreasing = TRUE)]
