@@ -12,21 +12,20 @@ setA = 1
 truth = mean(with(big, Q0_linear(A=setA,W1,W2,W3,W4)))
 truth
 # well-specified model
-Qform = formula("Y ~ W1 + W2 + A*(W3 + W4)")
 
-# specifying the covariates, treatment and outcome
-W = data[,2:5]
-A = data$A
-Y = data$Y
+data = gendata(n, g0_linear, Q0_linear)
 
-undebug(LR.TSM)
-undebug(IC.beta)
-# should cover each truth 95 percent of the time.
-info = LR.TSM(W=W,A=A,Y=Y,Qform=Qform, setA = 1, alpha = .05)
+formulas = list(formula("Y ~ W1 + W2 + A*(W3 + W4)"))
+Ynodes = c("Y")
+Anodes = c("A")
+setA = 1
+
+TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                   formulas = formulas, setA = setA, alpha = .05)
 
 # get CI
-info$CI
+TSMinfo$CI
 # get influence curve
-info$IC
+TSMinfo$IC
 
 
