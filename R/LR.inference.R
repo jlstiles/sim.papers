@@ -56,8 +56,9 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
 #' @param Anodes, character vector of time-ordered Ynodes
 #' @param formulas, list of formulas for the conditional means
 #' @param setA the value to which you intervene on A,vector of length that of Anodes
-#' @param alpha significance level for two-sided CI--not supported yet
-#' @return  a list with elements IC for the influence curve and psi for the estimate
+#' @param alpha significance level for two-sided CI.
+#' @return  a list with elements, CI for the confidence interval and  IC for the 
+#' influence curve.
 #' @export
 long.TSM = function(data, Ynodes, Anodes, formulas, setA)
 {
@@ -118,7 +119,12 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA)
   
   psi = mean(QAk)
   IC = apply(IC_t, 2, FUN = function(x) sum(score*x)) + QAk - psi
-  return(list(psi = psi, IC = IC))
+  SE = sd(IC)*sqrt(n-1)/n
+  
+  qq = qnorm(1-alpha/2)
+  CI = c(psi = psi, left = psi - qq*SE, right = psi + qq*SE)
+  
+  return(list(CI = CI, IC = IC))
 }
 
 

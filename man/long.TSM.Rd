@@ -17,10 +17,11 @@ long.TSM(data, Ynodes, Anodes, formulas, setA)
 
 \item{setA}{the value to which you intervene on A,vector of length that of Anodes}
 
-\item{alpha}{significance level for two-sided CI--not supported yet}
+\item{alpha}{significance level for two-sided CI.}
 }
 \value{
-a list with elements IC for the influence curve and psi for the estimate
+a list with elements, CI for the confidence interval and  IC for the 
+influence curve.
 }
 \description{
 computes IC and psi for logistic regression plug-in estimator of treatment
