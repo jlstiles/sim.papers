@@ -19,7 +19,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   colnames(X) = paste0("X",1:(ncol(X)))
   # fit the regression
   Y = data[,Ynode]
-  if (verbose = TRUE) {
+  if (verbose) {
     Qfit = suppressWarnings(stats::glm(Y~.,data=X,
                     family='binomial'))
   } else {
