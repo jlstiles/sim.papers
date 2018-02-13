@@ -10,10 +10,10 @@
 #' @export
 IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   n = nrow(data)
+  if (!is.null(OC)) data[,Ynode] = OC
   cens = is.na(data[,Ynode])
   data = data[!cens,]
   n1 = nrow(data)
-  if (!is.null(OC)) data[,Ynode] = OC
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
   colnames(X)[!(colnames(X) %in% Anodes)] = paste0("X",1:(ncol(X)-length(Anodes)))
