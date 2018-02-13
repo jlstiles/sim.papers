@@ -63,7 +63,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
 #' @example /inst/examples/example_longTSM.R
 long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
 {
-  times = 1:length(formulas)
+  times = 1:length(setA)
   times = times[order(times,decreasing = TRUE)]
   for (t in times){
     # undebug(IC.beta)
