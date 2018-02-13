@@ -16,7 +16,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   n1 = nrow(data)
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
-  colnames(X)[!(colnames(X) %in% Anodes)] = paste0("X",1:(ncol(X)-length(Anodes)))
+  colnames(X) = paste0("X",1:(ncol(X)))
   # fit the regression
   Y = data[,Ynode]
   Qfit = stats::glm(Y~.,data=X,
@@ -72,7 +72,7 @@ LR.TSM = function(data, Ynode, Anode, Qform, setA, alpha = .05) {
   XA[,Anode] = setA
   XA = model.matrix(Qform,XA)
   XA = as.data.frame(XA[,-1])
-  colnames(XA)[colnames(XA)!="A"] = paste0("X",1:(ncol(XA)-1))
+  colnames(XA) = paste0("X",1:ncol(XA))
 
   QAk = predict(Qfit,newdata=XA,type='response')
   
