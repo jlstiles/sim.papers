@@ -9,8 +9,10 @@
 #' @return  a list with elements IC_beta and Qfit, the glm fit object.  
 #' @export
 IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
-  data = data[!is.na(data[,Ynode]),]
   n = nrow(data)
+  cens = is.na(data[,Ynode])
+  data = data[!cens,]
+  n1 = nrow(data)
   if (!is.null(OC)) data[,Ynode] = OC
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
@@ -23,23 +25,25 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   Qk = predict(Qfit,type='response')
   
   X$Y = NULL
-  X=cbind(int = rep(1,n),X)
+  X=cbind(int = rep(1,n1),X)
   # head(X)
   # calculate the score
-  score_beta = sapply(1:n,FUN = function(x) {
+  score_beta = sapply(1:n1,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
   })
   
   # averaging hessians to approx the deriv of hessian and mean then inverse
-  hessian = lapply(1:n,FUN = function(x) {
+  hessian = lapply(1:n1,FUN = function(x) {
     mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
     return(mat)
   })
-  fisher = -Reduce('+', hessian)/n
+  fisher = -Reduce('+', hessian)/n1
   M = solve(fisher)
   
   # calculate the IC for beta
-  IC_beta = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+  IC_beta = matrix(rep(0, nrow(M)*n), nrow = nrow(M))
+  IC_beta[,!cens] = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
+  IC_beta = IC_beta*n/n1
   return(list(IC_beta = IC_beta, Qfit = Qfit))
   
 }
