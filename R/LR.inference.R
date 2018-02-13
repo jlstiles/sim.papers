@@ -100,7 +100,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
         return(mat)
       })
       M = Reduce('+', hess)/n0
-      
+      M = ICinfo_t$hessian %*% M 
       IC_temp = apply(IC_tplus1,2,FUN = function(x) M%*%as.numeric(x))
       IC_t = ICinfo_t$IC_beta + IC_temp
       
