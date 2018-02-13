@@ -8,7 +8,7 @@
 #' 
 #' @return  a list with elements IC_beta and Qfit, the glm fit object.  
 #' @export
-IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
+IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = TRUE) {
   n = nrow(data)
   if (!is.null(OC)) data[,Ynode] = OC
   cens = is.na(data[,Ynode])
@@ -19,8 +19,12 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   colnames(X) = paste0("X",1:(ncol(X)))
   # fit the regression
   Y = data[,Ynode]
-  Qfit = stats::glm(Y~.,data=X,
-                    family='binomial')
+  if (verbose = TRUE) {
+    Qfit = suppressWarnings(stats::glm(Y~.,data=X,
+                    family='binomial'))
+  } else {
+    Qfit = stats::glm(Y~.,data=X,family='binomial')
+  }
   # predictions over data, A=1 and A=0
   Qk = predict(Qfit,type='response')
   
