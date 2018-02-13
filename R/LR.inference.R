@@ -100,11 +100,11 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
       OC = OC[!is.na(OC)]
-      hess = lapply(1:n0,FUN = function(x) {
+      hess = lapply(1:length(OC),FUN = function(x) {
         mat = (1-OC[x])*OC[x]*as.numeric(X_t[x,])%*%t(as.numeric(Xa_tplus1[x,]))
         return(mat)
       })
-      M = Reduce('+', hess)/n0
+      M = Reduce('+', hess)/length(OC)
       M = ICinfo_t$hessian %*% M 
       IC_temp = apply(IC_tplus1,2,FUN = function(x) M%*%as.numeric(x))
       IC_t = ICinfo_t$IC_beta + IC_temp
