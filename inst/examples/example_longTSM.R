@@ -1,4 +1,6 @@
-
+###
+# The following example is for pt treatment
+###
 # using built-in package functions, g0_linear and define Q0_linear to specify
 # pscore and outcome model probabilities
 g0_linear
