@@ -4,16 +4,16 @@
 \alias{IC.beta}
 \title{IC.beta}
 \usage{
-IC.beta(W, A, Y, Qform)
+IC.beta(data, OC = NULL, Ynode, Anodes, Qform)
 }
 \arguments{
+\item{Qform, }{a formula for Y in terms of the covariates as input in glm}
+
 \item{W, }{matrix or data.frame of covariates}
 
 \item{A, }{a binary vector of treatment assignments}
 
 \item{Y, }{a binary vector of outcomes}
-
-\item{Qform, }{a formula for Y in terms of the covariates as input in glm}
 }
 \value{
 a list with elements IC_beta and Qfit, the glm fit object.

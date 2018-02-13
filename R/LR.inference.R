@@ -59,7 +59,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
 #' @param alpha significance level for two-sided CI
 #' @return  a list with elements IC for the influence curve and CI for 
 #' the confidence interval 
-#' @export
+
 LR.TSM = function(data, Ynode, Anode, Qform, setA, alpha = .05) {
 
   IC_beta_info = IC.beta(data, Ynode = Ynode, Qform = Qform)
