@@ -60,5 +60,27 @@ TSMinfo$CI
 # get influence curve
 TSMinfo$IC
 
+####
+# example with longitudinal intervention
+####
 
+data(longdata)
+head(data)
+
+Ynodes = c("Y_1", "Y_2","Y_3","Y_4")
+Anodes = c("A1_0", "A1_1","A1_2","A1_3")
+
+# specify the formulas
+formula0 = formula("Y_1 ~ L2_0 + L1_0 + A1_0") 
+formula1 = formula("Y_2 ~ L2_1 + A1_1")
+formula2 = formula("Y_3 ~ L2_2 + A1_2")
+formula3 = formula("Y_4 ~ L2_3 + A1_3")
+formulas = list(formula0, formula1, formula2, formula3)
+setA = c(0,1,1,1)
+
+TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                   formulas = formulas, setA = setA)
+
+TSMinfo$CI
+TSMinfo$IC
 }
