@@ -48,50 +48,80 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform) {
   
 }
 
-# @title LR.TSM
-# @description computes IC for logistic regression plug-in estimator of treatment
-# specific mean and the corresponding wald confidence interval
-# @param W, matrix or data.frame of covariates
-# @param A, a binary vector of treatment assignments
-# @param Y, a binary vector of outcomes
-# @param Qform, a formula for Y in terms of the covariates as input in glm
-# @param setA the value to which you intervene on A, the treatment
-# @param alpha significance level for two-sided CI
-# @return  a list with elements IC for the influence curve and CI for
-# the confidence interval
-
-LR.TSM = function(data, Ynode, Anode, Qform, setA, alpha = .05) {
-
-  IC_beta_info = IC.beta(data, Ynode = Ynode, Qform = Qform)
-
-  Qfit = IC_beta_info$Qfit
+#' @title long.TSM
+#' @description computes IC and psi for logistic regression plug-in estimator of treatment
+#' specific mean for survival data in wide form. IN DEVELOPMENT
+#' @param data, data.frame of variables in time ordering from left to right
+#' @param Ynodes, character vector of time-ordered Ynodes
+#' @param Anodes, character vector of time-ordered Ynodes
+#' @param formulas, list of formulas for the conditional means
+#' @param setA the value to which you intervene on A,vector of length that of Anodes
+#' @param alpha significance level for two-sided CI--not supported yet
+#' @return  a list with elements IC for the influence curve and psi for the estimate
+#' @export
+long.TSM = function(data, Ynodes, Anodes, formulas, setA)
+{
+  times = 1:length(formulas)
+  times = times[order(times,decreasing = TRUE)]
+  for (t in times){
+    # undebug(IC.beta)
+    if (t == max(times)) {
+      IC_tplus1 = 0
+      OC = NULL
+      ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
+                         Anode = Anodes[1:t], Qform = formulas[[t]])
+      IC_t = ICinfo_t$IC_beta
+    } else {
+      IC_tplus1 = IC_t
+      ICinfo_tplus1 = ICinfo_t
+      n0 = nrow(ICinfo_tplus1$X)
+      Yind = grep(Ynodes[t+1], colnames(data))
+      Y_t = data[,Ynodes[t]]
+      goods = vapply(Y_t, FUN = function(x) {
+        t = ifelse(!is.na(x), x==0, FALSE) 
+      }, FUN.VALUE = TRUE)
+      
+      Xa_tplus1 = data[goods,1:Yind]
+      for (i in 1:(t+1)) {
+        col = grep(Anodes[i], colnames(Xa_tplus1))
+        Xa_tplus1[,col] = setA[i]
+      }
+      Xa_tplus1 = model.matrix(formulas[[t+1]],Xa_tplus1)
+      OC = rep(NA,n)
+      OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
+      ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
+                         Anode = Anodes[1:t], Qform = formulas[[t]])
+      X_t = ICinfo_t$X
+      OC = OC[!is.na(OC)]
+      hess = lapply(1:n0,FUN = function(x) {
+        mat = (1-OC[x])*OC[x]*as.numeric(X_t[x,])%*%t(as.numeric(Xa_tplus1[x,]))
+        return(mat)
+      })
+      M = Reduce('+', hess)/n0
+      
+      IC_temp = apply(IC_tplus1,2,FUN = function(x) M%*%as.numeric(x))
+      IC_t = ICinfo_t$IC_beta + IC_temp
+      
+    }
+  } 
   
-  data = data[!is.na(data[Ynode]),]
+  
   n = nrow(data)
   XA = data
-  XA[,Anode] = setA
-  XA = model.matrix(Qform,XA)
-  XA = as.data.frame(XA[,-1])
-  colnames(XA) = paste0("X",1:ncol(XA))
-
-  QAk = predict(Qfit,newdata=XA,type='response')
+  XA[,Anodes[1]] = setA[1]
+  XA = model.matrix(formulas[[1]],XA)
+  QAk = plogis(XA %*% ICinfo_t$Qfit$coef)
   
-  tsm = mean(QAk)
-  # calculate the deriv to mult by IC_beta
-  XA = cbind(int = rep(1, n), XA)
-  deriv = rowMeans(vapply(1:n, FUN = function(x) {
-    return((1-QAk[x])*QAk[x]*as.numeric(XA[x,]))
-  }, FUN.VALUE=rep(1,ncol(XA))))
+  score = rowMeans(sapply(1:n,FUN = function(x) {
+    QAk[x]*(1 - QAk[x])*XA[x,]
+  })) 
   
-  IC_beta = IC_beta_info$IC_beta
-  IC = apply(IC_beta, 2, FUN = function(x) t(deriv)%*%x) + QAk - tsm
-  # standard error
-  SE = sd(IC)*sqrt((n-1))/n
-  
-  qq = qnorm(1-alpha/2)
-  CI = c(tsm = tsm, left = tsm - qq*SE, right = tsm + qq*SE)
-  return(list(CI=CI, IC = IC))
+  psi = mean(QAk)
+  IC = apply(IC_t, 2, FUN = function(x) sum(score*x)) + QAk - psi
+  return(list(psi = psi, IC = IC))
 }
+
+
 
 #' @title LR.inference
 #' @description Function that gives inference for logistic regression plug-in
