@@ -87,6 +87,9 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       goods = vapply(Y_t, FUN = function(x) {
         t = ifelse(!is.na(x), x==0, FALSE) 
       }, FUN.VALUE = TRUE)
+      reals = vapply(Y_t, FUN = function(x) {
+        ifelse(!is.na(x), x==1, FALSE) 
+      }, FUN.VALUE = TRUE)
       
       Xa_tplus1 = data[goods,1:Yind]
       for (i in 1:(t+1)) {
@@ -96,6 +99,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       Xa_tplus1 = model.matrix(formulas[[t+1]],Xa_tplus1)
       OC = rep(NA,n)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
+      OC[reals] = 1
       ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
