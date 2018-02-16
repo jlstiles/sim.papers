@@ -47,7 +47,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   # calculate the IC for beta
   IC_beta = matrix(rep(0, nrow(M)*n), nrow = nrow(M))
   IC_beta[,!cens] = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
-  IC_beta = IC_beta
+  IC_beta = IC_beta*n/n1
   return(list(IC_beta = IC_beta, Qfit = Qfit, X = X, hessian = M))
   
 }
