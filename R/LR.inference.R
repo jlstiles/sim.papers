@@ -104,7 +104,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
       pred_t = rep(NA,n)
-      pred_t[goods | reals] = X_t %*% ICinfo_t$Qfit$coef
+      pred_t[goods | reals] = as.matrix(X_t) %*% ICinfo_t$Qfit$coef
       pred_t = pred_t[goods]
       OC = OC[goods]
       hess = lapply(1:length(OC),FUN = function(x) {
