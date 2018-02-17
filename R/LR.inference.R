@@ -103,9 +103,12 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
+      pred_t = rep(NA,n)
+      pred_t[goods | reals] = X_t %*% ICinfo_t$Qfit$coef
+      pred_t = pred_t[goods]
       OC = OC[goods]
       hess = lapply(1:length(OC),FUN = function(x) {
-        mat = (1-OC[x])*OC[x]*as.numeric(X_t[x,])%*%t(as.numeric(Xa_tplus1[x,]))
+        mat = (1-OC[x])*OC[x]*1-pred_t[x])*as.numeric(X_t[x,])%*%t(as.numeric(Xa_tplus1[x,]))
         return(mat)
       })
       M = Reduce('+', hess)/length(OC)
