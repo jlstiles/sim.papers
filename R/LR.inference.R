@@ -10,10 +10,13 @@
 #' @export
 IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   n = nrow(data)
+  # This option is for when feeding in sequential regression
   if (!is.null(OC)) data[,Ynode] = OC
+  # we only fit on non deaths or uncensored
   cens = is.na(data[,Ynode])
   data = data[!cens,]
   n1 = nrow(data)
+  # form the design matrix based on the formula
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
   colnames(X) = paste0("X",1:(ncol(X)))
@@ -25,18 +28,18 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   } else {
     Qfit = stats::glm(Y~.,data=X,family='binomial')
   }
-  # predictions over data, A=1 and A=0
+  # predictions over data
   Qk = predict(Qfit,type='response')
   
   X$Y = NULL
   X=cbind(int = rep(1,n1),X)
-  # head(X)
+  
   # calculate the score
   score_beta = sapply(1:n1,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
   })
   
-  # averaging hessians to approx the deriv of hessian and mean then inverse
+  # averaging hessians to approx the true average then invert as per IC
   hessian = lapply(1:n1,FUN = function(x) {
     mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
     return(mat)
@@ -71,18 +74,21 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
   times = 1:length(setA)
   times = times[order(times,decreasing = TRUE)]
   for (t in times){
-    # undebug(IC.beta)
+    # If t is the end time we just do a regression on the outcome
     if (t == max(times)) {
       IC_tplus1 = 0
       OC = NULL
       ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       IC_t = ICinfo_t$IC_beta
+      # otherwise we recursively proceed to define the IC
     } else {
       IC_tplus1 = IC_t
       ICinfo_tplus1 = ICinfo_t
-      n0 = nrow(ICinfo_tplus1$X)
+      # get the indice to make the design matrix based on the formula
       Yind = grep(Ynodes[t+1], colnames(data))
+      # for the outcomes at t which are 0 we use prev regression o.w use Y = 1
+      # goods are those that did not die
       Y_t = data[,Ynodes[t]]
       goods = vapply(Y_t, FUN = function(x) {
         t = ifelse(!is.na(x), x==0, FALSE) 
@@ -90,7 +96,9 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       reals = vapply(Y_t, FUN = function(x) {
         ifelse(!is.na(x), x==1, FALSE) 
       }, FUN.VALUE = TRUE)
-      
+      # make the outcome predictions based on previous beta by grabbing previous 
+      # design, intervening then setting up the design--should prob 
+      # switch to datatable
       Xa_tplus1 = data[goods,1:Yind]
       for (i in 1:(t+1)) {
         col = grep(Anodes[i], colnames(Xa_tplus1))
@@ -100,16 +108,19 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       OC = rep(NA,n)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
       OC[reals] = 1
+      # get the new beta
       ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
       OC = OC[goods]
+      # This is to create the M matrix from the paper
       hess = lapply(1:length(OC),FUN = function(x) {
         mat = (1-OC[x])*OC[x]*as.numeric(X_t[x,])%*%t(as.numeric(Xa_tplus1[x,]))
         return(mat)
       })
       M = Reduce('+', hess)/length(OC)
       M = ICinfo_t$hessian %*% M 
+      # form the IC
       IC_temp = apply(IC_tplus1,2,FUN = function(x) M%*%as.numeric(x))
       IC_t = ICinfo_t$IC_beta + IC_temp
       
