@@ -47,7 +47,9 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   M = solve(fisher)
   
   Xfull = matrix(rep(NA,(n*ncol(X))),nrow = n)
+  Xfull = as.data.frame(Xfull)
   Xfull[!cens,] = X
+  colnames(Xfull) = colnames(X)
   # calculate the IC for beta
   IC_beta = matrix(rep(0, nrow(M)*n), nrow = nrow(M))
   IC_beta[,!cens] = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
