@@ -27,7 +27,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   } else {
     Qfit = stats::glm(Y~.,data=X,family='binomial')
   }
-  
+  goods = 1:(ncol(X)+1)
   if (any(is.na(coef(Qfit)))) {
     print(paste0("you have a singular covariance matrix so we will refit without these variables",
                  names(coef(Qfit))[is.na(coef(Qfit))]))
@@ -57,7 +57,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
     return(mat)
   })
   
-  M1 = summary(Qfit)$cov.unscaled*n1
+  # M1 = summary(Qfit)$cov.unscaled*n1
   fisher = -Reduce('+', hessian)/n1
   M = solve(fisher)
   
