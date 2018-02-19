@@ -109,6 +109,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
       OC[reals] = 1
       # get the new beta
+      if (t == 1) data = data[,1:(Yind-1)] else data = data[,-Ynodes[1:(t-1)]]
       ICinfo_t = IC.beta(data = data[,-Ynodes[1:t-1]], OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
