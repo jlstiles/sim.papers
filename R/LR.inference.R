@@ -14,7 +14,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   if (!is.null(OC)) data[,Ynode] = OC
   # we only fit on non deaths or uncensored
   cens = is.na(data[,Ynode])
-  data = data[!cens,1:Ynode]
+  data = data[!cens,1:grep(Ynode,colnames(data))]
   n1 = nrow(data)
   # form the design matrix based on the formula
   X = model.matrix(Qform,data)
