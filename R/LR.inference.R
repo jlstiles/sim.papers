@@ -78,7 +78,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
     if (t == max(times)) {
       IC_tplus1 = 0
       OC = NULL
-      ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
+      ICinfo_t = IC.beta(data = data[,-Ynodes[1:(t-1)]], OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       IC_t = ICinfo_t$IC_beta
       # otherwise we recursively proceed to define the IC
@@ -109,7 +109,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
       OC[reals] = 1
       # get the new beta
-      ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
+      ICinfo_t = IC.beta(data = data[,-Ynodes[1:t-1]], OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
       OC = OC[goods]
