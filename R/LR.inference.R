@@ -47,15 +47,24 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   X=cbind(int = rep(1,n1),X)
   
   # calculate the score
-  score_beta = sapply(1:n1,FUN = function(x) {
+  # score_beta = sapply(1:n1,FUN = function(x) {
+  #   X[x,]*(Y[x]-Qk[x])
+  # })
+  
+  score_beta = mclapply(1:n1,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
-  })
+  }, mc.cores = getOption("mc.cores", parallel::detectCores()))
+  
+  LL = length(score_beta[[1]])
+  score_beta = vapply(1:length(score_beta), FUN = function(x){
+    return(unlist(score_beta[[x]]))
+           }, FUN.VALUE = rep(1,LL))
   
   # averaging hessians to approx the true average then invert as per IC
-  hessian = lapply(1:n1,FUN = function(x) {
+  hessian = mclapply(1:n1,FUN = function(x) {
     mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
     return(mat)
-  })
+  }, mc.cores = getOption("mc.cores", parallel::detectCores()))
   
   # M1 = summary(Qfit)$cov.unscaled*n1
   fisher = -Reduce('+', hessian)/n1
@@ -136,10 +145,10 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       X_t = ICinfo_t$X[goods,]
       OC = OC[goods]
       # This is to create the M matrix from the paper
-      hess = lapply(1:length(OC),FUN = function(x) {
+      hess = mclapply(1:length(OC),FUN = function(x) {
         mat = (1-OC[x])*OC[x]*as.numeric(X_t[x,])%*%t(as.numeric(Xa_tplus1[x,]))
         return(mat)
-      })
+      }, mc.cores = getOption("mc.cores", parallel::detectCores()))
       M = Reduce('+', hess)/length(OC)
       M = ICinfo_t$hessian %*% M 
       # form the IC
