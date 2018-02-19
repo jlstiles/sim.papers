@@ -14,7 +14,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   if (!is.null(OC)) data[,Ynode] = OC
   # we only fit on non deaths or uncensored
   cens = is.na(data[,Ynode])
-  data = data[!cens,1:grep(Ynode,colnames(data))]
+  data = data[!cens,]
   n1 = nrow(data)
   # form the design matrix based on the formula
   X = model.matrix(Qform,data)
@@ -130,8 +130,8 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
       OC[reals] = 1
       # get the new beta
-      if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
-      ICinfo_t = IC.beta(data = design, OC = OC, Ynode = Ynodes[t], 
+      # if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
+      ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X[goods,]
       OC = OC[goods]
@@ -149,9 +149,9 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
     }
   } 
   
-  
   n = nrow(data)
-  if (t == 1) XA = data else XA = data[,-Yinds[1:(t-1)]]
+  # if (t == 1) XA = data else XA = data[,-Yinds[1:(t-1)]]
+  XA = data
   XA[,Anodes[1]] = setA[1]
   XA = model.matrix(formulas[[1]],XA)
   XA = XA[,(ICinfo_t$goods)]
