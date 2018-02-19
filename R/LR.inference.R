@@ -30,7 +30,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   goods = 1:(ncol(X)+1)
   if (any(is.na(coef(Qfit)))) {
     print(paste0("you have a singular covariance matrix so we will refit without these variables",
-                 names(coef(Qfit))[is.na(coef(Qfit))]))
+                 paste(names(coef(Qfit))[is.na(coef(Qfit))], collapse = " ")))
     goods = which(!is.na(coef(Qfit)))
     X = X[,(goods-1)]
     if (!verbose) {
