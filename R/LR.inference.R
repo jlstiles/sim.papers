@@ -46,11 +46,13 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   fisher = -Reduce('+', hessian)/n1
   M = solve(fisher)
   
+  Xfull = matrix(rep(NA,(n*ncol(X))),nrow = n)
+  Xfull[!cens,] = X
   # calculate the IC for beta
   IC_beta = matrix(rep(0, nrow(M)*n), nrow = nrow(M))
   IC_beta[,!cens] = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
   IC_beta = IC_beta
-  return(list(IC_beta = IC_beta, Qfit = Qfit, X = X, hessian = M))
+  return(list(IC_beta = IC_beta, Qfit = Qfit, X = Xfull, hessian = M))
   
 }
 
