@@ -71,6 +71,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
 long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
 {
   n = nrow(data)
+  Yinds = vapply(Ynodes, FUN = function(x) grep(x,colnames(data)), FUN.VALUE = 1)
   times = 1:length(setA)
   times = times[order(times,decreasing = TRUE)]
   for (t in times){
@@ -78,7 +79,8 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
     if (t == max(times)) {
       IC_tplus1 = 0
       OC = NULL
-      ICinfo_t = IC.beta(data = data[,-Ynodes[1:(t-1)]], OC = OC, Ynode = Ynodes[t], 
+      if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
+      ICinfo_t = IC.beta(data = design, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       IC_t = ICinfo_t$IC_beta
       # otherwise we recursively proceed to define the IC
@@ -99,7 +101,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       # make the outcome predictions based on previous beta by grabbing previous 
       # design, intervening then setting up the design--should prob 
       # switch to datatable
-      Xa_tplus1 = data[goods,1:Yind]
+      Xa_tplus1 = data[goods,-Yinds[1:t]]
       for (i in 1:(t+1)) {
         col = grep(Anodes[i], colnames(Xa_tplus1))
         Xa_tplus1[,col] = setA[i]
@@ -109,8 +111,8 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
       OC[reals] = 1
       # get the new beta
-      if (t == 1) data = data[,1:(Yind-1)] else data = data[,-Ynodes[1:(t-1)]]
-      ICinfo_t = IC.beta(data = data[,-Ynodes[1:t-1]], OC = OC, Ynode = Ynodes[t], 
+      if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
+      ICinfo_t = IC.beta(data = design, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
       X_t = ICinfo_t$X
       OC = OC[goods]
