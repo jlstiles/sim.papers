@@ -129,7 +129,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
   
   
   n = nrow(data)
-  XA = data[,1:Ynodes[t]]
+  XA = data[,1:(Yind-1)]
   XA[,Anodes[1]] = setA[1]
   XA = model.matrix(formulas[[1]],XA)
   QAk = plogis(XA %*% ICinfo_t$Qfit$coef)
