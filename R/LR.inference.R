@@ -27,6 +27,19 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   } else {
     Qfit = stats::glm(Y~.,data=X,family='binomial')
   }
+  
+  if (any(is.na(coef(Qfit)))) {
+    print(paste0("you have a singular covariance matrix so we will refit without these variables",
+                 names(coef(Qfit))[is.na(coef(Qfit))]))
+    goods = which(!(colnames(X) %in% names(coef(Qfit))[is.na(coef(Qfit))]))
+    X = X[,goods]
+    if (!verbose) {
+      Qfit = suppressWarnings(stats::glm(Y~.,data=X,
+                                         family='binomial'))
+    } else {
+      Qfit = stats::glm(Y~.,data=X,family='binomial')
+    }
+  }
   # predictions over data
   Qk = predict(Qfit,type='response')
   
@@ -54,7 +67,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   IC_beta = matrix(rep(0, nrow(M)*n), nrow = nrow(M))
   IC_beta[,!cens] = apply(score_beta,2,FUN = function(x) M%*%as.numeric(x))
   IC_beta = IC_beta
-  return(list(IC_beta = IC_beta, Qfit = Qfit, X = Xfull, hessian = M))
+  return(list(IC_beta = IC_beta, Qfit = Qfit, X = Xfull, hessian = M, goods = goods))
   
 }
 
@@ -110,6 +123,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
         Xa_tplus1[,col] = setA[i]
       }
       Xa_tplus1 = model.matrix(formulas[[t+1]],Xa_tplus1)
+      Xa_tplus1 = Xa_tplus1[,(ICinfo_tplus1$goods+1)]
       OC = rep(NA,n)
       OC[goods] = plogis(Xa_tplus1 %*% ICinfo_tplus1$Qfit$coef)
       OC[reals] = 1
@@ -138,6 +152,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
   if (t == 1) XA = data else XA = data[,-Yinds[1:(t-1)]]
   XA[,Anodes[1]] = setA[1]
   XA = model.matrix(formulas[[1]],XA)
+  XA = XA[,(ICinfo_t$goods+1)]
   QAk = plogis(XA %*% ICinfo_t$Qfit$coef)
   
   score = rowMeans(sapply(1:n,FUN = function(x) {
