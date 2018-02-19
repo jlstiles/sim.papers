@@ -56,6 +56,8 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
     mat = -(1-Qk[x])*Qk[x]*as.numeric(X[x,])%*%t(as.numeric(X[x,]))
     return(mat)
   })
+  
+  M1 = summary(Qfit)$cov.unscaled*n1
   fisher = -Reduce('+', hessian)/n1
   M = solve(fisher)
   
