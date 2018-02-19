@@ -19,7 +19,6 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE) {
   # form the design matrix based on the formula
   X = model.matrix(Qform,data)
   X = as.data.frame(X[,-1])
-  colnames(X) = paste0("X",1:(ncol(X)))
   # fit the regression
   Y = data[,Ynode]
   if (!verbose) {
