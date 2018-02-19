@@ -113,7 +113,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05)
       if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
       ICinfo_t = IC.beta(data = design, OC = OC, Ynode = Ynodes[t], 
                          Anode = Anodes[1:t], Qform = formulas[[t]])
-      X_t = ICinfo_t$X
+      X_t = ICinfo_t$X[goods,]
       OC = OC[goods]
       # This is to create the M matrix from the paper
       hess = lapply(1:length(OC),FUN = function(x) {
