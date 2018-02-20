@@ -93,11 +93,11 @@ sim.longTSM = function(n, dag, gform, Qform, formulas, setA, T_end,
   return(CIs)
 }
 
-cl = makeCluster(detectCores(), type = "SOCK")
+cl = makeCluster(4, type = "SOCK")
 registerDoSNOW(cl)
 
 # run this on a 24 core node
-B=1000
+B=10
 n=10000
 setA = c(1,0,1,1,1,1,0)
 T_end = 3
@@ -119,9 +119,5 @@ psi0
 res = do.call(rbind,ALL3_10000)
 coverage = cov.check(res,psi0,c(1,5))
 
-plotdf = data.frame(ests = c(res[,1], res[,5]), 
-                    type = c(rep("deltaLR", nrow(res)),rep("gcomp", nrow(res))))
-plot = ggplot(plotdf, aes(x=ests, fill = type, xmin = .5, xmax = .7))+geom_density(alpha=.5) 
-
 save(formulas, Qform, gform, Ddyn, coverage, psi0,setA,
-     Ynodes, Anodes, Lnodes,  ALL3_10000, T_end, plot, plotdf, file = "longdelta3_10000.RData")
+     Ynodes, Anodes, Lnodes,  ALL3_10000, T_end, file = "longdelta3_10000.RData")
