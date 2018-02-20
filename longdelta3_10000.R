@@ -93,7 +93,7 @@ sim.longTSM = function(n, dag, gform, Qform, formulas, setA, T_end,
   return(CIs)
 }
 
-cl = makeCluster(4, type = "SOCK")
+cl = makeCluster(6, type = "SOCK")
 registerDoSNOW(cl)
 
 # run this on a 24 core node
