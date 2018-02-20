@@ -97,7 +97,7 @@ cl = makeCluster(6, type = "SOCK")
 registerDoSNOW(cl)
 
 # run this on a 24 core node
-B=10
+B=1000
 n=10000
 setA = c(1,0,1,1,1,1,0)
 T_end = 3
@@ -118,6 +118,6 @@ psi0
 
 res = do.call(rbind,ALL3_10000)
 coverage = cov.check(res,psi0,c(1,5))
-
+coverage
 save(formulas, Qform, gform, Ddyn, coverage, psi0,setA,
      Ynodes, Anodes, Lnodes,  ALL3_10000, T_end, file = "longdelta3_10000.RData")
