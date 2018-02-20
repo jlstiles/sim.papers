@@ -102,7 +102,7 @@ n=10000
 setA = c(1,0,1,1,1,1,0)
 T_end = 3
 
-ALL=foreach(i=1:B,.packages=c("Simulations","simcausal"),
+ALL=foreach(i=1:B,.packages=c("Simulations","simcausal","parallel"),
             .errorhandling = "remove")%dopar%
             {sim.longTSM(n=n, dag=Ddyn, gform=gform, Qform=Qform, 
                          formulas =formulas, setA = setA, T_end = 3,
