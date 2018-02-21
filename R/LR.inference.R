@@ -286,7 +286,7 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
   }
 }
 
-#' @ export
+#' @export
 sim.longTSM = function(n, dag, gform, Qform, formulas, setA, T_end, 
                        Lnodes, Anodes, Ynodes)
 {
