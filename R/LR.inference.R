@@ -302,16 +302,16 @@ sim.longTSM = function(n, dag, gform, Qform, formulas, setA, T_end,
   nombre = Ynodes[T_end]
   Yend = grep(nombre, colnames(data))
   
-  res = ltmle(data=data_ltmle[,1:Yend], Anodes=Anodes[1:T_end], Lnodes = Lnodes[1:T_end], 
-              Ynodes=Ynodes[1:T_end],survivalOutcome = TRUE, abar = setA[1:T_end], 
-              Qform = Qform[1:T_end], gform = gform[1:T_end], 
+  res = ltmle(data=data_ltmle[,1:Yend], Anodes=Anodes, Lnodes = Lnodes, 
+              Ynodes=Ynodes,survivalOutcome = TRUE, abar = setA, 
+              Qform = Qform, gform = gform, 
               gbounds = c(0.000001,1),deterministic.g.function = NULL,  
               estimate.time = TRUE, gcomp = TRUE, iptw.only = FALSE, stratify = FALSE,
               deterministic.Q.function = NULL,variance.method = "ic", 
               observation.weights = NULL, id = NULL)
   
-  TSMinfo = long.TSM(data = data, Ynodes = Ynodes[1:T_end], Anodes = Anodes[1:T_end], 
-                     formulas = formulas[1:T_end], setA = setA[1:T_end])
+  TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                     formulas = formulas, setA = setA)
   
   TSMinfo$CI
   sd(TSMinfo$IC)*sqrt(n-1)/n
