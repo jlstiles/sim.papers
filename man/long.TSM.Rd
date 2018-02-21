@@ -4,7 +4,8 @@
 \alias{long.TSM}
 \title{long.TSM}
 \usage{
-long.TSM(data, Ynodes, Anodes, formulas, setA, alpha = 0.05)
+long.TSM(data, Ynodes, Anodes, formulas, setA, alpha = 0.05,
+  parallelize = FALSE)
 }
 \arguments{
 \item{data, }{data.frame of variables in time ordering from left to right}

@@ -18,7 +18,7 @@ Qform = formula("Y ~ W1 + W2 + A*(W3 + W4)")
 W = data[,2:5]
 A = data$A
 Y = data$Y
-debug(LR.inference)
+
 # should cover each truth 95 percent of the time.
 info = LR.inference(W=W,A=A,Y=Y,Qform=Qform, alpha = .05)
 info

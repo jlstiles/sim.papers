@@ -285,3 +285,44 @@ LR.inference = function(W, A, Y, Qform, alpha = .05, simultaneous.inference = FA
     return(c(CI_ate, CI))
   }
 }
+
+#' @ export
+sim.longTSM = function(n, dag, gform, Qform, formulas, setA, T_end, 
+                       Lnodes, Anodes, Ynodes)
+{
+  
+  OdatL = sim(Ddyn, n = n)
+  OdatL$ID = NULL
+  data = OdatL
+  data_ltmle = data
+  for (t in 1:(T_end-1)) {
+    data_ltmle[data_ltmle[,Ynodes[t]]==1,Ynodes[t+1]] = 1 
+  }
+  
+  nombre = Ynodes[T_end]
+  Yend = grep(nombre, colnames(data))
+  
+  res = ltmle(data=data_ltmle[,1:Yend], Anodes=Anodes[1:T_end], Lnodes = Lnodes[1:T_end], 
+              Ynodes=Ynodes[1:T_end],survivalOutcome = TRUE, abar = setA[1:T_end], 
+              Qform = Qform[1:T_end], gform = gform[1:T_end], 
+              gbounds = c(0.000001,1),deterministic.g.function = NULL,  
+              estimate.time = TRUE, gcomp = TRUE, iptw.only = FALSE, stratify = FALSE,
+              deterministic.Q.function = NULL,variance.method = "ic", 
+              observation.weights = NULL, id = NULL)
+  
+  TSMinfo = long.TSM(data = data, Ynodes = Ynodes[1:T_end], Anodes = Anodes[1:T_end], 
+                     formulas = formulas[1:T_end], setA = setA[1:T_end])
+  
+  TSMinfo$CI
+  sd(TSMinfo$IC)*sqrt(n-1)/n
+  summary(res)[[1]]$std.dev
+  sd(res$IC$iptw)*sqrt(n-1)/n
+  
+  c(summary(res)[[1]]$estimate, summary(res)[[1]]$CI)
+  
+  CIs = c(c(summary(res)[[1]]$estimate, summary(res)[[1]]$CI),summary(res)[[1]]$std.dev,
+          TSMinfo$CI, sd(TSMinfo$IC)*sqrt(n-1)/n,sd(res$IC$iptw)*sqrt(n-1)/n)
+  names(CIs)[c(2:3,6:7)] = c("left", "right")
+  names(CIs)[c(1,4,5,8,9)] = c("gcomp", "SE gcomp","LRdelta","SE LR", "SE iptw")
+  return(CIs)
+}

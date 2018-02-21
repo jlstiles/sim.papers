@@ -14,17 +14,16 @@ simmie = function(n, truth) {
   # n=1000
   data = gendata(n, g0_linear, Q0_linear)
   # well-specified model
-  Qform = formula("Y ~ W1 + W2 + A*(W3 + W4)")
   
-  # specifying the covariates, treatment and outcome
-  W = data[,2:5]
-  A = data$A
-  Y = data$Y
+  formulas = list(formula("Y ~ W1 + W2 + A*(W3 + W4)"))
+  Ynodes = c("Y")
+  Anodes = c("A")
+  setA = 1
   
-  # should cover each truth 95 percent of the time.
-  info = LR.TSM(W=W,A=A,Y=Y,Qform=Qform, setA = 0, alpha = .05)
+  TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                     formulas = formulas, setA = setA, alpha = .05)
   
-  cover = (info$CI[2] < truth) & (info$CI[3] > truth)
+  cover = (TSMinfo$CI[2] < truth) & (TSMinfo$CI[3] > truth)
   # cover
   # info$CI
   
@@ -38,7 +37,7 @@ registerDoSNOW(cl)
 B = 100
 ALL=foreach(i=1:B,.packages=c("gentmle2","mvtnorm","hal","Simulations","SuperLearner"),
             .errorhandling = "remove")%dopar%
-            {simmie(1000, truth0)}
+            {simmie(1000, truth1)}
 results =  mean(unlist(ALL))
 results
 

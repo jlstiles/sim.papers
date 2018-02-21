@@ -4,7 +4,8 @@
 \alias{IC.beta}
 \title{IC.beta}
 \usage{
-IC.beta(data, OC = NULL, Ynode, Anodes, Qform, verbose = FALSE)
+IC.beta(data, OC = NULL, Ynode, Anodes, Qform, verbose = FALSE,
+  parallelize = FALSE)
 }
 \arguments{
 \item{Qform, }{a formula for Y in terms of the covariates as input in glm}
