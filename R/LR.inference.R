@@ -51,7 +51,7 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE, parallel
   #   X[x,]*(Y[x]-Qk[x])
   # })
   
-  if (parallelize) cores = getOption("mc.cores",parallel:detectCores()) else cores = 1L
+  if (parallelize) cores = getOption("mc.cores",parallel::detectCores()) else cores = 1L
   score_beta = mclapply(1:n1,FUN = function(x) {
     X[x,]*(Y[x]-Qk[x])
   }, mc.cores = getOption("mc.cores", cores))
