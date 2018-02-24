@@ -104,14 +104,28 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05, paralleli
   times = 1:length(setA)
   times = times[order(times,decreasing = TRUE)]
   
-  if (tmle = true) {
+  if (tmle == true) {
     ICg = list()
     for (t in 1:length(setA)) {
       ICg[[t]] = IC.beta(data,OC=NULL, Anodes[t], Qform = formulas_g[[t]], 
                    verbose = FALSE, parallelize = FALSE)
-      L = model.matrix(data, formulas_g[[t]])
-      H[[t]] = predict(ICg[[t]]$Qfit, type = 'repsonse')
-      
+      L = data
+      L[!is.na(L[,Anodes[t]]),Anodes[t]] = setA[t]
+      Adef = !is.na(L[,Anodes[t]])
+      A = L[Adef,Anodes[t]]
+      IA = I(A == setA[t])
+      L = model.matrix(data = data, object = formulas_g[[t]])
+      L = L[,goods]
+      bottom = predict(ICg[[t]]$Qfit, type = 'repsonse')*setA[t] + 
+        (1- predict(ICg[[t]]$Qfit, type = 'response'))*(1 - setA[t])
+      if (t = 1) {
+        H[[t]] = rep(0,n)
+        H[[t]][Adef] = IA/bottom
+      } else {
+        Ht= rep(0,n)
+        Ht[Adef] = IA/bottom
+        H[[t]] = H[[t-1]]*Ht
+      }
     }
     
   }
