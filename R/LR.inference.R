@@ -104,7 +104,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05, paralleli
   times = 1:length(setA)
   times = times[order(times,decreasing = TRUE)]
   
-  if (tmle == true) {
+  if (tmle == TRUE) {
     ICg = list()
     for (t in 1:length(setA)) {
       ICg[[t]] = IC.beta(data,OC=NULL, Anodes[t], Qform = formulas_g[[t]], 
