@@ -118,7 +118,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05, paralleli
       L = L[,goods]
       bottom = predict(ICg[[t]]$Qfit, type = 'repsonse')*setA[t] + 
         (1- predict(ICg[[t]]$Qfit, type = 'response'))*(1 - setA[t])
-      if (t = 1) {
+      if (t == 1) {
         H[[t]] = rep(0,n)
         H[[t]][Adef] = IA/bottom
       } else {
