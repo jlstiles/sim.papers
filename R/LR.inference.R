@@ -8,7 +8,7 @@
 #' 
 #' @return  a list with elements IC_beta and Qfit, the glm fit object.  
 #' @export
-IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE, parallelize = FALSE) {
+IC.beta = function(data,OC=NULL, Ynode, Qform, verbose = FALSE, parallelize = FALSE) {
   n = nrow(data)
   # This option is for when feeding in sequential regression
   if (!is.null(OC)) data[,Ynode] = OC
@@ -96,20 +96,33 @@ IC.beta = function(data,OC=NULL, Ynode, Anodes, Qform, verbose = FALSE, parallel
 #' influence curve.
 #' @export
 #' @example /inst/examples/example_longTSM.R
-long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05, parallelize = FALSE)
+long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05, parallelize = FALSE,
+                    formulas_g = NULL, tmle = FALSE)
 {
   n = nrow(data)
   Yinds = vapply(Ynodes, FUN = function(x) grep(x,colnames(data)), FUN.VALUE = 1)
   times = 1:length(setA)
   times = times[order(times,decreasing = TRUE)]
+  
+  if (tmle = true) {
+    ICg = list()
+    for (t in 1:length(setA)) {
+      ICg[[t]] = IC.beta(data,OC=NULL, Anodes[t], Qform = formulas_g[[t]], 
+                   verbose = FALSE, parallelize = FALSE)
+      L = model.matrix(data, formulas_g[[t]])
+      H[[t]] = predict(ICg[[t]]$Qfit, type = 'repsonse')
+      
+    }
+    
+  }
   for (t in times){
     # If t is the end time we just do a regression on the outcome
     if (t == max(times)) {
       IC_tplus1 = 0
       OC = NULL
       if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
-      ICinfo_t = IC.beta(data = design, OC = OC, Ynode = Ynodes[t], 
-                         Anode = Anodes[1:t], Qform = formulas[[t]], parallelize = parallelize)
+      ICinfo_t = IC.beta(data = design, OC = OC, Ynode = Ynodes[t],
+                         Qform = formulas[[t]], parallelize = parallelize)
       IC_t = ICinfo_t$IC_beta
       # otherwise we recursively proceed to define the IC
     } else {
@@ -142,7 +155,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05, paralleli
       # get the new beta
       # if (t == 1) design = data else design = data[,-Yinds[1:(t-1)]]
       ICinfo_t = IC.beta(data = data, OC = OC, Ynode = Ynodes[t], 
-                         Anode = Anodes[1:t], Qform = formulas[[t]],parallelize = parallelize)
+                         Qform = formulas[[t]],parallelize = parallelize)
       X_t = ICinfo_t$X[goods,]
       OC = OC[goods]
       # This is to create the M matrix from the paper
