@@ -84,11 +84,16 @@ IC.beta = function(data,OC=NULL, Ynode, Qform, verbose = FALSE, parallelize = FA
 }
 
 #' @title long.TSM
-#' @description computes IC and psi for logistic regression plug-in estimator of treatment
-#' specific mean for survival data in wide form. IN DEVELOPMENT
+#' @description computes delta method inferencec for logistic regression plug-in 
+#' estimator of treatment specific mean for survival data in wide form, 
+#' including pt treatment. Also does logistic regression plug-in using clever
+#' covariate in the regression, inference computed using delta method as well.
+#' Note, in performing tmle, pscores are obtained via user supplied regression
+#' formulas for each time point.  Formulas for the conditional means are also
+#' user supplied.  
 #' @param data, data.frame of variables in time ordering from left to right
 #' @param Ynodes, character vector of time-ordered Ynodes
-#' @param Anodes, character vector of time-ordered Ynodes
+#' @param Anodes, character vector of time-ordered Anodes
 #' @param formulas, list of formulas for the conditional means
 #' @param setA the value to which you intervene on A,vector of length that of Anodes
 #' @param alpha significance level for two-sided CI.
@@ -99,7 +104,7 @@ IC.beta = function(data,OC=NULL, Ynode, Qform, verbose = FALSE, parallelize = FA
 #' model fit using clever covariate in your regression.  Set to TRUE for RCT's.
 #' @param parallelize FALSE by default
 #' @return  a list with elements, CI for the confidence interval and  IC for the 
-#' influence curve.
+#' influence curve. 
 #' @export
 #' @example /inst/examples/example_longTSM.R
 long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05,

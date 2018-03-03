@@ -1,8 +1,10 @@
 ###
-# The following example is for pt treatment
+# The following example is for pt treatment.  
 ###
 # using built-in package functions, g0_linear and define Q0_linear to specify
 # pscore and outcome model probabilities
+data(longdata)
+head(data_pt)
 g0_linear
 Q0_linear = function(A,W1,W2,W3,W4) plogis(A + W1 + W2 + A*(W3 + W4) + W3 +W4)
 
@@ -12,7 +14,7 @@ truth = mean(with(gendata(1e6, g0_linear, Q0_linear), Q0_linear(A=setA,W1,W2,W3,
 truth
 
 # well-specified model
-n=5000
+n=1000
 
 formulas = list(formula("Y ~ A + W1 + W2 + A*(W3 + W4) + W3 +W4"))
 Ynodes = c("Y")
@@ -33,8 +35,7 @@ TSMinfo$IC
 
 # TMLE recovers truth from misspecified outcome model by getting pscore right
 # non-tmle does not
-n=5000
-data = gendata(n, g0_linear, Q0_linear)[,c(2:5,1,6)]
+
 # misspecified outcome regression
 formulas = list(formula("Y ~ A"))
 Ynodes = c("Y")
@@ -43,10 +44,11 @@ setA = 1
 # correctly specified g
 formulas_g = list(formula("A ~ W1 + W2 + W3 + W4"))
 
-TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+TSMinfo = long.TSM(data = data_pt, Ynodes = Ynodes, Anodes = Anodes, 
                    formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05)
 
-TSMinfo1 = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+# non-tmle
+TSMinfo1 = long.TSM(data = data_pt, Ynodes = Ynodes, Anodes = Anodes, 
                     formulas = formulas, formulas_g = formulas_g, tmle = FALSE, setA = setA, alpha = .05)
 # get CI
 TSMinfo$CI
@@ -56,10 +58,8 @@ TSMinfo$IC
 ####
 # example with longitudinal intervention
 ####
-
-data(longdata)
-head(data)
-
+# enter data with time-ordering correct
+head(data_long)
 Ynodes = c("Y_1", "Y_2","Y_3","Y_4")
 Anodes = c("A1_0", "A1_1","A1_2","A1_3")
 
@@ -71,8 +71,13 @@ formula3 = formula("Y_4 ~ L2_3 + A1_3")
 formulas = list(formula0, formula1, formula2, formula3)
 setA = c(0,1,1,1)
 
-TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
-                   formulas = formulas, setA = setA)
+# tmle
+TSMinfo = long.TSM(data = data_long, Ynodes = Ynodes, Anodes = Anodes, 
+                   formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05)
 
+# non-tmle
+TSMinfo1 = long.TSM(data = data_long, Ynodes = Ynodes, Anodes = Anodes, 
+                    formulas = formulas, formulas_g = formulas_g, tmle = FALSE, setA = setA, alpha = .05)
+# get CI
 TSMinfo$CI
-TSMinfo$IC
+TSMinfo1$CI
