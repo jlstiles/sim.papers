@@ -22,10 +22,10 @@ Anodes = c("A")
 setA = 1
 formulas_g = list(formula("A ~ W1 + W2 + W3 + W4"))
 
-TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+TSMinfo = long.TSM(data = data_pt, Ynodes = Ynodes, Anodes = Anodes, 
                    formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05)
 
-TSMinfo1 = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+TSMinfo1 = long.TSM(data = data_pt, Ynodes = Ynodes, Anodes = Anodes, 
                    formulas = formulas, formulas_g = formulas_g, tmle = FALSE, setA = setA, alpha = .05)
 # get CI
 TSMinfo$CI
