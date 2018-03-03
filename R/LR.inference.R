@@ -92,6 +92,12 @@ IC.beta = function(data,OC=NULL, Ynode, Qform, verbose = FALSE, parallelize = FA
 #' @param formulas, list of formulas for the conditional means
 #' @param setA the value to which you intervene on A,vector of length that of Anodes
 #' @param alpha significance level for two-sided CI.
+#' @param formulas_g NULL by default but must be filled in if tmle = TRUE
+#' @param tmle option to put a clever covariate in the regression.  If the propensity
+#' score is well-specified, will give good coverage asymptotically despite mispecifying
+#' the outcome model.  Otherwise gives delta method inference for the "closest" linear
+#' model fit using clever covariate in your regression.  Set to TRUE for RCT's.
+#' @param parallelize FALSE by default
 #' @return  a list with elements, CI for the confidence interval and  IC for the 
 #' influence curve.
 #' @export
