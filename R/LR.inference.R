@@ -102,7 +102,7 @@ IC.beta = function(data,OC=NULL, Ynode, Qform, verbose = FALSE, parallelize = FA
 #' score is well-specified, will give good coverage asymptotically despite mispecifying
 #' the outcome model.  Otherwise gives delta method inference for the "closest" linear
 #' model fit using clever covariate in your regression.  Set to TRUE for RCT's.
-#' @param parallelize FALSE by default
+#' @param parallelize FALSE by default (still in development)
 #' @return  a list with elements, CI for the confidence interval and  IC for the 
 #' influence curve. 
 #' @export
@@ -254,7 +254,7 @@ long.TSM = function(data, Ynodes, Anodes, formulas, setA, alpha = .05,
           mat = -beta_g*HAW[[t]][keeps][x]*(1-QAW[x])*
             QAW[x]*as.numeric(X_t[x,])%*%t(gpred_dotLg[,x])
           return(mat)
-        }, mc.cores = getOption("mc.cores", detectCores()))
+        })
         
         hess_g = Reduce('+', hess_g)/nrow(L)
         # taking average

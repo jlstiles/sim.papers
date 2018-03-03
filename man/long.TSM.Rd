@@ -27,7 +27,7 @@ score is well-specified, will give good coverage asymptotically despite mispecif
 the outcome model.  Otherwise gives delta method inference for the "closest" linear
 model fit using clever covariate in your regression.  Set to TRUE for RCT's.}
 
-\item{parallelize}{FALSE by default}
+\item{parallelize}{FALSE by default (still in development)}
 }
 \value{
 a list with elements, CI for the confidence interval and  IC for the 
@@ -98,8 +98,7 @@ TSMinfo1 = long.TSM(data = data_pt, Ynodes = Ynodes, Anodes = Anodes,
 # get CI
 TSMinfo$CI
 TSMinfo1$CI
-# get influence curve
-TSMinfo$IC
+
 ####
 # example with longitudinal intervention
 ####
@@ -112,18 +111,26 @@ Anodes = c("A1_0", "A1_1","A1_2","A1_3")
 formula0 = formula("Y_1 ~ L2_0 + L1_0 + A1_0") 
 formula1 = formula("Y_2 ~ L2_1 + A1_1")
 formula2 = formula("Y_3 ~ L2_2 + A1_2")
-formula3 = formula("Y_4 ~ L2_3 + A1_3")
-formulas = list(formula0, formula1, formula2, formula3)
-setA = c(0,1,1,1)
+formulas = list(formula0, formula1, formula2)
+formula_g0 = formula("A1_0 ~ L2_0 + L1_0") 
+formula_g1 = formula("A1_1 ~ L2_1 + A1_0")
+formula_g2 = formula("A1_2 ~ L2_2 + A1_1")
+formulas_g = list(formula_g0, formula_g1, formula_g2)
+setA = c(0,1,1)
 
-# tmle
+# tmle (takes about 6 seconds on a mac with 4 cores)
+time = proc.time()
 TSMinfo = long.TSM(data = data_long, Ynodes = Ynodes, Anodes = Anodes, 
-                   formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05)
-
+                   formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05,
+                   parallel = TRUE)
+proc.time() - time
 # non-tmle
 TSMinfo1 = long.TSM(data = data_long, Ynodes = Ynodes, Anodes = Anodes, 
                     formulas = formulas, formulas_g = formulas_g, tmle = FALSE, setA = setA, alpha = .05)
 # get CI
 TSMinfo$CI
+
+# ignoring propensity score gives much smaller variance but gives small variance
+# and high bias if confounding is present
 TSMinfo1$CI
 }
