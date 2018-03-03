@@ -6,30 +6,53 @@
 g0_linear
 Q0_linear = function(A,W1,W2,W3,W4) plogis(A + W1 + W2 + A*(W3 + W4) + W3 +W4)
 
-# get a randomly drawn dataframe under the specified model
-data = gendata(1000, g0_linear, Q0_linear)
-big = gendata(1e6, g0_linear, Q0_linear)
 # get the truth setting A to 1
 setA = 1
-truth = mean(with(big, Q0_linear(A=setA,W1,W2,W3,W4)))
+truth = mean(with(gendata(1e6, g0_linear, Q0_linear), Q0_linear(A=setA,W1,W2,W3,W4)))
 truth
+
 # well-specified model
+n=5000
 
-data = gendata(n, g0_linear, Q0_linear)
-
-formulas = list(formula("Y ~ W1 + W2 + A*(W3 + W4)"))
+formulas = list(formula("Y ~ A + W1 + W2 + A*(W3 + W4) + W3 +W4"))
 Ynodes = c("Y")
 Anodes = c("A")
 setA = 1
+formulas_g = list(formula("A ~ W1 + W2 + W3 + W4"))
 
 TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
-                   formulas = formulas, setA = setA, alpha = .05)
+                   formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05)
 
+TSMinfo1 = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                   formulas = formulas, formulas_g = formulas_g, tmle = FALSE, setA = setA, alpha = .05)
 # get CI
 TSMinfo$CI
+TSMinfo1$CI
 # get influence curve
 TSMinfo$IC
 
+# TMLE recovers truth from misspecified outcome model by getting pscore right
+# non-tmle does not
+n=5000
+data = gendata(n, g0_linear, Q0_linear)[,c(2:5,1,6)]
+# misspecified outcome regression
+formulas = list(formula("Y ~ A"))
+Ynodes = c("Y")
+Anodes = c("A")
+setA = 1
+# correctly specified g
+formulas_g = list(formula("A ~ W1 + W2 + W3 + W4"))
+
+TSMinfo = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                   formulas = formulas, formulas_g = formulas_g, tmle = TRUE, setA = setA, alpha = .05)
+
+TSMinfo1 = long.TSM(data = data, Ynodes = Ynodes, Anodes = Anodes, 
+                    formulas = formulas, formulas_g = formulas_g, tmle = FALSE, setA = setA, alpha = .05)
+# get CI
+TSMinfo$CI
+TSMinfo1$CI
+# get influence curve
+TSMinfo$IC
 ####
 # example with longitudinal intervention
 ####

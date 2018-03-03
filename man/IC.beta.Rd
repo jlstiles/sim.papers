@@ -4,7 +4,7 @@
 \alias{IC.beta}
 \title{IC.beta}
 \usage{
-IC.beta(data, OC = NULL, Ynode, Anodes, Qform, verbose = FALSE,
+IC.beta(data, OC = NULL, Ynode, Qform, verbose = FALSE,
   parallelize = FALSE)
 }
 \arguments{
@@ -17,7 +17,7 @@ IC.beta(data, OC = NULL, Ynode, Anodes, Qform, verbose = FALSE,
 \item{Y, }{a binary vector of outcomes}
 }
 \value{
-a list with elements IC_beta and Qfit, the glm fit object.
+a list with elements IC_beta and fit, the glm fit object.
 }
 \description{
 computes IC for beta coefficients of logistic regression
