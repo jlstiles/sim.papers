@@ -88,3 +88,4 @@ TSMinfo$CI
 # ignoring propensity score gives much smaller variance but gives small variance
 # and high bias if confounding is present
 TSMinfo1$CI
+
