@@ -304,7 +304,9 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     col.check = apply(Qrisk_mat, 2, FUN = function(col) {
       any(is.na(col)) | any(col != 0)
     })
-    if (all(!col.check)) Qrisk = rep(0, nrow(Qrisk_mat)) else Qrisk = rowMeans(Qrisk_mat[,col.check])
+    if (all(!col.check)) Qrisk = rep(0, nrow(Qrisk_mat)) else {
+      Qrisk = rowMeans(as.data.frame(Qrisk_mat[,col.check]))
+    }
   }
   
   if (is.vector(Gcoef_mat)) {
@@ -319,7 +321,9 @@ SL.stack1 = function(Y, X, A, W, newdata, method, SL.library, SL.libraryG,
     col.check = apply(Grisk_mat, 2, FUN = function(col) {
       any(is.na(col)) | any(col != 0)
     })
-    if (all(!col.check)) Grisk = rep(0, nrow(Grisk_mat)) else Grisk = rowMeans(Grisk_mat[,col.check])
+    if (all(!col.check)) Grisk = rep(0, nrow(Grisk_mat)) else {
+      Grisk = rowMeans(as.data.frame(Grisk_mat[,col.check]))
+    }
   }
   
   inds = unlist(lapply(stack, FUN = function(x) x$inds))
