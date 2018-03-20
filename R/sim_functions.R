@@ -369,7 +369,7 @@ sim_cv = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
 
 # input data.frame with A, Y and covariates spit out lr CI based on delta method
 # remember the order of vars is A, mainterms, then interactions
-
+#' @export
 sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS", 
                    cv = TRUE, V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL) {
   
@@ -414,7 +414,6 @@ sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
     lrsingle = TRUE
   }
   
-  gggggg = 5
   single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
                         method = method, gn = gn, cvhal = FALSE)
   
