@@ -189,7 +189,7 @@ noise_analysis = function(n, rate, truth, coverage, Q0, biasQ, sdQ) {
   
   title = paste("sample size ",n, "variance bias = ",round(var_bias,5))
   df = data.frame(CATE = c(blip_test,blip_true), type = c(rep("test",1e6),rep("true",1e6)))
-  gg_testvstrue = ggplot2::ggplot(df,aes(x=blip,color=type))+geom_density()+ggtitle(title)+
+  gg_testvstrue = ggplot2::ggplot(df,aes(x=CATE,color=type))+geom_density()+ggtitle(title)+
     theme(plot.title = element_text(size = 10, face = "bold"),
           axis.text.x = element_text(size=8,angle=315)) 
   caption = paste0("coverage = ",coverage)
