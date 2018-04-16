@@ -119,7 +119,7 @@ getRes = function(allresults,B, ATE0, var0, varind = c(4,10),
     theme(axis.title.x = element_blank())+
     theme(plot.title = element_text(size = 12, face = "bold"),
           axis.text.x = element_text(size=8,angle=315))+
-    ggtitle("blip variance sampling distributions")
+    ggtitle("CATE variance sampling distributions")
   ggover2 = ggover2+geom_vline(xintercept = var0,color="green")+
     geom_vline(xintercept=mean(results[,4]),color = "black")+
     geom_vline(xintercept=mean(results[,10]),color = "red")

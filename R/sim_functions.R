@@ -546,4 +546,175 @@ sim_cv4 = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
   
 }
 
+####
+####
+####
+####
 
+#' @export
+sim_cvnew = function(n, g0, Q0, SL.library, SL.libraryG, method = "method.NNLS",
+                     V = 10, SL = 10L, gform, Qform, estimator, dgp = NULL, gendata.fcn) {
+  
+  if (!is.null(dgp)) {
+    data = dgp$DF
+    BV0 = dgp$BV0
+    ATE0 = dgp$ATE0
+    blip_n = dgp$blip_n
+  } else {
+    data = gendata.fcn(n, g0, Q0)
+  }
+  
+  if (is.vector(g0)) gn = g0 else gn = NULL
+  
+  Y = data$Y
+  A = data$A
+  
+  X = data
+  X$Y = NULL
+  X1 = X0 = X
+  X0$A = 0
+  X1$A = 1
+  newdata = rbind(X,X1,X0)
+  
+  W = X
+  W$A = NULL
+  
+  single_info = sim_hal(data = data, gform = gform, Qform = Qform, V = 10, estimator = estimator,
+                        method = method, gn = gn, cvhal = FALSE)
+  
+  stack = SL.stack1(Y=Y, X=X, A=A, W=W, newdata=newdata, method=method, 
+                    SL.library=SL.library, SL.libraryG=SL.libraryG,cv = TRUE, V = V, SL = SL, gn = gn)
+  # proc.time() - time
+  
+  
+  initdata = stack$initdata
+  
+  # stack
+  initest = with(initdata,var(Q1k - Q0k))
+  initest_ATE = with(initdata, mean(Q1k - Q0k))
+  
+  if ("single 1step" %in% estimator) {
+    sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_EB2), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "recursive", max_iter = 10000, g.trunc = 1e-2)
+    
+    ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "recursive", max_iter = 10000,g.trunc = 1e-2)
+    steps = c(steps_EB21step = sigma_info$steps, steps_ate1step = ATE_info$steps)
+    converge = c(sigma_info$converge, ATE_info$converge)
+    D_blipvar = sigma_info$Dstar[[1]] - 2*ATE_info$tmleests*ATE_info$Dstar[[1]]
+    psi_blipvar = sigma_info$tmleests - ATE_info$tmleests^2
+    SE_blipvar = sd(D_blipvar)*sqrt(n-1)/n
+    ci_blipvar = c(-1.96*SE_blipvar, 1.96*SE_blipvar) + psi_blipvar
+    
+    cis = c(psi_blipvar, ci_blipvar , ci_gentmle(ATE_info)[c(2,4,5)])  
+    
+    names(cis)[c(1,4)] = names(steps) = names(converge) = c("bv1step", "ate1step")
+  } else {
+    cis = c()
+    converge = c()
+    steps = c()
+  }
+  
+  if ("single iterative" %in% estimator) {
+    sigma_info = gentmle2::gentmle(initdata=initdata, params=list(param_EB2), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100, g.trunc = 1e-2)
+    
+    ATE_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE), 
+                                 submodel = submodel_logit, loss = loss_loglik,
+                                 approach = "full", max_iter = 100,g.trunc = 1e-2)
+    steps1 = c(sigma_info$steps, ATE_info$steps)
+    converge1 = c(sigma_info$converge, ATE_info$converge)
+    D_blipvar = sigma_info$Dstar[[1]] - 2*ATE_info$tmleests*ATE_info$Dstar[[1]]
+    psi_blipvar = sigma_info$tmleests - ATE_info$tmleests^2
+    SE_blipvar = sd(D_blipvar)*sqrt(n-1)/n
+    ci_blipvar = c(-1.96*SE_blipvar, 1.96*SE_blipvar) + psi_blipvar
+    
+    cis1 = c(psi_blipvar, ci_blipvar , ci_gentmle(ATE_info)[c(2,4,5)])  
+    names(cis1)[c(1,4)] = names(steps1) = names(converge1) = c("bv", "ate")
+    
+    cis = c(cis, cis1)
+    converge = c(converge, converge1)
+    steps = c(steps, steps1)
+  }
+  
+  if ("simul 1step" %in% estimator) {
+    simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_EB2), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "recursive", max_iter = 10000, g.trunc = 1e-2,
+                                   simultaneous.inference = FALSE)
+    
+    steps1 = c(simul = simul_info$steps)
+    converge1 = c(simul = simul_info$converge)
+    
+    D_blipvar = simul_info$Dstar[[2]] - 2*simul_info$tmleests[1]*simul_info$Dstar[[1]]
+    psi_blipvar = simul_info$tmleests[2] - simul_info$tmleests[1]^2
+    SE_blipvar = sd(D_blipvar)*sqrt(n-1)/n
+    ci_blipvar = c(-1.96*SE_blipvar, 1.96*SE_blipvar) + psi_blipvar
+    
+    cis1 = c(psi_blipvar, ci_blipvar, ci_gentmle(simul_info)[1,c(2,4,5)])
+    names(cis1)[c(1,4)] = c("bv_simul", "ate_simul")
+    
+    cis = c(cis, cis1)
+    converge = c(converge, converge1)
+    steps = c(steps, steps1)
+  }
+  
+  if ("simul line" %in% estimator) {
+    simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_EB2), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "line", max_iter = 100, g.trunc = 1e-2,
+                                   simultaneous.inference = FALSE)
+    
+    steps1 = c(simul = simul_info$steps)
+    converge1 = c(simul = simul_info$converge)
+    
+    D_blipvar = simul_info$Dstar[[2]] - 2*simul_info$tmleests[1]*simul_info$Dstar[[1]]
+    psi_blipvar = simul_info$tmleests[2] - simul_info$tmleests[1]^2
+    SE_blipvar = sd(D_blipvar)*sqrt(n-1)/n
+    ci_blipvar = c(-1.96*SE_blipvar, 1.96*SE_blipvar) + psi_blipvar
+    
+    cis1 = c(psi_blipvar, ci_blipvar, ci_gentmle(simul_info)[1,c(2,4,5)])
+    names(cis1)[c(1,4)] = c("bv_simul", "ate_simul")
+    
+    cis = c(cis, cis1)
+    converge = c(converge, converge1)
+    steps = c(steps, steps1)
+  }
+  
+  if ("simul full" %in% estimator) {
+    simul_info = gentmle2::gentmle(initdata=initdata, params=list(param_ATE, param_EB2), 
+                                   submodel = submodel_logit, loss = loss_loglik,
+                                   approach = "full", max_iter = 100, g.trunc = 1e-2,
+                                   simultaneous.inference = FALSE)
+    
+    steps1 = c(simul = simul_info$steps)
+    converge1 = c(simul = simul_info$converge)
+    
+    D_blipvar = simul_info$Dstar[[2]] - 2*simul_info$tmleests[1]*simul_info$Dstar[[1]]
+    psi_blipvar = simul_info$tmleests[2] - simul_info$tmleests[1]^2
+    SE_blipvar = sd(D_blipvar)*sqrt(n-1)/n
+    ci_blipvar = c(-1.96*SE_blipvar, 1.96*SE_blipvar) + psi_blipvar
+    
+    cis1 = c(psi_blipvar, ci_blipvar, ci_gentmle(simul_info)[1,c(2,4,5)])
+    names(cis1)[c(1,4)] = c("bv_simul", "ate_simul")
+    
+    cis = c(cis, cis1)
+    converge = c(converge, converge1)
+    steps = c(steps, steps1)
+  }
+  
+  if (!is.null(dgp)) {
+    results = list(res = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
+                           Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
+                           Grisk = stack$Grisk, single = single_info, BV0 = BV0, ATE0 = ATE0), blip_n = blip_n)
+  } else {
+    results = c(cis, initest = initest, initest_ATE = initest_ATE, steps = steps, converge = converge, 
+                Qcoef = stack$Qcoef, Gcoef = stack$Gcoef, Qrisk = stack$Qrisk, 
+                Grisk = stack$Grisk, single = single_info)
+  }
+  return(results)
+  
+}
